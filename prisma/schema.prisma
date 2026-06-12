@@ -1,0 +1,114 @@
+// Prisma Schema - tbtparent.me
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== 首页 ==========
+model Home {
+  id        Int      @id @default(1)
+  name_zh   String
+  name_en   String
+  nameZh    String
+  title_zh  String
+  title_en  String
+  bio_zh    String   @db.Text
+  bio_en    String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========== 社交链接 ==========
+model SocialLink {
+  id        Int      @id @default(autoincrement())
+  name      String
+  url       String
+  icon      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========== 项目 ==========
+model Project {
+  id             Int      @id @default(autoincrement())
+  name_zh        String
+  name_en        String
+  description_zh String   @db.Text
+  description_en String   @db.Text
+  tags_zh        String[]
+  tags_en        String[]
+  deadline_zh    String
+  deadline_en    String
+  link           String
+  github         String?
+  demo_url       String?
+  project_type   String   @default("pc") // mobile, pc, dashboard
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ========== 博客 ==========
+model Blog {
+  id           Int          @id @default(autoincrement())
+  title_zh     String
+  title_en     String
+  slug         String       @unique
+  excerpt_zh   String       @db.Text
+  excerpt_en   String       @db.Text
+  content_zh   String       @db.Text
+  content_en   String       @db.Text
+  coverImage   String?
+  publishedAt  DateTime?
+  status       String       @default("draft")
+  images       BlogImage[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+// ========== 博客图片（MinIO） ==========
+model BlogImage {
+  id        Int      @id @default(autoincrement())
+  blogId    Int
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  url       String
+  filename  String
+  createdAt DateTime @default(now())
+}
+
+// ========== 关于 ==========
+model About {
+  id        Int      @id @default(1)
+  bio_zh    String   @db.Text
+  bio_en    String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========== 技术栈 ==========
+model TechStack {
+  id        Int      @id @default(autoincrement())
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+// ========== 工具 ==========
+model Tool {
+  id          Int      @id @default(autoincrement())
+  name_zh     String
+  name_en     String
+  description_zh String @db.Text
+  description_en String @db.Text
+  link        String
+  available   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

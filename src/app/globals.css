@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+/* ============================================
+   根据需求文档 v2 定义的 CSS Variables
+   极简黑白配色 + 明暗模式
+   ============================================ */
+
+:root {
+  /* Light Mode - 极简白底 */
+  --bg: #ffffff;
+  --fg: #000000;
+  --muted: #666666;
+  --border: #e5e5e5;
+  --accent: #000000;
+  
+  /* 粒子背景颜色（Light 模式）*/
+  --particle: #dddddd;
+  --particle-line: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  /* Dark Mode - 极简黑底 */
+  --bg: #0a0a0a;
+  --fg: #ffffff;
+  --muted: #999999;
+  --border: #333333;
+  --accent: #ffffff;
+  
+  /* 粒子背景颜色（Dark 模式）- 星空感 */
+  --particle: rgba(255, 255, 255, 0.15);
+  --particle-line: rgba(255, 255, 255, 0.05);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* 强制确保主题切换时颜色正确应用 */
+html.dark {
+  color-scheme: dark;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 隐藏滚动条但保留滚动行为 */
+html, body, * {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Edge */
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* View Transitions API - 主题切换动画 */
+::view-transition-old(root) {
+  animation: none;
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  animation: theme-expand 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  z-index: 9999;
+}
+
+@keyframes theme-expand {
+  from {
+    clip-path: circle(0% at 0% 0%);
+  }
+  to {
+    clip-path: circle(150% at 0% 0%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   响应式布局
+   ============================================ */
+
+/* Navbar 响应式 padding */
+.navbar-padding {
+  padding: 1rem 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .navbar-padding {
+    padding: 1.5rem 5rem;
+  }
+}
+
+/* 确保触摸目标足够大 */
+@media (pointer: coarse) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ============================================
+   即时 Tooltip（无延迟）
+   ============================================ */
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background-color: var(--fg);
+  color: var(--bg);
+  font-family: monospace;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 100;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
