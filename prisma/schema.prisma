@@ -41,6 +41,8 @@ model Project {
   name_en        String
   description_zh String   @db.Text
   description_en String   @db.Text
+  content_zh     String?  @db.Text
+  content_en     String?  @db.Text
   tags_zh        String[]
   tags_en        String[]
   deadline_zh    String
@@ -64,9 +66,12 @@ model Blog {
   excerpt_en   String       @db.Text
   content_zh   String       @db.Text
   content_en   String       @db.Text
-  coverImage   String?
-  publishedAt  DateTime?
+  tags_zh      String[]     @default([])
+  tags_en      String[]     @default([])
+  cover_image  String?
+  published_at DateTime?
   status       String       @default("draft")
+  pinned       Boolean      @default(false)  // 置顶标记
   images       BlogImage[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt

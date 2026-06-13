@@ -6,7 +6,8 @@ const initScript = `
   (function() {
     try {
       var theme = localStorage.getItem('theme');
-      if (theme === 'dark') {
+      // 默认暗黑模式：只有明确设置为 light 才不加 dark class
+      if (!theme || theme === 'dark') {
         document.documentElement.classList.add('dark');
       }
       var lang = localStorage.getItem('lang');

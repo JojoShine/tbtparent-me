@@ -16,15 +16,42 @@ export async function GET(request) {
       return Response.json(blog)
     }
 
-    // 获取列表
+    // 获取列表（支持分页 + 标签筛选）
     const status = searchParams.get('status')
-    const where = status ? { status } : {}
+    const tag = searchParams.get('tag')
+    const page = parseInt(searchParams.get('page') || '1')
+    const pageSize = parseInt(searchParams.get('pageSize') || '10')
+
+    const where = {}
+    if (status) where.status = status
+    if (tag) {
+      where.OR = [
+        { tags_zh: { has: tag } },
+        { tags_en: { has: tag } },
+      ]
+    }
+
+    // 查询所有标签（仅已发布）
+    const tagBlogs = await prisma.blog.findMany({
+      where: { status: 'published' },
+      select: { tags_zh: true, tags_en: true },
+    })
+    const tagSet = new Set()
+    tagBlogs.forEach(b => {
+      if (Array.isArray(b.tags_zh)) b.tags_zh.forEach(t => tagSet.add(t))
+      if (Array.isArray(b.tags_en)) b.tags_en.forEach(t => tagSet.add(t))
+    })
+    const allTags = [...tagSet]
+
+    const total = await prisma.blog.count({ where })
     const blogs = await prisma.blog.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
       include: { images: true },
     })
-    return Response.json(blogs)
+    return Response.json({ blogs, total, page, pageSize, allTags })
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 })
   }
@@ -37,7 +64,7 @@ export const POST = withAuth(async (request) => {
     const blog = await prisma.blog.create({
       data: {
         ...body,
-        publishedAt: body.status === 'published' ? new Date() : null,
+        published_at: body.status === 'published' ? new Date() : null,
       },
     })
     return Response.json(blog)
@@ -51,8 +78,8 @@ export const PUT = withAuth(async (request) => {
   try {
     const body = await request.json()
     const { id, ...data } = body
-    if (data.status === 'published' && !data.publishedAt) {
-      data.publishedAt = new Date()
+    if (data.status === 'published' && !data.published_at) {
+      data.published_at = new Date()
     }
     const blog = await prisma.blog.update({ where: { id }, data })
     return Response.json(blog)

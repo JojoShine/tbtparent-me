@@ -6,9 +6,11 @@ import { apiGet, apiPost, apiPut, apiDelete, apiTranslate, getHeaders, inputStyl
 const emptyBlog = {
   title_zh: '', title_en: '',
   slug: '',
+  tags_zh: [], tags_en: [],
   excerpt_zh: '', excerpt_en: '',
   content_zh: '', content_en: '',
   status: 'draft',
+  pinned: false,
 }
 
 export default function AdminBlog() {
@@ -35,7 +37,7 @@ export default function AdminBlog() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const load = () => apiGet('/api/blog').then(setBlogs).catch(console.error)
+  const load = () => apiGet('/api/blog').then(data => setBlogs(Array.isArray(data.blogs) ? data.blogs : (Array.isArray(data) ? data : []))).catch(console.error)
   useEffect(() => { load() }, [])
 
   const handleChange = (field, value) => {
@@ -132,6 +134,11 @@ export default function AdminBlog() {
             }}>
               <div>
                 <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--fg)' }}>{b.title_zh}</span>
+                {b.pinned && (
+                  <span style={{ marginLeft: '8px', fontSize: '0.7rem', color: '#d69e2e', padding: '2px 6px', border: '1px solid #d69e2e', borderRadius: '2px' }}>
+                    置顶
+                  </span>
+                )}
                 <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: 'var(--muted)', padding: '2px 6px', border: '1px solid var(--border)', borderRadius: '2px' }}>
                   {statusLabel(b.status)}
                 </span>
@@ -180,6 +187,27 @@ export default function AdminBlog() {
           <div>
             <label style={labelStyle}>Slug</label>
             <input style={inputStyle} value={editing.slug} onChange={e => handleChange('slug', e.target.value)} />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div>
+              <label style={labelStyle}>标签（中文，逗号分隔）</label>
+              <input
+                style={inputStyle}
+                value={(editing.tags_zh || []).join(', ')}
+                onChange={e => handleChange('tags_zh', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                placeholder="运维, Linux, Nginx"
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Tags (English, comma separated)</label>
+              <input
+                style={inputStyle}
+                value={(editing.tags_en || []).join(', ')}
+                onChange={e => handleChange('tags_en', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                placeholder="ops, linux, nginx"
+              />
+            </div>
           </div>
 
           <div>
@@ -281,12 +309,22 @@ export default function AdminBlog() {
                 )}
               </div>
             </div>
-            {editing.id && (
-              <div>
-                <label style={labelStyle}>上传图片（MinIO）</label>
-                <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} style={{ ...inputStyle, padding: '6px' }} />
-              </div>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '24px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--fg)' }}>
+                <input
+                  type="checkbox"
+                  checked={editing.pinned || false}
+                  onChange={e => handleChange('pinned', e.target.checked)}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                置顶
+              </label>
+              {editing.id && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--fg)' }}>
+                  <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} style={{ fontSize: '0.8rem' }} />
+                </label>
+              )}
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>

@@ -6,6 +6,7 @@ import { apiGet, apiPost, apiPut, apiDelete, apiTranslate, inputStyle, textareaS
 const emptyProject = {
   name_zh: '', name_en: '',
   description_zh: '', description_en: '',
+  content_zh: '', content_en: '',
   tags_zh: [], tags_en: [],
   deadline_zh: '', deadline_en: '',
   link: '#', github: '', demo_url: '',
@@ -166,7 +167,28 @@ export default function AdminProjects() {
                 {translating['description_en->description_zh'] ? '翻译中...' : '←译'}
               </button>
             </label>
-            <textarea style={textareaStyle} value={editing.description_en} onChange={e => handleChange('description_en', e.target.value)} />
+            <textarea style={{ ...textareaStyle, minHeight: '120px' }} value={editing.description_en} onChange={e => handleChange('description_en', e.target.value)} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>
+              详细介绍（中文 Markdown）
+              <button type="button" style={translateButtonStyle} data-tooltip="将中文翻译为英文" disabled={translating['content_zh->content_en']}
+                onClick={() => handleTranslate('content_zh', 'content_en')}>
+                {translating['content_zh->content_en'] ? '翻译中...' : '译→'}
+              </button>
+            </label>
+            <textarea style={{ ...textareaStyle, minHeight: '200px', fontFamily: 'monospace' }} value={editing.content_zh || ''} onChange={e => handleChange('content_zh', e.target.value)} placeholder="支持 Markdown 格式..." />
+          </div>
+          <div>
+            <label style={labelStyle}>
+              Detail (English Markdown)
+              <button type="button" style={translateButtonStyle} data-tooltip="将英文翻译为中文" disabled={translating['content_en->content_zh']}
+                onClick={() => handleTranslate('content_en', 'content_zh')}>
+                {translating['content_en->content_zh'] ? '翻译中...' : '←译'}
+              </button>
+            </label>
+            <textarea style={{ ...textareaStyle, minHeight: '200px', fontFamily: 'monospace' }} value={editing.content_en || ''} onChange={e => handleChange('content_en', e.target.value)} placeholder="Supports Markdown format..." />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>

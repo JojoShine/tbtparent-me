@@ -4,8 +4,8 @@ import { useSyncExternalStore, useEffect, useState } from 'react'
 
 // 外部主题存储，在组件外部维护状态
 let currentTheme = typeof window !== 'undefined'
-  ? (localStorage.getItem('theme') || 'light')
-  : 'light'
+  ? (localStorage.getItem('theme') || 'dark')
+  : 'dark'
 let listener = null
 
 function subscribe(cb) {
@@ -18,7 +18,7 @@ function getSnapshot() {
 }
 
 function getServerSnapshot() {
-  return 'light'
+  return 'dark'
 }
 
 export function useTheme() {

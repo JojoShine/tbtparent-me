@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useLang } from '@/hooks/useLang'
 import { localizedField } from '@/lib/i18n-helpers'
+import EmptyState from '@/components/ui/EmptyState'
 
 const fadeUp = {
   initial: { opacity: 0, y: 10 },
@@ -18,9 +19,10 @@ const stagger = {
 export default function ToolsPage() {
   const { lang, t } = useLang()
   const [tools, setTools] = useState([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    fetch('/api/tools').then(r => r.json()).then(setTools).catch(console.error)
+    fetch('/api/tools').then(r => r.json()).then(data => { setTools(data); setLoaded(true) }).catch(console.error)
   }, [])
 
   return (
@@ -57,13 +59,11 @@ export default function ToolsPage() {
             </a>
           ))}
         </div>
-        {tools.length === 0 && (
+        {!loaded && tools.length === 0 && (
           <p style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>Loading...</p>
         )}
-        {tools.length > 0 && tools.filter(t => t.available).length === 0 && (
-          <p style={{ color: 'var(--muted)', fontFamily: 'monospace', fontSize: '0.9rem' }}>
-            暂无可用工具
-          </p>
+        {loaded && tools.filter(tool => tool.available).length === 0 && (
+          <EmptyState message={lang === 'zh' ? '暂无可用工具' : 'No tools available'} />
         )}
       </motion.section>
     </motion.div>

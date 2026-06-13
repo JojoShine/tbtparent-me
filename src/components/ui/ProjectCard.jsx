@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Smartphone, Monitor, Tv, QrCode, ExternalLink } from 'lucide-react'
+import QRCode from 'qrcode'
 
 function GithubIcon({ style }) {
   return (
@@ -27,9 +28,31 @@ const typeLabelMap = {
 
 export default function ProjectCard({ project }) {
   const [showQr, setShowQr] = useState(false)
+  const [isSmallScreen, setIsSmallScreen] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState(null)
+  const qrGeneratedRef = useRef(false)
   const TypeIcon = typeIconMap[project.project_type] || Monitor
   const hasDemo = !!project.demo_url
   const isMobile = project.project_type === 'mobile'
+
+  useEffect(() => {
+    const check = () => setIsSmallScreen(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // 本地生成二维码（一次性，缓存结果）
+  useEffect(() => {
+    if (hasDemo && project.demo_url && !qrGeneratedRef.current) {
+      QRCode.toDataURL(project.demo_url, { width: 400, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
+        .then(url => {
+          setQrDataUrl(url)
+          qrGeneratedRef.current = true
+        })
+        .catch(console.error)
+    }
+  }, [hasDemo, project.demo_url])
 
   return (
     <div style={{ position: 'relative' }}>
@@ -45,29 +68,23 @@ export default function ProjectCard({ project }) {
             <span
               title={typeLabelMap[project.project_type] || 'PC端'}
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
                 color: 'var(--muted)',
+                lineHeight: 1,
               }}
             >
-              <TypeIcon style={{ width: '16px', height: '16px' }} />
+              <TypeIcon size={16} strokeWidth={2} />
             </span>
-            <a
-              href={project.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none' }}
-            >
-              <h3 className="font-mono font-bold" style={{ color: 'var(--fg)', fontSize: '1.1rem' }}>
-                {project.name}
-              </h3>
-            </a>
+            <h3 className="font-mono font-bold" style={{ color: 'var(--fg)', fontSize: '1.1rem', lineHeight: 1, margin: 0 }}>
+              {project.name}
+            </h3>
           </div>
 
           {/* GitHub + 演示 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginLeft: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, marginLeft: '12px' }}>
             {project.github && (
               <a
                 href={project.github}
@@ -78,8 +95,8 @@ export default function ProjectCard({ project }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '28px',
-                  height: '28px',
+                  width: '24px',
+                  height: '24px',
                   border: '1px solid var(--border)',
                   borderRadius: '2px',
                   color: 'var(--muted)',
@@ -88,11 +105,11 @@ export default function ProjectCard({ project }) {
                 onMouseEnter={e => e.currentTarget.style.color = 'var(--fg)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
               >
-                <GithubIcon style={{ width: '13px', height: '13px' }} />
+                <GithubIcon style={{ width: '12px', height: '12px' }} />
               </a>
             )}
 
-            {hasDemo && isMobile && (
+            {hasDemo && isMobile && !isSmallScreen && (
               <span
                 onMouseEnter={() => setShowQr(true)}
                 onMouseLeave={() => setShowQr(false)}
@@ -100,8 +117,8 @@ export default function ProjectCard({ project }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '28px',
-                  height: '28px',
+                  width: '24px',
+                  height: '24px',
                   border: '1px solid var(--border)',
                   borderRadius: '2px',
                   color: showQr ? 'var(--fg)' : 'var(--muted)',
@@ -109,11 +126,11 @@ export default function ProjectCard({ project }) {
                   transition: 'color 0.15s ease',
                 }}
               >
-                <QrCode style={{ width: '13px', height: '13px' }} />
+                <QrCode style={{ width: '12px', height: '12px' }} />
               </span>
             )}
 
-            {hasDemo && !isMobile && (
+            {hasDemo && (isMobile ? isSmallScreen : true) && (
               <a
                 href={project.demo_url}
                 target="_blank"
@@ -123,8 +140,8 @@ export default function ProjectCard({ project }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '28px',
-                  height: '28px',
+                  width: '24px',
+                  height: '24px',
                   border: '1px solid var(--border)',
                   borderRadius: '2px',
                   color: 'var(--muted)',
@@ -133,7 +150,7 @@ export default function ProjectCard({ project }) {
                 onMouseEnter={e => e.currentTarget.style.color = 'var(--fg)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
               >
-                <ExternalLink style={{ width: '13px', height: '13px' }} />
+                <ExternalLink style={{ width: '12px', height: '12px' }} />
               </a>
             )}
           </div>
@@ -173,8 +190,8 @@ export default function ProjectCard({ project }) {
         )}
       </motion.div>
 
-      {/* 右侧悬浮二维码面板 */}
-      {showQr && (
+      {/* 右侧悬浮二维码面板 - 仅非小屏幕显示 */}
+      {showQr && !isSmallScreen && (
         <div
           onMouseEnter={() => setShowQr(true)}
           onMouseLeave={() => setShowQr(false)}
@@ -197,7 +214,7 @@ export default function ProjectCard({ project }) {
         >
           <div style={{ position: 'relative', width: '180px', height: '180px', marginBottom: '10px' }}>
             <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(project.demo_url)}&bgcolor=ffffff&color=000000`}
+              src={qrDataUrl || ''}
               alt="QR Code"
               style={{ display: 'block', width: '180px', height: '180px' }}
             />
