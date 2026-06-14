@@ -51,6 +51,7 @@ model Project {
   github         String?
   demo_url       String?
   project_type   String   @default("pc") // mobile, pc, dashboard
+  recent_focus   Boolean  @default(false) // 近期聚焦标识
   sortOrder      Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -113,6 +114,97 @@ model Tool {
   description_en String @db.Text
   link        String
   available   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========== 收录 - 视频创作 ==========
+model ArchiveVideo {
+  id          Int      @id @default(autoincrement())
+  title_zh    String
+  title_en    String
+  description_zh String? @db.Text
+  description_en String? @db.Text
+  cover_url   String?
+  video_url   String?
+  sortOrder   Int      @default(0)
+  published_at DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========== 收录 - 小说作品 ==========
+model ArchiveNovel {
+  id          Int      @id @default(autoincrement())
+  title_zh    String
+  title_en    String
+  description_zh String? @db.Text
+  description_en String? @db.Text
+  cover_url   String?
+  external_link String?
+  status      String   @default("ongoing") // ongoing: 连载中, completed: 已完结, discontinued: 停更
+  sortOrder   Int      @default(0)
+  chapters    NovelChapter[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========== 收录 - 小说章节 ==========
+model NovelChapter {
+  id          Int      @id @default(autoincrement())
+  novelId     Int
+  novel       ArchiveNovel @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  chapter_number Int   // 章节序号
+  title_zh    String
+  title_en    String
+  content_zh  String   @db.Text
+  content_en  String?  @db.Text
+  sortOrder   Int      @default(0)
+  published_at DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========== 收录 - 采访报道 ==========
+model ArchiveInterview {
+  id          Int      @id @default(autoincrement())
+  title_zh    String
+  title_en    String
+  summary_zh  String?  @db.Text
+  summary_en  String?  @db.Text
+  cover_url   String?
+  link        String
+  published_at DateTime?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========== 收录 - 王者集锦 ==========
+model ArchiveHighlight {
+  id          Int      @id @default(autoincrement())
+  title_zh    String
+  title_en    String
+  description_zh String? @db.Text
+  description_en String? @db.Text
+  cover_url   String?
+  video_url   String?
+  published_at DateTime?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========== 问题集 Q&A ==========
+model QA {
+  id          Int      @id @default(autoincrement())
+  title_zh    String
+  title_en    String
+  tags_zh     String[] // 标签数组
+  tags_en     String[]
+  content_zh  String   @db.Text // Markdown 内容
+  content_en  String?  @db.Text
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

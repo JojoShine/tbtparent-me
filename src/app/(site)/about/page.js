@@ -32,7 +32,7 @@ export default function AboutPage() {
 
   if (!about) {
     return (
-      <div className="max-w-2xl py-8 md:py-20" style={{ margin: '0 auto' }}>
+      <div className="max-w-4xl py-8 md:py-20" style={{ margin: '0 auto' }}>
         <p style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>Loading...</p>
       </div>
     )
@@ -42,7 +42,7 @@ export default function AboutPage() {
 
   return (
     <motion.div
-      className="max-w-2xl py-8 md:py-20"
+      className="max-w-4xl py-8 md:py-20"
       style={{ margin: '0 auto' }}
       variants={stagger}
       initial="initial"

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
@@ -41,6 +41,7 @@ function extractHeadings(markdown) {
 
 export default function BlogDetailPage() {
   const { slug } = useParams()
+  const router = useRouter()
   const { lang } = useLang()
   const [blog, setBlog] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -107,7 +108,7 @@ export default function BlogDetailPage() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '4rem 0' }}>
+      <div style={{ maxWidth: '896px', margin: '0 auto', padding: '4rem 0' }}>
         <p className="font-mono" style={{ color: 'var(--muted)' }}>Loading...</p>
       </div>
     )
@@ -115,7 +116,7 @@ export default function BlogDetailPage() {
 
   if (!blog) {
     return (
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '4rem 0' }}>
+      <div style={{ maxWidth: '896px', margin: '0 auto', padding: '4rem 0' }}>
         <p className="font-mono" style={{ color: 'var(--muted)' }}>404 - Article not found</p>
       </div>
     )
@@ -177,6 +178,33 @@ export default function BlogDetailPage() {
 
       {/* 正文 */}
       <div className="blog-main" ref={contentRef}>
+      {/* 返回按钮 */}
+      <button
+        onClick={() => router.push('/blog')}
+        className="font-mono"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 0',
+          marginBottom: '24px',
+          background: 'none',
+          border: 'none',
+          color: 'var(--muted)',
+          fontSize: '0.8rem',
+          cursor: 'pointer',
+          transition: 'color 0.15s ease',
+        }}
+        onMouseEnter={e => e.currentTarget.style.color = 'var(--fg)'}
+        onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        {lang === 'zh' ? '返回博客' : 'Back'}
+      </button>
+
       {/* 标题 */}
       <h1
         className="font-mono font-bold"
@@ -318,10 +346,10 @@ export default function BlogDetailPage() {
           max-width: 1100px;
           margin: 0 auto;
           display: flex;
-          gap: 100px;
+          gap: 40px;
         }
         .blog-toc-area {
-          width: 200px;
+          width: 180px;
           flex-shrink: 0;
           order: -1;
           position: relative;
@@ -404,7 +432,7 @@ export default function BlogDetailPage() {
         .blog-main {
           flex: 1;
           min-width: 0;
-          max-width: 720px;
+          padding-left: 40px;
         }
         @media (max-width: 1023px) {
           .blog-toc-area { display: none; }

@@ -40,7 +40,7 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/home').then(r => r.json()).then(setHome).catch(console.error)
     fetch('/api/social-links').then(r => r.json()).then(setSocialLinks).catch(console.error)
-    fetch('/api/projects').then(r => r.json()).then(setProjects).catch(console.error)
+    fetch('/api/projects/recent').then(r => r.json()).then(setProjects).catch(console.error)
   }, [])
 
   const copyId = (id) => {
@@ -83,7 +83,7 @@ export default function Home() {
 
   if (!home) {
     return (
-      <div className="max-w-2xl py-8 md:py-20" style={{ margin: '0 auto' }}>
+      <div className="max-w-3xl py-8 md:py-20" style={{ margin: '0 auto' }}>
         <p style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>Loading...</p>
       </div>
     )
@@ -96,7 +96,7 @@ export default function Home() {
 
   return (
     <motion.div
-      className="max-w-2xl py-8 md:py-20"
+      className="max-w-3xl py-8 md:py-20"
       style={{ margin: '0 auto' }}
       variants={stagger}
       initial="initial"
@@ -123,6 +123,9 @@ export default function Home() {
 
       {/* 社交链接 */}
       <motion.section variants={fadeUp} style={{ padding: '24px 0' }}>
+        <h2 className="text-2xl font-mono font-bold" style={{ color: 'var(--fg)', marginBottom: '16px' }}>
+          {t('home.contact')}
+        </h2>
         <div className="flex gap-4 md:gap-6 flex-wrap">
           {socialLinks.map(link => {
             const Icon = iconMap[link.icon]

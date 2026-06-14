@@ -6,11 +6,11 @@ import { usePathname, useRouter } from 'next/navigation'
 
 const navItems = [
   { label: '首页', path: '/admin/home' },
-  { label: '项目', path: '/admin/projects' },
   { label: '博客', path: '/admin/blog' },
-  { label: '社交链接', path: '/admin/social-links' },
-  { label: '关于', path: '/admin/about' },
+  { label: '项目', path: '/admin/projects' },
   { label: '工具', path: '/admin/tools' },
+  { label: '收录', path: '/admin/archive' },
+  { label: '问题集', path: '/admin/qa' },
 ]
 
 export default function AdminLayout({ children }) {

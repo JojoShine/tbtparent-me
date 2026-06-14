@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Gamepad2 } from 'lucide-react'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import Logo from '@/components/ui/Logo'
 import LanguageSwitch from '@/components/ui/LanguageSwitch'
@@ -19,7 +19,8 @@ export default function Navbar() {
     { key: 'nav.blog', path: '/blog' },
     { key: 'nav.projects', path: '/projects' },
     { key: 'nav.tools', path: '/tools' },
-    { key: 'nav.about', path: '/about' },
+    { key: 'nav.hobbies', path: '/hobbies' },
+    { key: 'nav.qa', path: '/qa' },
   ]
 
   // 点击导航链接后关闭菜单
@@ -78,6 +79,16 @@ export default function Navbar() {
               <circle cx="5" cy="19" r="1" />
             </svg>
           </a>
+          
+          {/* 游戏入口按钮 */}
+          <Link
+            href="/game"
+            title="成语闯关"
+            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
+            style={{ color: 'var(--fg)' }}
+          >
+            <Gamepad2 className="w-5 h-5" />
+          </Link>
         </div>
 
         {/* 移动端汉堡菜单按钮 */}
@@ -116,6 +127,15 @@ export default function Navbar() {
             <div className="flex items-center gap-4 py-4">
               <LanguageSwitch />
               <ThemeToggle />
+              <Link
+                href="/game"
+                onClick={handleNavClick}
+                title="成语闯关"
+                className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
+                style={{ color: 'var(--fg)' }}
+              >
+                <Gamepad2 className="w-5 h-5" />
+              </Link>
             </div>
           </div>
         </div>

@@ -7,11 +7,14 @@ export const translations = {
       blog: '博客',
       projects: '项目',
       tools: '工具',
+      hobbies: '收录',
+      qa: '问题集',
       about: '关于',
     },
     home: {
       projects: '近期聚焦',
       viewAllProjects: '查看全部项目 →',
+      contact: '联络渠道',
     },
     about: {
       bio: '关于我',
@@ -27,11 +30,14 @@ export const translations = {
       blog: 'Blog',
       projects: 'Projects',
       tools: 'Tools',
+      hobbies: 'Archive',
+      qa: 'Q&A',
       about: 'About',
     },
     home: {
       projects: 'Recent Focus',
       viewAllProjects: 'View all projects →',
+      contact: 'Contact',
     },
     about: {
       bio: 'About Me',

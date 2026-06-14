@@ -153,3 +153,32 @@ body {
 [data-tooltip]:hover::after {
   opacity: 1;
 }
+
+/* ============================================
+   收录页面 - 小说响应式布局
+   ============================================ */
+.novel-item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .novel-item {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* 采访网格 - 移动端单列 */
+.interview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .interview-grid {
+    grid-template-columns: 1fr;
+  }
+}

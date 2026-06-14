@@ -10,7 +10,7 @@ const emptyProject = {
   tags_zh: [], tags_en: [],
   deadline_zh: '', deadline_en: '',
   link: '#', github: '', demo_url: '',
-  project_type: 'pc', sortOrder: 0,
+  project_type: 'pc', recent_focus: false, sortOrder: 0,
 }
 
 const typeOptions = [
@@ -24,6 +24,9 @@ export default function AdminProjects() {
   const [editing, setEditing] = useState(null)
   const [msg, setMsg] = useState('')
   const [translating, setTranslating] = useState({})
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(20)
+  const [searchKeyword, setSearchKeyword] = useState('')
 
   const load = () => apiGet('/api/projects').then(setProjects).catch(console.error)
   useEffect(() => { load() }, [])
@@ -68,6 +71,7 @@ export default function AdminProjects() {
       }
       setEditing(null)
       setMsg('保存成功 ✓')
+      setCurrentPage(1)
       load()
     } catch (e) {
       setMsg('保存失败: ' + e.message)
@@ -85,6 +89,25 @@ export default function AdminProjects() {
     }
   }
 
+  // 过滤和分页
+  const filteredProjects = projects.filter(p => 
+    !searchKeyword || 
+    p.name_zh.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+    p.name_en?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+    (p.tags_zh && p.tags_zh.some(tag => tag.toLowerCase().includes(searchKeyword.toLowerCase()))) ||
+    (p.tags_en && p.tags_en.some(tag => tag.toLowerCase().includes(searchKeyword.toLowerCase())))
+  )
+  const totalPages = Math.ceil(filteredProjects.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedProjects = filteredProjects.slice(startIndex, endIndex)
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+    }
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -98,10 +121,25 @@ export default function AdminProjects() {
 
       {msg && <p style={{ fontSize: '0.85rem', color: msg.includes('✓') ? '#38a169' : '#e53e3e', marginBottom: '16px' }}>{msg}</p>}
 
+      {/* 搜索框 - 移动端显示 */}
+      <div className="mobile-search" style={{ marginBottom: '16px', display: 'none' }}>
+        <input
+          type="text"
+          placeholder="搜索项目名称或标签..."
+          value={searchKeyword}
+          onChange={(e) => { setSearchKeyword(e.target.value); setCurrentPage(1) }}
+          style={{
+            ...inputStyle,
+            width: '100%',
+          }}
+        />
+      </div>
+
       {/* 项目列表 */}
       {!editing && (
-        <div style={{ display: 'grid', gap: '8px' }}>
-          {projects.map(p => (
+        <div>
+          <div style={{ display: 'grid', gap: '8px' }}>
+            {paginatedProjects.map(p => (
             <div key={p.id} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: '12px 16px', border: '1px solid var(--border)',
@@ -109,13 +147,58 @@ export default function AdminProjects() {
               <div>
                 <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--fg)' }}>{p.name_zh}</span>
                 <span style={{ marginLeft: '8px', fontSize: '0.8rem', color: 'var(--muted)' }}>{p.deadline_zh}</span>
+                {p.recent_focus && (
+                  <span style={{ marginLeft: '8px', fontSize: '0.7rem', padding: '1px 6px', backgroundColor: 'var(--fg)', color: 'var(--bg)', borderRadius: '2px' }}>聚焦</span>
+                )}
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button style={secondaryButtonStyle} onClick={() => setEditing(p)}>编辑</button>
                 <button style={secondaryButtonStyle} onClick={() => handleDelete(p.id)}>删除</button>
               </div>
             </div>
-          ))}
+            ))}
+          </div>
+
+          {/* 分页控件 */}
+          {totalPages > 1 && (
+            <div style={{ 
+              marginTop: '24px', 
+              paddingTop: '16px', 
+              borderTop: '1px solid var(--border)',
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: '8px' 
+            }}>
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                style={{
+                  ...secondaryButtonStyle,
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                ← 上一页
+              </button>
+              
+              <span className="font-mono" style={{ fontSize: '0.85rem', color: 'var(--muted)', minWidth: '80px', textAlign: 'center' }}>
+                {currentPage} / {totalPages}
+              </span>
+              
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                style={{
+                  ...secondaryButtonStyle,
+                  opacity: currentPage === totalPages ? 0.5 : 1,
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                }}
+              >
+                下一页 →
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -275,6 +358,19 @@ export default function AdminProjects() {
             </div>
           </div>
 
+          {/* 近期聚焦开关 */}
+          <div>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={editing.recent_focus || false}
+                onChange={e => handleChange('recent_focus', e.target.checked)}
+                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              />
+              <span>设为近期聚焦（首页展示）</span>
+            </label>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
               <label style={labelStyle}>链接</label>
@@ -292,6 +388,14 @@ export default function AdminProjects() {
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .mobile-search {
+            display: block !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

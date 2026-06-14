@@ -21,6 +21,9 @@ export default function AdminBlog() {
   const [translating, setTranslating] = useState({})
   const [statusOpen, setStatusOpen] = useState(false)
   const statusRef = useRef(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(20)
+  const [searchKeyword, setSearchKeyword] = useState('')
 
   const statusOptions = [
     { value: 'draft', label: '草稿' },
@@ -53,6 +56,7 @@ export default function AdminBlog() {
       }
       setEditing(null)
       setMsg('保存成功 ✓')
+      setCurrentPage(1)
       load()
     } catch (e) {
       setMsg('保存失败: ' + e.message)
@@ -111,6 +115,24 @@ export default function AdminBlog() {
 
   const statusLabel = (s) => s === 'published' ? '已发布' : '草稿'
 
+  // 过滤和分页
+  const filteredBlogs = blogs.filter(b => 
+    !searchKeyword || 
+    b.title_zh.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+    b.title_en?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+    b.slug?.toLowerCase().includes(searchKeyword.toLowerCase())
+  )
+  const totalPages = Math.ceil(filteredBlogs.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedBlogs = filteredBlogs.slice(startIndex, endIndex)
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+    }
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -124,10 +146,25 @@ export default function AdminBlog() {
 
       {msg && <p style={{ fontSize: '0.85rem', color: msg.includes('✓') ? '#38a169' : '#e53e3e', marginBottom: '16px' }}>{msg}</p>}
 
+      {/* 搜索框 - 移动端显示 */}
+      <div className="mobile-search" style={{ marginBottom: '16px', display: 'none' }}>
+        <input
+          type="text"
+          placeholder="搜索博客标题或slug..."
+          value={searchKeyword}
+          onChange={(e) => { setSearchKeyword(e.target.value); setCurrentPage(1) }}
+          style={{
+            ...inputStyle,
+            width: '100%',
+          }}
+        />
+      </div>
+
       {/* 文章列表 */}
       {!editing && (
-        <div style={{ display: 'grid', gap: '8px' }}>
-          {blogs.map(b => (
+        <div>
+          <div style={{ display: 'grid', gap: '8px' }}>
+            {paginatedBlogs.map(b => (
             <div key={b.id} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: '12px 16px', border: '1px solid var(--border)',
@@ -149,8 +186,50 @@ export default function AdminBlog() {
                 <button style={secondaryButtonStyle} onClick={() => handleDelete(b.id)}>删除</button>
               </div>
             </div>
-          ))}
-          {blogs.length === 0 && <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>暂无文章</p>}
+            ))}
+            {paginatedBlogs.length === 0 && <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>暂无文章</p>}
+          </div>
+
+          {/* 分页控件 */}
+          {totalPages > 1 && (
+            <div style={{ 
+              marginTop: '24px', 
+              paddingTop: '16px', 
+              borderTop: '1px solid var(--border)',
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: '8px' 
+            }}>
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                style={{
+                  ...secondaryButtonStyle,
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                ← 上一页
+              </button>
+              
+              <span className="font-mono" style={{ fontSize: '0.85rem', color: 'var(--muted)', minWidth: '80px', textAlign: 'center' }}>
+                {currentPage} / {totalPages}
+              </span>
+              
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                style={{
+                  ...secondaryButtonStyle,
+                  opacity: currentPage === totalPages ? 0.5 : 1,
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                }}
+              >
+                下一页 →
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -333,6 +412,14 @@ export default function AdminBlog() {
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .mobile-search {
+            display: block !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

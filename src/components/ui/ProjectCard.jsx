@@ -45,7 +45,19 @@ export default function ProjectCard({ project }) {
   // 本地生成二维码（一次性，缓存结果）
   useEffect(() => {
     if (hasDemo && project.demo_url && !qrGeneratedRef.current) {
-      QRCode.toDataURL(project.demo_url, { width: 400, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
+      // 根据主题设置二维码颜色
+      const isDark = document.documentElement.classList.contains('dark')
+      QRCode.toDataURL(project.demo_url, { 
+        width: 400, 
+        margin: 1, 
+        color: isDark ? {
+          dark: '#e5e5e5',  // 柔和的浅灰色，不是纯白
+          light: '#1a1a1a'  // 深灰黑色背景，不是纯黑
+        } : {
+          dark: '#000000',  // 浅色模式保持纯黑
+          light: '#ffffff'  // 浅色模式保持纯白
+        }
+      })
         .then(url => {
           setQrDataUrl(url)
           qrGeneratedRef.current = true
@@ -204,7 +216,7 @@ export default function ProjectCard({ project }) {
             width: '220px',
             padding: '20px 16px',
             border: '1px solid var(--border)',
-            backgroundColor: '#fff',
+            backgroundColor: 'var(--bg)',
             boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
             zIndex: 50,
             display: 'flex',
@@ -226,7 +238,7 @@ export default function ProjectCard({ project }) {
                 transform: 'translate(-50%, -50%)',
                 width: '36px',
                 height: '36px',
-                backgroundColor: '#fff',
+                backgroundColor: 'var(--bg)',
                 borderRadius: '6px',
                 padding: '2px',
                 display: 'flex',
