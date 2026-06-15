@@ -6,23 +6,9 @@ import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
 import { pinyin } from 'pinyin-pro'
 import { ArrowLeft } from 'lucide-react'
-import IDIOM_DATABASE from '@/data/idioms.json'
 
-// 多音字在成语中的正确读音映射
-const POLYPHONE_MAP = {
-  '撒': 'sǎ',      // 撒豆成兵 (三声)
-  '重': 'chóng',   // 重整旗鼓 (二声)
-  '长': 'cháng',   // 长年累月 (二声)
-  '乐': 'lè',      // 乐不思蜀 (四声)
-  '调': 'diào',    // 调兵遣将 (四声)
-  '弹': 'tán',     // 弹丸之地 (二声)
-  '奇': 'qí',      // 奇花异草 (二声)
-  '难': 'nán',     // 材大难用 (二声)
-  '中': 'zhōng',   // 中流砥柱 (一声)
-}
-
-// 从JSON文件导入成语库（一维数组）
 import ALL_IDIOMS from '@/data/idioms.json'
+import IDIOM_PINYIN_MAP from '@/data/idiom-pinyin.json'
 
 export default function IdiomGamePage() {
   const { lang } = useLang()
@@ -39,8 +25,7 @@ export default function IdiomGamePage() {
     won: 0,       // 获胜次数
     totalGuesses: 0  // 猜题总次数
   })
-  const [showAlert, setShowAlert] = useState(false) // 自定义弹窗
-  const [alertMessage, setAlertMessage] = useState('') // 弹窗消息
+  const [inlineMsg, setInlineMsg] = useState('') // 按钮下方提示信息
   const [usedIdioms, setUsedIdioms] = useState({}) // 记录每关已使用的成语
   const [isComposing, setIsComposing] = useState(false) // 跟踪输入法状态
 
@@ -120,16 +105,14 @@ export default function IdiomGamePage() {
     setGameStatus('playing')
   }
 
-  // 获取字符的拼音信息
-  const getPinyinInfo = (char) => {
-    // 先检查是否是多音字
-    if (POLYPHONE_MAP[char]) {
-      return POLYPHONE_MAP[char]
+  // 获取成语每个字的拼音（优先查预计算映射表，回退 pinyin-pro）
+  const getIdiomPinyins = (idiom) => {
+    // 先查预计算的成语级拼音映射
+    if (IDIOM_PINYIN_MAP[idiom]) {
+      return IDIOM_PINYIN_MAP[idiom]
     }
-    
-    // 否则使用 pinyin-pro 默认转换
-    const py = pinyin(char, { toneType: 'symbol' })
-    return py
+    // 回退：逐字用 pinyin-pro 转换
+    return idiom.split('').map(char => pinyin(char, { toneType: 'symbol' }))
   }
 
   // 检查猜测结果
@@ -137,8 +120,8 @@ export default function IdiomGamePage() {
     if (guess.length !== 4) return null
 
     const result = []
-    const targetPinyins = targetIdiom.split('').map(char => getPinyinInfo(char))
-    const guessPinyins = guess.split('').map(char => getPinyinInfo(char))
+    const targetPinyins = getIdiomPinyins(targetIdiom)
+    const guessPinyins = getIdiomPinyins(guess)
 
     for (let i = 0; i < 4; i++) {
       const targetChar = targetIdiom[i]
@@ -311,8 +294,12 @@ export default function IdiomGamePage() {
     e.preventDefault()
     
     if (userInput.length !== 4) {
-      setAlertMessage(lang === 'zh' ? '请输入四字成语' : 'Please enter a 4-character idiom')
-      setShowAlert(true)
+      setInlineMsg(lang === 'zh' ? '请输入四字成语' : 'Please enter a 4-character idiom')
+      return
+    }
+
+    if (new Set(userInput.split('')).size === 1) {
+      setInlineMsg(lang === 'zh' ? '四字一样的成语为无效输入，请重新输入' : 'Invalid input: all 4 characters are the same')
       return
     }
 
@@ -362,8 +349,7 @@ export default function IdiomGamePage() {
       startNewGame(newLevel)
     } else {
       // 通关
-      setAlertMessage(lang === 'zh' ? '恭喜通关！' : 'Congratulations! You cleared all levels!')
-      setShowAlert(true)
+      setInlineMsg(lang === 'zh' ? '恭喜通关！' : 'Congratulations! You cleared all levels!')
       setCurrentLevel(0)
       startNewGame(0)
     }
@@ -412,7 +398,7 @@ export default function IdiomGamePage() {
         </h1>
         
         <div className="font-mono text-sm" style={{ color: 'var(--muted)' }}>
-          {lang === 'zh' ? `第 ${currentLevel + 1} 关` : `Level ${currentLevel + 1}`}
+          {lang === 'zh' ? `第 ${currentLevel + 1} 关 | 成语库 ${ALL_IDIOMS.length} 条` : `Level ${currentLevel + 1} | ${ALL_IDIOMS.length} idioms`}
         </div>
       </div>
 
@@ -589,12 +575,9 @@ export default function IdiomGamePage() {
                           padding: '10px 5px',
                           borderRadius: '4px',
                           border: '1px solid var(--border)',
-                          background: charData.status === 'correct' ? 'var(--fg)' :
-                                     'transparent',
-                          color: charData.status === 'correct' ? 'var(--bg)' :
-                                'var(--muted)',
-                          borderColor: charData.status === 'correct' ? 'var(--fg)' :
-                                      'var(--border)',
+                          background: charData.status === 'correct' ? 'var(--fg)' : 'transparent',
+                          color: charData.status === 'correct' ? 'var(--bg)' : 'var(--muted)',
+                          borderColor: charData.status === 'correct' ? 'var(--fg)' : 'var(--border)',
                         }}
                       >
                         {charData.char}
@@ -744,7 +727,7 @@ export default function IdiomGamePage() {
               <input
                 type="text"
                 value={userInput}
-                onChange={(e) => setUserInput(e.target.value.trim())}
+                onChange={(e) => { setUserInput(e.target.value.trim()); setInlineMsg('') }}
                 placeholder={lang === 'zh' ? '输入四字成语...' : 'Enter a 4-character idiom...'}
                 maxLength={4}
                 className="font-mono text-lg"
@@ -842,6 +825,18 @@ export default function IdiomGamePage() {
                 </button>
               )}
             </div>
+
+            {/* 按钮下方提示 */}
+            {inlineMsg && (
+              <div className="font-mono text-xs" style={{
+                textAlign: 'center',
+                color: 'var(--muted)',
+                marginTop: '12px',
+                opacity: 0.8,
+              }}>
+                {inlineMsg}
+              </div>
+            )}
           </form>
         )}
 
@@ -860,13 +855,10 @@ export default function IdiomGamePage() {
               {lang === 'zh' ? '输入四字成语，最多猜8次' : 'Enter a 4-character idiom, max 8 guesses'}
             </li>
             <li className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '6px' }}>
-              {lang === 'zh' ? '黑底白字：完全正确' : 'Black background: fully correct'}
+              {lang === 'zh' ? '绿色拼音字母：该位置字母正确' : 'Green letter: correct at this position'}
             </li>
             <li className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '6px' }}>
-              {lang === 'zh' ? '绿色拼音：声调或字母匹配' : 'Green pinyin: tone or letter match'}
-            </li>
-            <li className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '6px' }}>
-              {lang === 'zh' ? '橙色声调：声调不匹配' : 'Orange tone: tone mismatch'}
+              {lang === 'zh' ? '声调绿色：声调正确；声调橙色：声调错误' : 'Green tone: correct; Orange tone: wrong'}
             </li>
             <li className="font-mono text-xs" style={{ color: 'var(--muted)' }}>
               {lang === 'zh' ? '首次猜测后可使用提示' : 'Hint available after first guess'}
@@ -875,59 +867,13 @@ export default function IdiomGamePage() {
         </div>
       </div>
 
-      {/* 自定义弹窗 */}
-      {showAlert && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-        }} onClick={() => setShowAlert(false)}>
-          <div style={{
-            backgroundColor: 'var(--bg)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            padding: '30px',
-            maxWidth: '400px',
-            width: '90%',
-            textAlign: 'center',
-          }} onClick={(e) => e.stopPropagation()}>
-            <div className="font-mono text-sm" style={{ color: 'var(--fg)', marginBottom: '20px' }}>
-              {alertMessage}
-            </div>
-            <button
-              onClick={() => setShowAlert(false)}
-              className="font-mono text-sm inline-block relative hover:opacity-70 transition-opacity social-link"
-              style={{ 
-                color: 'var(--fg)', 
-                border: '1px solid var(--fg)',
-                padding: '10px 30px',
-                height: '40px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {lang === 'zh' ? '确定' : 'OK'}
-              <span
-                className="absolute bottom-0 left-0 h-px w-0 transition-all duration-200 ease-out social-link-underline"
-                style={{ backgroundColor: 'var(--fg)' }}
-              />
-            </button>
-          </div>
-        </div>
-      )}
+
 
       <style jsx>{`
         .social-link:hover .social-link-underline {
           width: 100% !important;
         }
+
       `}</style>
     </motion.div>
   )
