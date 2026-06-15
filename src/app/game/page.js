@@ -386,7 +386,7 @@ export default function IdiomGamePage() {
 
   return (
     <motion.div
-      className="max-w-3xl py-8 md:py-20"
+      className="max-w-3xl pb-8 md:pb-20"
       style={{ margin: '0 auto', minHeight: '100vh', paddingBottom: '60px' }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}

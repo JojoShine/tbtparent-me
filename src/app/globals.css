@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ============================================
    根据需求文档 v2 定义的 CSS Variables
@@ -29,16 +31,6 @@
   /* 粒子背景颜色（Dark 模式）- 星空感 */
   --particle: rgba(255, 255, 255, 0.15);
   --particle-line: rgba(255, 255, 255, 0.05);
-}
-
-@theme inline {
-  --color-bg: var(--bg);
-  --color-fg: var(--fg);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
-  --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 /* 强制确保主题切换时颜色正确应用 */

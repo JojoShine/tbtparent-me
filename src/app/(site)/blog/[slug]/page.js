@@ -124,7 +124,7 @@ export default function BlogDetailPage() {
 
   return (
     <div
-      className="blog-layout py-8 md:py-16"
+      className="blog-layout pb-8 md:pb-16"
       style={{ paddingBottom: '8rem' }}
       onMouseEnter={() => setTocVisible(true)}
       onMouseLeave={() => setTocVisible(false)}

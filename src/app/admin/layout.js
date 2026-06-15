@@ -10,7 +10,6 @@ const navItems = [
   { label: '项目', path: '/admin/projects' },
   { label: '工具', path: '/admin/tools' },
   { label: '收录', path: '/admin/archive' },
-  { label: '问题集', path: '/admin/qa' },
 ]
 
 export default function AdminLayout({ children }) {

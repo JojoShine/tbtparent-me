@@ -44,7 +44,7 @@ export default function ProjectsPage() {
 
   return (
     <motion.div
-      className="max-w-4xl py-8 md:py-20"
+      className="max-w-4xl pb-8 md:pb-20"
       style={{ margin: '0 auto' }}
       variants={stagger}
       initial="initial"

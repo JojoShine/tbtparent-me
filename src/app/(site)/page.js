@@ -83,7 +83,7 @@ export default function Home() {
 
   if (!home) {
     return (
-      <div className="max-w-3xl py-8 md:py-20" style={{ margin: '0 auto' }}>
+      <div className="max-w-3xl pb-8 md:pb-20" style={{ margin: '0 auto' }}>
         <p style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>Loading...</p>
       </div>
     )
@@ -96,7 +96,7 @@ export default function Home() {
 
   return (
     <motion.div
-      className="max-w-3xl py-8 md:py-20"
+      className="max-w-3xl pb-8 md:pb-20"
       style={{ margin: '0 auto' }}
       variants={stagger}
       initial="initial"
@@ -110,10 +110,74 @@ export default function Home() {
         <p className="text-base md:text-lg font-mono" style={{ color: 'var(--muted)', marginTop: '8px' }}>
           {title}
         </p>
+        
+        {/* 个人标签 */}
+        <div className="flex flex-wrap gap-2" style={{ marginTop: '20px' }}>
+          <span 
+            className="font-mono text-xs rounded inline-block" 
+            style={{ 
+              backgroundColor: 'var(--muted)', 
+              color: 'var(--bg)', 
+              fontWeight: 500,
+              padding: '4px 12px',
+              opacity: 0.8
+            }}
+          >
+            INTJ-A
+          </span>
+          <span 
+            className="font-mono text-xs rounded inline-block" 
+            style={{ 
+              backgroundColor: 'var(--muted)', 
+              color: 'var(--bg)', 
+              fontWeight: 500,
+              padding: '4px 12px',
+              opacity: 0.8
+            }}
+          >
+            摩羯男
+          </span>
+          <span 
+            className="font-mono text-xs rounded inline-block" 
+            style={{ 
+              backgroundColor: 'var(--muted)', 
+              color: 'var(--bg)', 
+              fontWeight: 500,
+              padding: '4px 12px',
+              opacity: 0.8
+            }}
+          >
+            宅
+          </span>
+          <span 
+            className="font-mono text-xs rounded inline-block" 
+            style={{ 
+              backgroundColor: 'var(--muted)', 
+              color: 'var(--bg)', 
+              fontWeight: 500,
+              padding: '4px 12px',
+              opacity: 0.8
+            }}
+          >
+            铲屎官
+          </span>
+          <span 
+            className="font-mono text-xs rounded inline-block" 
+            style={{ 
+              backgroundColor: 'var(--muted)', 
+              color: 'var(--bg)', 
+              fontWeight: 500,
+              padding: '4px 12px',
+              opacity: 0.8
+            }}
+          >
+            王者荣耀
+          </span>
+        </div>
       </motion.section>
 
       {/* 简介 */}
-      <motion.section variants={fadeUp} style={{ padding: '24px 0' }}>
+      <motion.section variants={fadeUp} style={{ padding: '16px 0' }}>
         {bio.split('\n\n').map((paragraph, i, arr) => (
           <p key={i} className="text-base leading-loose max-w-prose" style={{ color: 'var(--fg)', marginBottom: i < arr.length - 1 ? '16px' : 0 }}>
             {renderParagraph(paragraph)}

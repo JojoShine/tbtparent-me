@@ -53,7 +53,7 @@ export default function ChapterPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl py-8 md:py-20" style={{ margin: '0 auto' }}>
+      <div className="max-w-4xl pb-8 md:pb-20" style={{ margin: '0 auto' }}>
         <p style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>Loading...</p>
       </div>
     )
@@ -61,7 +61,7 @@ export default function ChapterPage() {
 
   if (!chapter || !novel) {
     return (
-      <div className="max-w-4xl py-8 md:py-20" style={{ margin: '0 auto' }}>
+      <div className="max-w-4xl pb-8 md:pb-20" style={{ margin: '0 auto' }}>
         <p style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>404 - Chapter not found</p>
       </div>
     )
@@ -75,7 +75,7 @@ export default function ChapterPage() {
   const nextChapter = currentIndex < allChapters.length - 1 ? allChapters[currentIndex + 1] : null
 
   return (
-    <div className="max-w-4xl py-8 md:py-20" style={{ margin: '0 auto' }}>
+    <div className="max-w-4xl pb-8 md:pb-20" style={{ margin: '0 auto' }}>
       {/* 返回按钮 */}
       <button
         onClick={() => router.push('/hobbies')}

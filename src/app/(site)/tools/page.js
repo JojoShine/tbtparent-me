@@ -81,7 +81,7 @@ export default function ToolsPage() {
 
   return (
     <motion.div
-      className="max-w-6xl py-8 md:py-20"
+      className="max-w-6xl pb-8 md:pb-20"
       style={{ margin: '0 auto', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', paddingBottom: '48px' }}
       variants={stagger}
       initial="initial"
