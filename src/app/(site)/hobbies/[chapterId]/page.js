@@ -75,7 +75,7 @@ export default function ChapterPage() {
   const nextChapter = currentIndex < allChapters.length - 1 ? allChapters[currentIndex + 1] : null
 
   return (
-    <div className="max-w-4xl pb-8 md:pb-20" style={{ margin: '0 auto' }}>
+    <div className="max-w-4xl pb-8 md:pb-12" style={{ margin: '0 auto' }}>
       {/* 返回按钮 */}
       <button
         onClick={() => router.push('/hobbies')}
@@ -153,7 +153,7 @@ export default function ChapterPage() {
       {(prevChapter || nextChapter) && (
         <div style={{ 
           marginTop: '48px', 
-          marginBottom: '80px',
+          marginBottom: '24px',
           paddingTop: '24px', 
           borderTop: '1px solid var(--border)',
           display: 'flex',

@@ -83,7 +83,7 @@ export default function Navbar() {
           {/* 游戏入口按钮 */}
           <Link
             href="/game"
-            title="成语闯关"
+            title="益智趣味小游戏"
             className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
             style={{ color: 'var(--fg)' }}
           >
@@ -151,7 +151,7 @@ export default function Navbar() {
               <Link
                 href="/game"
                 onClick={handleNavClick}
-                title="成语闯关"
+                title="益智趣味小游戏"
                 className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
                 style={{ color: 'var(--fg)' }}
               >
@@ -180,7 +180,7 @@ const builtinTools = [
 ]
 
 const searchPages = [
-  { key: 'idiom-game', label_zh: '成语闯关', label_en: 'Idiom Game', description_zh: '猜成语小游戏', path: '/game' },
+  { key: 'idiom-game', label_zh: '成语闯关', label_en: 'Idiom Game', description_zh: '猜成语小游戏', path: '/game/idiom' },
 ]
 
 function SearchModal({ onClose }) {
