@@ -191,8 +191,8 @@ export default function GuessNumberPage() {
       {/* 操作提示 */}
       <div className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '12px', lineHeight: 1.6 }}>
         {lang === 'zh' 
-          ? `输入${digits}位无重复数字，系统会反馈 xAyB（A=位置和数字都对，B=仅数字对但位置错，A优先于B）` 
-          : `Enter ${digits} unique digits, system returns xAyB (A=correct position & digit, B=digit only but wrong position, A takes priority)`}
+          ? `从 0-9 中选择${digits}个不重复数字，系统会反馈 xAyB（A=位置和数字都对，B=仅数字对但位置错，A优先于B）` 
+          : `Select ${digits} unique digits from 0-9, system returns xAyB (A=correct position & digit, B=digit only but wrong position, A takes priority)`}
       </div>
 
       {/* 猜测历史 */}
@@ -344,7 +344,7 @@ export default function GuessNumberPage() {
         </div>
         <ul style={{ paddingLeft: '20px', listStyle: 'disc' }}>
           <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '6px', lineHeight: 1.5 }}>
-            {lang === 'zh' ? `系统生成${digits}位无重复数字（如 1928）` : `System generates ${digits}-digit number with no repeats (e.g., 1928)`}
+            {lang === 'zh' ? `系统从 0-9 中生成${digits}位无重复数字（如 1928）` : `System generates ${digits}-digit number from 0-9 with no repeats (e.g., 1928)`}
           </li>
           <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '6px', lineHeight: 1.5 }}>
             {lang === 'zh' ? 'xA：x个数字的位置和数值都正确（优先判断）' : 'xA: x digits are correct in both position and value (checked first)'}
