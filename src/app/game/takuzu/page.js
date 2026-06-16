@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
 import { ArrowLeft, RotateCcw, CheckCircle } from 'lucide-react'
@@ -134,12 +134,11 @@ export default function TakuzuGamePage() {
   const [solution, setSolution] = useState(null)
   const [gameStatus, setGameStatus] = useState('playing') // playing, won, checking
   const [errors, setErrors] = useState(new Set()) // 错误的格子 key: "r,c"
+  const [errorMessages, setErrorMessages] = useState([]) // 具体错误描述
   const [timer, setTimer] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [loading, setLoading] = useState(false)
   const gridSize = LEVELS[level].size
-  const cacheRef = useRef({}) // 预生成的棋盘缓存 { size: [{fullBoard, puzzle}] }
 
   // 检测移动端
   useEffect(() => {
@@ -147,36 +146,6 @@ export default function TakuzuGamePage() {
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
-  }, [])
-
-  // 后台预生成大棋盘（Web Worker）
-  const pregenerate = useCallback((size) => {
-    const workerCode = `
-      ${isValidPlacement.toString()}
-      ${isCompleteBoardValid.toString()}
-      ${generateFullBoard.toString()}
-      ${createPuzzle.toString()}
-      self.onmessage = function(e) {
-        var s = e.data.size;
-        var fb = generateFullBoard(s);
-        var pz = createPuzzle(fb, s);
-        self.postMessage({ size: s, fullBoard: fb, puzzle: pz });
-      };
-    `
-    const blob = new Blob([workerCode], { type: 'application/javascript' })
-    const worker = new Worker(URL.createObjectURL(blob))
-    worker.onmessage = (e) => {
-      if (!cacheRef.current[e.data.size]) cacheRef.current[e.data.size] = []
-      cacheRef.current[e.data.size].push({ fullBoard: e.data.fullBoard, puzzle: e.data.puzzle })
-      worker.terminate()
-    }
-    worker.postMessage({ size })
-  }, [])
-
-  // 页面加载时预生成所有大尺寸棋盘
-  useEffect(() => {
-    const sizes = [10, 12]
-    sizes.forEach(s => pregenerate(s))
   }, [])
 
   // 计时器
@@ -191,53 +160,21 @@ export default function TakuzuGamePage() {
     startNewGame(0)
   }, [])
 
-  // 开始新游戏（优先用缓存，无缓存则异步生成）
+  // 开始新游戏（同步生成）
   const startNewGame = useCallback((lvl) => {
     const targetLevel = lvl !== undefined ? lvl : level
     const size = LEVELS[targetLevel].size
-    
+    const fullBoard = generateFullBoard(size)
+    const puzzle = createPuzzle(fullBoard, size)
     setLevel(targetLevel)
+    setSolution(fullBoard)
+    setBoard(puzzle)
     setGameStatus('playing')
     setErrors(new Set())
+    setErrorMessages([])
     setTimer(0)
     setIsRunning(true)
-
-    // 小棋盘直接同步生成
-    if (size <= 8) {
-      const fullBoard = generateFullBoard(size)
-      const puzzle = createPuzzle(fullBoard, size)
-      setSolution(fullBoard)
-      setBoard(puzzle)
-      return
-    }
-
-    // 检查缓存
-    const cached = cacheRef.current[size]
-    if (cached && cached.length > 0) {
-      const { fullBoard, puzzle } = cached.shift()
-      setSolution(fullBoard)
-      setBoard(puzzle)
-      // 用完补一个
-      pregenerate(size)
-      return
-    }
-
-    // 无缓存，显示加载提示但保留旧棋盘
-    setLoading(true)
-    pregenerate(size)
-    // 等待 Worker 完成后自动更新
-    const check = setInterval(() => {
-      const c = cacheRef.current[size]
-      if (c && c.length > 0) {
-        const { fullBoard, puzzle } = c.shift()
-        setSolution(fullBoard)
-        setBoard(puzzle)
-        setLoading(false)
-        pregenerate(size)
-        clearInterval(check)
-      }
-    }, 200)
-  }, [level, pregenerate])
+  }, [level])
 
   // 点击格子
   const handleCellClick = (r, c) => {
@@ -256,6 +193,7 @@ export default function TakuzuGamePage() {
       next.delete(`${r},${c}`)
       return next
     })
+    setErrorMessages([])
   }
 
   // 检查当前答案
@@ -265,6 +203,7 @@ export default function TakuzuGamePage() {
     const n = board.length
     const half = n / 2
     const newErrors = new Set()
+    const rules = new Set() // 用 Set 去重，只记录违反了哪些规则
     let allFilled = true
     let allCorrect = true
 
@@ -275,18 +214,11 @@ export default function TakuzuGamePage() {
 
     if (!allFilled) {
       setGameStatus('playing')
+      setErrorMessages([lang === 'zh' ? '还有空格未填满' : 'Not all cells are filled'])
       return
     }
 
-    // 对比答案
-    for (let i = 0; i < n; i++)
-      for (let j = 0; j < n; j++)
-        if (!board[i][j].locked && board[i][j].value !== solution[i][j]) {
-          newErrors.add(`${i},${j}`)
-          allCorrect = false
-        }
-
-    // 检查连续3个
+    // 检查连续3个（行）
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n - 2; j++) {
         if (board[i][j].value && board[i][j].value === board[i][j + 1].value && board[i][j].value === board[i][j + 2].value) {
@@ -294,14 +226,20 @@ export default function TakuzuGamePage() {
           newErrors.add(`${i},${j + 1}`)
           newErrors.add(`${i},${j + 2}`)
           allCorrect = false
+          rules.add(2)
         }
       }
+    }
+
+    // 检查连续3个（列）
+    for (let i = 0; i < n; i++) {
       for (let j = 0; j < n - 2; j++) {
         if (board[j][i].value && board[j][i].value === board[j + 1][i].value && board[j][i].value === board[j + 2][i].value) {
           newErrors.add(`${j},${i}`)
           newErrors.add(`${j + 1},${i}`)
           newErrors.add(`${j + 2},${i}`)
           allCorrect = false
+          rules.add(2)
         }
       }
     }
@@ -315,11 +253,16 @@ export default function TakuzuGamePage() {
         if (board[j][i].value === 'X') cX++
         else if (board[j][i].value === 'O') cO++
       }
-      if (rX !== half || rO !== half)
+      if (rX !== half || rO !== half) {
         for (let j = 0; j < n; j++) if (!board[i][j].locked) newErrors.add(`${i},${j}`)
-      if (cX !== half || cO !== half)
+        allCorrect = false
+        rules.add(1)
+      }
+      if (cX !== half || cO !== half) {
         for (let j = 0; j < n; j++) if (!board[j][i].locked) newErrors.add(`${j},${i}`)
-      if (rX !== half || rO !== half || cX !== half || cO !== half) allCorrect = false
+        allCorrect = false
+        rules.add(1)
+      }
     }
 
     // 检查行/列唯一性
@@ -332,6 +275,7 @@ export default function TakuzuGamePage() {
             if (!board[j][k].locked) newErrors.add(`${j},${k}`)
           }
           allCorrect = false
+          rules.add(3)
         }
     for (let c = 0; c < n; c++) {
       const col = board.map(r => r[c].value).join('')
@@ -343,11 +287,28 @@ export default function TakuzuGamePage() {
             if (!board[k][c2].locked) newErrors.add(`${k},${c2}`)
           }
           allCorrect = false
+          rules.add(3)
         }
       }
     }
 
+    // 对比答案（仅标记未在上述规则中已标记的错误格子）
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++)
+        if (!board[i][j].locked && board[i][j].value !== solution[i][j] && !newErrors.has(`${i},${j}`)) {
+          newErrors.add(`${i},${j}`)
+          allCorrect = false
+        }
+
+    // 生成规则提示（不暴露具体位置）
+    const msgs = []
+    const zh = lang === 'zh'
+    if (rules.has(1)) msgs.push(zh ? '① 存在行或列的 X/O 数量不均等' : '① Some rows or columns have unequal X/O counts')
+    if (rules.has(2)) msgs.push(zh ? '② 存在3个连续相同的 X 或 O' : '② There are 3 consecutive X or O')
+    if (rules.has(3)) msgs.push(zh ? '③ 存在重复的行或列排列' : '③ There are duplicate rows or columns')
+
     setErrors(newErrors)
+    setErrorMessages(msgs)
 
     if (allCorrect) {
       setGameStatus('won')
@@ -362,6 +323,7 @@ export default function TakuzuGamePage() {
       cell.locked ? cell : { ...cell, value: '' }
     )))
     setErrors(new Set())
+    setErrorMessages([])
     setGameStatus('playing')
     setTimer(0)
     setIsRunning(true)
@@ -390,7 +352,7 @@ export default function TakuzuGamePage() {
       alignItems: 'center',
       justifyContent: 'center',
       fontSize: gridSize <= 6 ? '20px' : gridSize <= 8 ? '16px' : '13px',
-      fontWeight: 'bold',
+      fontWeight: cell.locked ? 800 : 'bold',
       fontFamily: 'monospace',
       cursor: cell.locked ? 'default' : 'pointer',
       userSelect: 'none',
@@ -399,14 +361,14 @@ export default function TakuzuGamePage() {
         : isWon 
           ? cell.value === 'X' ? 'var(--fg)' : 'var(--fg)'
           : cell.locked 
-            ? 'transparent' 
+            ? 'var(--cell-locked-bg)' 
             : 'transparent',
       color: isWon
         ? cell.value === 'X' ? 'var(--bg)' : 'var(--bg)'
         : isError
           ? '#ef4444'
-          : cell.value === 'X'
-            ? 'var(--fg)'
+          : cell.locked
+            ? 'var(--cell-locked-fg)'
             : 'var(--fg)',
       transition: 'none',
     }
@@ -475,13 +437,6 @@ export default function TakuzuGamePage() {
         {lang === 'zh' ? '点击空格子切换: 空 → X → O → 空' : 'Click empty cell to cycle: empty → X → O → empty'}
       </div>
 
-      {/* 加载提示 */}
-      {loading && (
-        <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '12px' }}>
-          {lang === 'zh' ? '生成棋盘中...' : 'Generating puzzle...'}
-        </div>
-      )}
-
       {/* 棋盘 + 规则 外边框容器 */}
       {board && (
         <div style={{
@@ -528,6 +483,23 @@ export default function TakuzuGamePage() {
               </>
             )}
           </div>
+        </div>
+      )}
+
+      {/* 错误提示 */}
+      {errorMessages.length > 0 && (
+        <div style={{
+          border: '1px solid #ef4444',
+          borderRadius: '4px',
+          padding: '12px 16px',
+          marginBottom: '20px',
+          backgroundColor: 'rgba(239, 68, 68, 0.06)',
+        }}>
+          {errorMessages.map((msg, i) => (
+            <div key={i} className="font-mono text-xs" style={{ color: '#ef4444', lineHeight: 1.8 }}>
+              {msg}
+            </div>
+          ))}
         </div>
       )}
 

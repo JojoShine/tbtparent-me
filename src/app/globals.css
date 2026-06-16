@@ -18,6 +18,10 @@
   /* 粒子背景颜色（Light 模式）*/
   --particle: #dddddd;
   --particle-line: rgba(0, 0, 0, 0.1);
+  
+  /* 游戏锁定格子：黑底白字 */
+  --cell-locked-bg: #000000;
+  --cell-locked-fg: #ffffff;
 }
 
 .dark {
@@ -31,6 +35,10 @@
   /* 粒子背景颜色（Dark 模式）- 星空感 */
   --particle: rgba(255, 255, 255, 0.15);
   --particle-line: rgba(255, 255, 255, 0.05);
+  
+  /* 游戏锁定格子：白底黑字 */
+  --cell-locked-bg: #ffffff;
+  --cell-locked-fg: #000000;
 }
 
 /* 强制确保主题切换时颜色正确应用 */
