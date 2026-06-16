@@ -31,11 +31,14 @@ export default function IdiomGamePage() {
   const [dailyLimit, setDailyLimit] = useState({ date: '', count: 0 }) // 每日限制
   const DAILY_MAX = 10
   const [countdown, setCountdown] = useState('')
+  const [devModeClicks, setDevModeClicks] = useState(0) // 开发者模式点击计数
+  const [isDevMode, setIsDevMode] = useState(false) // 开发者模式状态
 
   // 初始化游戏
   useEffect(() => {
     loadDailyLimit()
     loadStats()
+    loadDevMode() // 加载开发者模式状态
     // 只有在未达到限额时才生成新题目
     const today = new Date().toISOString().split('T')[0]
     const raw = localStorage.getItem('idiom-game-stats-daily')
@@ -93,6 +96,18 @@ export default function IdiomGamePage() {
     setDailyLimit(fresh)
   }
 
+  // 加载开发者模式状态
+  const loadDevMode = () => {
+    try {
+      const saved = localStorage.getItem('idiom-dev-mode')
+      if (saved === 'true') {
+        setIsDevMode(true)
+      }
+    } catch (e) {
+      console.error('Failed to load dev mode:', e)
+    }
+  }
+
   // 增加今日答题数
   const incrementDaily = () => {
     const today = new Date().toISOString().split('T')[0]
@@ -148,6 +163,21 @@ export default function IdiomGamePage() {
     setShowHint(false)
     setHintChar('')
     setGameStatus('playing')
+  }
+
+  // 处理标题点击（开发者模式触发）
+  const handleTitleClick = () => {
+    if (isDevMode) return // 已解锁则不处理
+    
+    const newClicks = devModeClicks + 1
+    setDevModeClicks(newClicks)
+    
+    if (newClicks >= 7) {
+      setIsDevMode(true)
+      localStorage.setItem('idiom-dev-mode', 'true') // 持久化保存
+      setInlineMsg(lang === 'zh' ? '🎮 开发者模式已激活！无限答题' : '🎮 Developer mode activated! Unlimited questions')
+      setTimeout(() => setInlineMsg(''), 3000)
+    }
   }
 
   // 获取成语每个字的拼音（优先查预计算映射表，回退 pinyin-pro）
@@ -400,9 +430,11 @@ export default function IdiomGamePage() {
 
   // 下一关
   const nextLevel = () => {
-    const today = new Date().toISOString().split('T')[0]
-    const usedToday = dailyLimit.date === today ? dailyLimit.count : 0
-    if (usedToday >= DAILY_MAX) return
+    if (!isDevMode) {
+      const today = new Date().toISOString().split('T')[0]
+      const usedToday = dailyLimit.date === today ? dailyLimit.count : 0
+      if (usedToday >= DAILY_MAX) return
+    }
 
     if (currentLevel < 9) {
       const newLevel = currentLevel + 1
@@ -455,12 +487,25 @@ export default function IdiomGamePage() {
           />
         </Link>
         
-        <h1 className="text-3xl md:text-4xl font-mono font-bold" style={{ color: 'var(--fg)', marginBottom: '8px' }}>
+        <h1 
+          className="text-3xl md:text-4xl font-mono font-bold" 
+          style={{ color: 'var(--fg)', marginBottom: '8px', cursor: isDevMode ? 'default' : 'pointer' }}
+          onClick={handleTitleClick}
+          title={!isDevMode ? '' : 'Developer Mode Active'}
+        >
           {lang === 'zh' ? '成语闯关' : 'Idiom Quest'}
+          {isDevMode && (
+            <span style={{ fontSize: '0.5em', marginLeft: '8px', opacity: 0.6 }}>
+              [DEV]
+            </span>
+          )}
         </h1>
         
         <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginTop: '8px' }}>
-          {lang === 'zh' ? `${dailyLimit.count >= DAILY_MAX ? DAILY_MAX : dailyLimit.count + 1} / ${DAILY_MAX}` : `${dailyLimit.count >= DAILY_MAX ? DAILY_MAX : dailyLimit.count + 1} / ${DAILY_MAX}`}
+          {isDevMode 
+            ? (lang === 'zh' ? '∞ 无限模式' : '∞ Unlimited')
+            : `${dailyLimit.count >= DAILY_MAX ? DAILY_MAX : dailyLimit.count + 1} / ${DAILY_MAX}`
+          }
         </div>
 
 
@@ -469,7 +514,7 @@ export default function IdiomGamePage() {
       {/* 游戏主区域 */}
       <div style={{ border: '1px solid var(--border)', borderRadius: '4px', padding: '20px' }}>
         {/* 超限提示条 */}
-        {dailyLimit.count >= DAILY_MAX && (
+        {!isDevMode && dailyLimit.count >= DAILY_MAX && (
           <div style={{
             padding: '12px 16px',
             border: '1px solid var(--border)',
@@ -506,13 +551,15 @@ export default function IdiomGamePage() {
             </div>
             <button
               onClick={() => {
-                const today = new Date().toISOString().split('T')[0]
-                const usedToday = dailyLimit.date === today ? dailyLimit.count : 0
-                if (usedToday >= DAILY_MAX) {
-                  window.location.href = '/game'
-                } else {
-                  nextLevel()
+                if (!isDevMode) {
+                  const today = new Date().toISOString().split('T')[0]
+                  const usedToday = dailyLimit.date === today ? dailyLimit.count : 0
+                  if (usedToday >= DAILY_MAX) {
+                    window.location.href = '/game'
+                    return
+                  }
                 }
+                nextLevel()
               }}
               className="font-mono text-sm inline-block relative hover:opacity-70 transition-opacity social-link"
               style={{ 
@@ -527,6 +574,9 @@ export default function IdiomGamePage() {
               }}
             >
               {(() => {
+                if (isDevMode) {
+                  return lang === 'zh' ? '下一关' : 'Next Level'
+                }
                 const today = new Date().toISOString().split('T')[0]
                 const usedToday = dailyLimit.date === today ? dailyLimit.count : 0
                 if (usedToday >= DAILY_MAX) {
@@ -560,13 +610,15 @@ export default function IdiomGamePage() {
             </div>
             <button
               onClick={() => {
-                const today = new Date().toISOString().split('T')[0]
-                const usedToday = dailyLimit.date === today ? dailyLimit.count : 0
-                if (usedToday >= DAILY_MAX) {
-                  window.location.href = '/game'
-                } else {
-                  restartLevel()
+                if (!isDevMode) {
+                  const today = new Date().toISOString().split('T')[0]
+                  const usedToday = dailyLimit.date === today ? dailyLimit.count : 0
+                  if (usedToday >= DAILY_MAX) {
+                    window.location.href = '/game'
+                    return
+                  }
                 }
+                restartLevel()
               }}
               className="font-mono text-sm inline-block relative hover:opacity-70 transition-opacity social-link"
               style={{ 
@@ -581,6 +633,9 @@ export default function IdiomGamePage() {
               }}
             >
               {(() => {
+                if (isDevMode) {
+                  return lang === 'zh' ? '重新挑战' : 'Try Again'
+                }
                 const today = new Date().toISOString().split('T')[0]
                 const usedToday = dailyLimit.date === today ? dailyLimit.count : 0
                 if (usedToday >= DAILY_MAX) {
@@ -639,26 +694,86 @@ export default function IdiomGamePage() {
                 <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
                   {item.result.map((charData, charIndex) => (
                     <div key={charIndex} style={{ flex: 1 }}>
-                      <div
-                        title={`${lang === 'zh' ? '目标' : 'Target'}: ${charData.targetPinyin}`}
-                        className="font-mono text-lg font-bold"
-                        style={{
-                          textAlign: 'center',
-                          padding: '10px 5px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--border)',
-                          background: charData.status === 'correct' ? 'var(--fg)' : 'transparent',
-                          color: charData.status === 'correct' ? 'var(--bg)' : 'var(--muted)',
-                          borderColor: charData.status === 'correct' ? 'var(--fg)' : 'var(--border)',
-                        }}
-                      >
-                        {charData.char}
+                      {/* 田字格外层容器 */}
+                      <div style={{ 
+                        position: 'relative',
+                        width: '60px',
+                        height: '60px',
+                        margin: '0 auto',
+                        border: '1px solid var(--border)',
+                        borderRadius: '4px',
+                        overflow: 'hidden',
+                      }}>
+                        {/* 对角线虚线和横竖线 */}
+                        <svg 
+                          style={{ 
+                            position: 'absolute', 
+                            top: 0, 
+                            left: 0, 
+                            width: '100%', 
+                            height: '100%',
+                            pointerEvents: 'none',
+                          }}
+                        >
+                          {/* 横线 */}
+                          <line 
+                            x1="0" y1="50%" 
+                            x2="100%" y2="50%" 
+                            stroke="var(--border)" 
+                            strokeWidth="1" 
+                            strokeDasharray="4,4"
+                          />
+                          {/* 竖线 */}
+                          <line 
+                            x1="50%" y1="0" 
+                            x2="50%" y2="100%" 
+                            stroke="var(--border)" 
+                            strokeWidth="1" 
+                            strokeDasharray="4,4"
+                          />
+                          {/* 对角线 */}
+                          <line 
+                            x1="0" y1="0" 
+                            x2="100%" y2="100%" 
+                            stroke="var(--border)" 
+                            strokeWidth="1" 
+                            strokeDasharray="4,4"
+                          />
+                          <line 
+                            x1="100%" y1="0" 
+                            x2="0" y2="100%" 
+                            stroke="var(--border)" 
+                            strokeWidth="1" 
+                            strokeDasharray="4,4"
+                          />
+                        </svg>
+                        
+                        {/* 汉字 */}
+                        <div
+                          title={`${lang === 'zh' ? '目标' : 'Target'}: ${charData.targetPinyin}`}
+                          className="font-mono text-2xl font-bold"
+                          style={{
+                            position: 'relative',
+                            zIndex: 1,
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: charData.status === 'correct' ? 'var(--fg)' : 'transparent',
+                            color: charData.status === 'correct' ? 'var(--bg)' : 'var(--muted)',
+                            fontFamily: "'STKaiti', 'KaiTi', '楷体', serif",
+                          }}
+                        >
+                          {charData.char}
+                        </div>
                       </div>
-                      {/* 拼音显示 - 放大，每个字母和声调分别用颜色标记 */}
+                      
+                      {/* 拼音显示 - 在田字格下方 */}
                       <div className="font-mono" style={{
                         textAlign: 'center',
-                        marginTop: '6px',
-                        fontSize: '16px',
+                        marginTop: '8px',
+                        fontSize: '15px',
                         fontWeight: 'bold',
                       }}>
                         {(() => {
@@ -758,7 +873,7 @@ export default function IdiomGamePage() {
                                           left: '50%',
                                           transform: 'translateX(-50%)',
                                           top: '-0.25em',
-                                          fontSize: '1.0em',
+                                          fontSize: '1.3em',
                                           lineHeight: 1,
                                           fontWeight: 'bold',
                                         }}>
@@ -800,9 +915,9 @@ export default function IdiomGamePage() {
                 type="text"
                 value={userInput}
                 onChange={(e) => { setUserInput(e.target.value.trim()); setInlineMsg('') }}
-                placeholder={dailyLimit.count >= DAILY_MAX ? (lang === 'zh' ? '今日已达上限，请明天再来' : 'Daily limit reached') : (lang === 'zh' ? '输入四字成语...' : 'Enter a 4-character idiom...')}
+                placeholder={(!isDevMode && dailyLimit.count >= DAILY_MAX) ? (lang === 'zh' ? '今日已达上限，请明天再来' : 'Daily limit reached') : (lang === 'zh' ? '输入四字成语...' : 'Enter a 4-character idiom...')}
                 maxLength={4}
-                disabled={dailyLimit.count >= DAILY_MAX}
+                disabled={!isDevMode && dailyLimit.count >= DAILY_MAX}
                 className="font-mono text-lg"
                 style={{
                   width: '100%',
@@ -855,13 +970,13 @@ export default function IdiomGamePage() {
             <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 type="submit"
-                disabled={guessCount >= 8 || dailyLimit.count >= DAILY_MAX}
+                disabled={guessCount >= 8 || (!isDevMode && dailyLimit.count >= DAILY_MAX)}
                 className="font-mono text-sm flex-1 relative hover:opacity-70 transition-opacity social-link"
                 style={{ 
-                  color: (guessCount >= 8 || dailyLimit.count >= DAILY_MAX) ? 'var(--muted)' : 'var(--fg)', 
+                  color: (guessCount >= 8 || (!isDevMode && dailyLimit.count >= DAILY_MAX)) ? 'var(--muted)' : 'var(--fg)', 
                   border: '1px solid var(--fg)',
-                  cursor: (guessCount >= 8 || dailyLimit.count >= DAILY_MAX) ? 'not-allowed' : 'pointer',
-                  opacity: (guessCount >= 8 || dailyLimit.count >= DAILY_MAX) ? 0.5 : 1,
+                  cursor: (guessCount >= 8 || (!isDevMode && dailyLimit.count >= DAILY_MAX)) ? 'not-allowed' : 'pointer',
+                  opacity: (guessCount >= 8 || (!isDevMode && dailyLimit.count >= DAILY_MAX)) ? 0.5 : 1,
                   height: '48px',
                   display: 'flex',
                   alignItems: 'center',
@@ -871,7 +986,7 @@ export default function IdiomGamePage() {
                 {lang === 'zh' ? '猜！' : 'Guess!'}
                 <span
                   className="absolute bottom-0 left-0 h-px w-0 transition-all duration-200 ease-out social-link-underline"
-                  style={{ backgroundColor: (guessCount >= 8 || dailyLimit.count >= DAILY_MAX) ? 'var(--muted)' : 'var(--fg)' }}
+                  style={{ backgroundColor: (guessCount >= 8 || (!isDevMode && dailyLimit.count >= DAILY_MAX)) ? 'var(--muted)' : 'var(--fg)' }}
                 />
               </button>
 
@@ -879,24 +994,24 @@ export default function IdiomGamePage() {
                 <button
                   type="button"
                   onClick={useHint}
-                  disabled={dailyLimit.count >= DAILY_MAX}
+                  disabled={!isDevMode && dailyLimit.count >= DAILY_MAX}
                   className="font-mono text-sm px-6 relative hover:opacity-70 transition-opacity social-link"
                   style={{ 
-                    color: dailyLimit.count >= DAILY_MAX ? 'var(--muted)' : 'var(--fg)', 
+                    color: (!isDevMode && dailyLimit.count >= DAILY_MAX) ? 'var(--muted)' : 'var(--fg)', 
                     border: '1px solid var(--fg)',
                     height: '48px',
                     minWidth: '80px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: dailyLimit.count >= DAILY_MAX ? 'not-allowed' : 'pointer',
-                    opacity: dailyLimit.count >= DAILY_MAX ? 0.5 : 1,
+                    cursor: (!isDevMode && dailyLimit.count >= DAILY_MAX) ? 'not-allowed' : 'pointer',
+                    opacity: (!isDevMode && dailyLimit.count >= DAILY_MAX) ? 0.5 : 1,
                   }}
                 >
                   {lang === 'zh' ? '提示' : 'Hint'}
                   <span
                     className="absolute bottom-0 left-0 h-px w-0 transition-all duration-200 ease-out social-link-underline"
-                    style={{ backgroundColor: dailyLimit.count >= DAILY_MAX ? 'var(--muted)' : 'var(--fg)' }}
+                    style={{ backgroundColor: (!isDevMode && dailyLimit.count >= DAILY_MAX) ? 'var(--muted)' : 'var(--fg)' }}
                   />
                 </button>
               )}

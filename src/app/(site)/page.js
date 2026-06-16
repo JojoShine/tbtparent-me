@@ -135,7 +135,7 @@ export default function Home() {
               opacity: 0.8
             }}
           >
-            摩羯男
+            摩羯
           </span>
           <span 
             className="font-mono text-xs rounded inline-block" 

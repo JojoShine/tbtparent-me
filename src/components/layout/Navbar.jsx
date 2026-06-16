@@ -262,7 +262,7 @@ function SearchModal({ onClose }) {
     >
       <div 
         className="w-[calc(100%-16px)] max-w-2xl mx-2 md:mx-4 rounded-lg shadow-2xl border overflow-hidden"
-        style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg)', maxHeight: '80vh' }}
+        style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg)', maxHeight: '80vh', maxWidth: 'calc(100vw - 32px)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* 搜索输入框 */}

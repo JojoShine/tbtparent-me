@@ -8,10 +8,26 @@ export default function Footer() {
   const [stats, setStats] = useState(null)
 
   useEffect(() => {
-    fetch('/api/visits', { method: 'POST' })
-      .then(res => res.json())
-      .then(data => setStats(data))
-      .catch(() => {})
+    // 检查今天是否已经记录过访问
+    const today = new Date().toISOString().split('T')[0]
+    const lastVisitDate = localStorage.getItem('last-visit-date')
+    
+    // 只有今天首次访问才调用 API
+    if (lastVisitDate !== today) {
+      fetch('/api/visits', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          setStats(data)
+          localStorage.setItem('last-visit-date', today)
+        })
+        .catch(() => {})
+    } else {
+      // 今天已经访问过,只获取统计数据
+      fetch('/api/visits')
+        .then(res => res.json())
+        .then(data => setStats(data))
+        .catch(() => {})
+    }
   }, [])
 
   return (

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
-import { ArrowLeft, BookOpen, Grid3x3 } from 'lucide-react'
+import { ArrowLeft, BookOpen, Grid3x3, Calculator } from 'lucide-react'
 
 const GAMES = [
   {
@@ -31,6 +31,19 @@ const GAMES = [
     limit_zh: '畅玩',
     limit_en: 'Unlimited',
     statsKey: 'takuzu-game-stats',
+    maxDaily: Infinity,
+  },
+  {
+    id: 'guess-number',
+    href: '/game/guess-number',
+    icon: Calculator,
+    title_zh: '猜数字',
+    title_en: 'Guess Number',
+    desc_zh: '猜出系统生成的无重复数字，反馈xAyB提示',
+    desc_en: 'Guess secret number with xAyB feedback (A=position, B=digit)',
+    limit_zh: '畅玩',
+    limit_en: 'Unlimited',
+    statsKey: 'guess-number-game-stats',
     maxDaily: Infinity,
   },
 ]

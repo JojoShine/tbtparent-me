@@ -303,9 +303,112 @@ export default function TakuzuGamePage() {
     // 生成规则提示（不暴露具体位置）
     const msgs = []
     const zh = lang === 'zh'
-    if (rules.has(1)) msgs.push(zh ? '① 存在行或列的 X/O 数量不均等' : '① Some rows or columns have unequal X/O counts')
-    if (rules.has(2)) msgs.push(zh ? '② 存在3个连续相同的 X 或 O' : '② There are 3 consecutive X or O')
-    if (rules.has(3)) msgs.push(zh ? '③ 存在重复的行或列排列' : '③ There are duplicate rows or columns')
+    if (rules.has(1)) {
+      // 找出哪些行或列有问题
+      const problemRows = []
+      const problemCols = []
+      for (let i = 0; i < n; i++) {
+        let rX = 0, rO = 0, cX = 0, cO = 0
+        for (let j = 0; j < n; j++) {
+          if (board[i][j].value === 'X') rX++
+          else if (board[i][j].value === 'O') rO++
+          if (board[j][i].value === 'X') cX++
+          else if (board[j][i].value === 'O') cO++
+        }
+        if (rX !== half || rO !== half) problemRows.push(i + 1)
+        if (cX !== half || cO !== half) problemCols.push(i + 1)
+      }
+      
+      if (problemRows.length > 0 && problemCols.length > 0) {
+        msgs.push(zh 
+          ? `① 第 ${problemRows.join(', ')} 行和第 ${problemCols.join(', ')} 列的 X/O 数量不均等`
+          : `① Rows ${problemRows.join(', ')} and columns ${problemCols.join(', ')} have unequal X/O counts`)
+      } else if (problemRows.length > 0) {
+        msgs.push(zh 
+          ? `① 第 ${problemRows.join(', ')} 行的 X/O 数量不均等`
+          : `① Rows ${problemRows.join(', ')} have unequal X/O counts`)
+      } else if (problemCols.length > 0) {
+        msgs.push(zh 
+          ? `① 第 ${problemCols.join(', ')} 列的 X/O 数量不均等`
+          : `① Columns ${problemCols.join(', ')} have unequal X/O counts`)
+      }
+    }
+    if (rules.has(2)) {
+      // 找出哪些行或列有连续3个
+      const problemRows = []
+      const problemCols = []
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n - 2; j++) {
+          if (board[i][j].value && board[i][j].value === board[i][j + 1].value && board[i][j].value === board[i][j + 2].value) {
+            if (!problemRows.includes(i + 1)) problemRows.push(i + 1)
+            break
+          }
+        }
+        for (let j = 0; j < n - 2; j++) {
+          if (board[j][i].value && board[j][i].value === board[j + 1][i].value && board[j][i].value === board[j + 2][i].value) {
+            if (!problemCols.includes(i + 1)) problemCols.push(i + 1)
+            break
+          }
+        }
+      }
+      
+      if (problemRows.length > 0 && problemCols.length > 0) {
+        msgs.push(zh 
+          ? `② 第 ${problemRows.join(', ')} 行和第 ${problemCols.join(', ')} 列存在3个连续相同的 X 或 O`
+          : `② Rows ${problemRows.join(', ')} and columns ${problemCols.join(', ')} have 3 consecutive X or O`)
+      } else if (problemRows.length > 0) {
+        msgs.push(zh 
+          ? `② 第 ${problemRows.join(', ')} 行存在3个连续相同的 X 或 O`
+          : `② Rows ${problemRows.join(', ')} have 3 consecutive X or O`)
+      } else if (problemCols.length > 0) {
+        msgs.push(zh 
+          ? `② 第 ${problemCols.join(', ')} 列存在3个连续相同的 X 或 O`
+          : `② Columns ${problemCols.join(', ')} have 3 consecutive X or O`)
+      }
+    }
+    if (rules.has(3)) {
+      // 找出哪些行或列重复
+      const rowStrs = board.map(r => r.map(c => c.value).join(''))
+      const duplicateRows = new Set()
+      const duplicateCols = new Set()
+      
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          if (rowStrs[i] === rowStrs[j]) {
+            duplicateRows.add(i + 1)
+            duplicateRows.add(j + 1)
+          }
+        }
+      }
+      
+      for (let c = 0; c < n; c++) {
+        const col = board.map(r => r[c].value).join('')
+        for (let c2 = c + 1; c2 < n; c2++) {
+          const col2 = board.map(r => r[c2].value).join('')
+          if (col === col2) {
+            duplicateCols.add(c + 1)
+            duplicateCols.add(c2 + 1)
+          }
+        }
+      }
+      
+      const dupRows = Array.from(duplicateRows).sort((a, b) => a - b)
+      const dupCols = Array.from(duplicateCols).sort((a, b) => a - b)
+      
+      if (dupRows.length > 0 && dupCols.length > 0) {
+        msgs.push(zh 
+          ? `③ 第 ${dupRows.join(', ')} 行和第 ${dupCols.join(', ')} 列的排列重复`
+          : `③ Rows ${dupRows.join(', ')} and columns ${dupCols.join(', ')} are duplicated`)
+      } else if (dupRows.length > 0) {
+        msgs.push(zh 
+          ? `③ 第 ${dupRows.join(', ')} 行的排列重复`
+          : `③ Rows ${dupRows.join(', ')} are duplicated`)
+      } else if (dupCols.length > 0) {
+        msgs.push(zh 
+          ? `③ 第 ${dupCols.join(', ')} 列的排列重复`
+          : `③ Columns ${dupCols.join(', ')} are duplicated`)
+      }
+    }
 
     setErrors(newErrors)
     setErrorMessages(msgs)
@@ -377,7 +480,7 @@ export default function TakuzuGamePage() {
   return (
     <div
       className="max-w-3xl pb-8 md:pb-12"
-      style={{ margin: '0 auto', minHeight: '100vh', paddingBottom: '60px', padding: '0 16px' }}
+      style={{ margin: '0 auto', minHeight: '100vh', padding: '0 16px' }}
     >
       {/* 头部 */}
       <div style={{ marginBottom: '24px' }}>
@@ -504,7 +607,7 @@ export default function TakuzuGamePage() {
       )}
 
       {/* 操作按钮 */}
-      <div style={{ display: 'flex', gap: '12px' }}>
+      <div style={{ display: 'flex', gap: '12px', marginTop: '20px', marginBottom: '20px' }}>
         <button
           onClick={resetBoard}
           className="inline-flex items-center gap-2 font-mono text-sm"
