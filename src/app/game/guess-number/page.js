@@ -109,6 +109,7 @@ export default function GuessNumberPage() {
 
     // 检查是否已猜过
     if (guessHistory.some(h => h.guess === userInput)) {
+      alert(lang === 'zh' ? '这个数字已经猜过了！' : 'Already guessed this number!')
       return
     }
 
@@ -297,10 +298,10 @@ export default function GuessNumberPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button
               type="submit"
-              disabled={userInput.length !== digits || new Set(userInput.split('')).size !== digits}
+              disabled={!userInput || userInput.length !== digits || new Set(userInput.split('')).size !== digits}
               className="inline-flex items-center gap-2 font-mono text-sm"
               style={{
                 padding: '8px 16px',
@@ -308,8 +309,8 @@ export default function GuessNumberPage() {
                 borderRadius: '3px',
                 backgroundColor: 'var(--fg)',
                 color: 'var(--bg)',
-                cursor: userInput.length !== digits || new Set(userInput.split('')).size !== digits ? 'not-allowed' : 'pointer',
-                opacity: userInput.length !== digits || new Set(userInput.split('')).size !== digits ? 0.5 : 1,
+                cursor: !userInput || userInput.length !== digits || new Set(userInput.split('')).size !== digits ? 'not-allowed' : 'pointer',
+                opacity: !userInput || userInput.length !== digits || new Set(userInput.split('')).size !== digits ? 0.5 : 1,
               }}
             >
               <CheckCircle className="w-4 h-4" />
