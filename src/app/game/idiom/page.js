@@ -7,7 +7,7 @@ import { useLang } from '@/hooks/useLang'
 import { pinyin } from 'pinyin-pro'
 import { ArrowLeft } from 'lucide-react'
 
-import ALL_IDIOMS from '@/data/idioms.json'
+import COMMON_IDIOMS from '@/data/common-idioms.json'
 import IDIOM_PINYIN_MAP from '@/data/idiom-pinyin.json'
 
 export default function IdiomGamePage() {
@@ -130,10 +130,10 @@ export default function IdiomGamePage() {
   const startNewGame = (level) => {
     const targetLevel = level !== undefined ? level : currentLevel
     
-    // 从全部成语库中随机选择，避免本关重复
+    // 从常用成语库中随机选择，避免本关重复
     const usedInLevel = usedIdioms[targetLevel] || []
-    const available = ALL_IDIOMS.filter(idiom => !usedInLevel.includes(idiom))
-    const pool = available.length > 0 ? available : ALL_IDIOMS
+    const available = COMMON_IDIOMS.filter(idiom => !usedInLevel.includes(idiom))
+    const pool = available.length > 0 ? available : COMMON_IDIOMS
     const randomIdiom = pool[Math.floor(Math.random() * pool.length)]
     
     setTargetIdiom(randomIdiom)
@@ -160,13 +160,18 @@ export default function IdiomGamePage() {
     return idiom.split('').map(char => pinyin(char, { toneType: 'symbol' }))
   }
 
+  // 获取猜测的拼音（始终用 pinyin-pro 逐字生成，避免 JSON 数据损坏影响用户输入）
+  const getGuessPinyins = (guess) => {
+    return guess.split('').map(char => pinyin(char, { toneType: 'symbol' }))
+  }
+
   // 检查猜测结果
   const checkGuess = (guess) => {
     if (guess.length !== 4) return null
 
     const result = []
     const targetPinyins = getIdiomPinyins(targetIdiom)
-    const guessPinyins = getIdiomPinyins(guess)
+    const guessPinyins = getGuessPinyins(guess)
 
     for (let i = 0; i < 4; i++) {
       const targetChar = targetIdiom[i]
@@ -453,10 +458,6 @@ export default function IdiomGamePage() {
         <h1 className="text-3xl md:text-4xl font-mono font-bold" style={{ color: 'var(--fg)', marginBottom: '8px' }}>
           {lang === 'zh' ? '成语闯关' : 'Idiom Quest'}
         </h1>
-        
-        <div className="font-mono text-sm" style={{ color: 'var(--muted)' }}>
-          {lang === 'zh' ? `成语库 ${ALL_IDIOMS.length} 条` : `${ALL_IDIOMS.length} idioms`}
-        </div>
         
         <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginTop: '8px' }}>
           {lang === 'zh' ? `${dailyLimit.count >= DAILY_MAX ? DAILY_MAX : dailyLimit.count + 1} / ${DAILY_MAX}` : `${dailyLimit.count >= DAILY_MAX ? DAILY_MAX : dailyLimit.count + 1} / ${DAILY_MAX}`}

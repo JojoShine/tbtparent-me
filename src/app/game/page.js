@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
-import { ArrowLeft, BookOpen } from 'lucide-react'
+import { ArrowLeft, BookOpen, Grid3x3 } from 'lucide-react'
 
 const GAMES = [
   {
@@ -19,6 +19,19 @@ const GAMES = [
     limit_en: '10/day',
     statsKey: 'idiom-game-stats',
     maxDaily: 10,
+  },
+  {
+    id: 'takuzu',
+    href: '/game/takuzu',
+    icon: Grid3x3,
+    title_zh: 'XXOO',
+    title_en: 'Takuzu',
+    desc_zh: '填满棋盘，遵守三条规则：数量均分、无三连、无重复',
+    desc_en: 'Fill the board: equal X/O, no 3-in-a-row, no duplicate lines',
+    limit_zh: '畅玩',
+    limit_en: 'Unlimited',
+    statsKey: 'takuzu-game-stats',
+    maxDaily: Infinity,
   },
 ]
 
@@ -76,7 +89,7 @@ export default function GameHubPage() {
   return (
     <motion.div
       className="max-w-3xl pb-8 md:pb-12"
-      style={{ margin: '0 auto', minHeight: '100vh', paddingBottom: '60px' }}
+      style={{ margin: '0 auto' }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -158,15 +171,19 @@ export default function GameHubPage() {
                     {lang === 'zh' ? game.desc_zh : game.desc_en}
                   </div>
 
-                  <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: countdowns[game.id] ? '8px' : '0' }}>
-                    {exhausted
-                      ? (lang === 'zh' ? `今日已答 ${maxDaily} 题` : `Done today (${maxDaily}/${maxDaily})`)
-                      : (lang === 'zh' ? `今日已答 ${usedToday} / ${maxDaily} 题` : `Today: ${usedToday}/${maxDaily}`)}
-                  </div>
-                  {countdowns[game.id] && (
-                    <div className="font-mono text-lg font-bold" style={{ color: 'var(--fg)', letterSpacing: '3px' }}>
-                      {countdowns[game.id]}
-                    </div>
+                  {maxDaily !== Infinity && (
+                    <>
+                      <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: countdowns[game.id] ? '8px' : '0' }}>
+                        {exhausted
+                          ? (lang === 'zh' ? `今日已答 ${maxDaily} 题` : `Done today (${maxDaily}/${maxDaily})`)
+                          : (lang === 'zh' ? `今日已答 ${usedToday} / ${maxDaily} 题` : `Today: ${usedToday}/${maxDaily}`)}
+                      </div>
+                      {countdowns[game.id] && (
+                        <div className="font-mono text-lg font-bold" style={{ color: 'var(--fg)', letterSpacing: '3px' }}>
+                          {countdowns[game.id]}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

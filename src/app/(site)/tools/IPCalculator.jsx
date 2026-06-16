@@ -73,6 +73,7 @@ export default function IPCalculator() {
     setIp('192.168.1.0')
     setCidr('24')
     setResult(null)
+    setAvailableHosts(254)
   }
 
   return (

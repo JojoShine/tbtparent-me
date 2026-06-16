@@ -51,13 +51,13 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="zh"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: initScript }} />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         {children}
       </body>
     </html>

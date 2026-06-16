@@ -82,7 +82,7 @@ export default function ToolsPage() {
   return (
     <motion.div
       className="max-w-6xl pb-8 md:pb-20"
-      style={{ margin: '0 auto', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', paddingBottom: '48px' }}
+      style={{ margin: '0 auto', display: 'flex', flexDirection: 'column' }}
       variants={stagger}
       initial="initial"
       animate="animate"
@@ -157,10 +157,10 @@ export default function ToolsPage() {
                         fontSize: '0.8rem',
                         cursor: 'pointer',
                         textAlign: 'left',
-                        transition: 'all 0.15s ease',
                         borderRadius: '2px',
                         marginBottom: '4px',
                       }}
+                      className="tool-menu-item"
                     >
                       {lang === 'zh' ? child.label : child.key}
                     </button>
@@ -178,54 +178,38 @@ export default function ToolsPage() {
           style={{ flex: 1, minWidth: 0 }}
         >
 
-          {/* 根据选中的工具显示对应内容 */}
-          {activeTool === 'image-compressor' && (
-            <div style={{ border: '1px solid var(--border)', borderRadius: '4px' }}>
-              <ImageCompressor />
-            </div>
-          )}
+          {/* 根据选中的工具显示对应内容（使用 display 控制避免重新挂载闪烁） */}
+          <div style={{ display: activeTool === 'image-compressor' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <ImageCompressor />
+          </div>
           
-          {activeTool === 'qrcode-generator' && (
-            <div style={{ border: '1px solid var(--border)', borderRadius: '4px' }}>
-              <QRCodeGenerator />
-            </div>
-          )}
+          <div style={{ display: activeTool === 'qrcode-generator' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <QRCodeGenerator />
+          </div>
           
-          {activeTool === 'ip-query' && (
-            <div style={{ border: '1px solid var(--border)', borderRadius: '4px' }}>
-              <IPQuery />
-            </div>
-          )}
+          <div style={{ display: activeTool === 'ip-query' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <IPQuery />
+          </div>
           
-          {activeTool === 'ip-calculator' && (
-            <div style={{ border: '1px solid var(--border)', borderRadius: '4px' }}>
-              <IPCalculator />
-            </div>
-          )}
+          <div style={{ display: activeTool === 'ip-calculator' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <IPCalculator />
+          </div>
           
-          {activeTool === 'network-planning' && (
-            <div style={{ border: '1px solid var(--border)', borderRadius: '4px' }}>
-              <NetworkPlanning />
-            </div>
-          )}
+          <div style={{ display: activeTool === 'network-planning' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <NetworkPlanning />
+          </div>
           
-          {activeTool === 'network-commands' && (
-            <div style={{ border: '1px solid var(--border)', borderRadius: '4px' }}>
-              <NetworkCommands />
-            </div>
-          )}
+          <div style={{ display: activeTool === 'network-commands' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <NetworkCommands />
+          </div>
           
-          {activeTool === 'network-latency' && (
-            <div style={{ border: '1px solid var(--border)', borderRadius: '4px' }}>
-              <NetworkLatency />
-            </div>
-          )}
+          <div style={{ display: activeTool === 'network-latency' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <NetworkLatency />
+          </div>
           
-          {activeTool === 'dns-lookup' && (
-            <div style={{ border: '1px solid var(--border)', borderRadius: '4px' }}>
-              <DNSLookup />
-            </div>
-          )}
+          <div style={{ display: activeTool === 'dns-lookup' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <DNSLookup />
+          </div>
         </motion.main>
       </div>
 
@@ -265,6 +249,13 @@ export default function ToolsPage() {
       )}
 
       <style jsx global>{`
+        /* 菜单按钮只在 hover 时有过渡，选中态切换无过渡避免闪烁 */
+        .tool-menu-item {
+          transition: none;
+        }
+        .tool-menu-item:hover {
+          opacity: 0.85;
+        }
         @media (max-width: 768px) {
           .external-tools-grid {
             grid-template-columns: 1fr !important;

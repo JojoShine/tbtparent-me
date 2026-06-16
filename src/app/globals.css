@@ -64,6 +64,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 全局 placeholder 颜色一致性 */
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
 /* View Transitions API - 主题切换动画 */
 ::view-transition-old(root) {
   animation: none;

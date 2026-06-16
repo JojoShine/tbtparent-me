@@ -210,3 +210,11 @@ model QA {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// ========== 访客统计 ==========
+model SiteVisit {
+  id        Int      @id @default(autoincrement())
+  date      String   @unique // YYYY-MM-DD
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+}
