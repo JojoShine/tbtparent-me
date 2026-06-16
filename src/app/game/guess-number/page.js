@@ -191,8 +191,8 @@ export default function GuessNumberPage() {
       {/* 操作提示 */}
       <div className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '12px', lineHeight: 1.6 }}>
         {lang === 'zh' 
-          ? `输入${digits}位无重复数字，系统会反馈 xAyB（A=位置对，B=数字对）` 
-          : `Enter ${digits} unique digits, system returns xAyB (A=correct position, B=correct digit)`}
+          ? `输入${digits}位无重复数字，系统会反馈 xAyB（A=位置和数字都对，B=仅数字对但位置错，A优先于B）` 
+          : `Enter ${digits} unique digits, system returns xAyB (A=correct position & digit, B=digit only but wrong position, A takes priority)`}
       </div>
 
       {/* 猜测历史 */}
@@ -347,10 +347,10 @@ export default function GuessNumberPage() {
             {lang === 'zh' ? `系统生成${digits}位无重复数字（如 1928）` : `System generates ${digits}-digit number with no repeats (e.g., 1928)`}
           </li>
           <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '6px', lineHeight: 1.5 }}>
-            {lang === 'zh' ? 'xA：x个数字数值和位置都正确' : 'xA: x digits are correct in value and position'}
+            {lang === 'zh' ? 'xA：x个数字的位置和数值都正确（优先判断）' : 'xA: x digits are correct in both position and value (checked first)'}
           </li>
           <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '6px', lineHeight: 1.5 }}>
-            {lang === 'zh' ? 'yB：y个数字数值正确但位置错误' : 'yB: y digits are correct in value but wrong position'}
+            {lang === 'zh' ? 'yB：y个数字的数值正确但位置错误（排除A后统计）' : 'yB: y digits have correct value but wrong position (counted after excluding A)'}
           </li>
           <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
             {lang === 'zh' ? `目标：猜出 ${digits}A0B（全部正确）` : `Goal: Guess until you get ${digits}A0B (all correct)`}

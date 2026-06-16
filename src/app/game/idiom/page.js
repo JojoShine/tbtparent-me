@@ -324,9 +324,9 @@ export default function IdiomGamePage() {
       return map[match] || match
     })
     
-    // 逐个字母比较（按位置），取较短的长度
+    // 使用数组存储每个位置的匹配情况，避免同字母覆盖
     const minLength = Math.min(clean1.length, clean2.length)
-    const matches = {}
+    const positionMatches = []
     let hasMatch = false
     let allMatch = true
     
@@ -334,13 +334,19 @@ export default function IdiomGamePage() {
       const char1 = clean1[i]
       const char2 = clean2[i]
       const isMatch = char1 === char2
-      matches[char1] = isMatch
+      positionMatches.push({ char: char1, isMatch, position: i })
       if (isMatch) hasMatch = true
       if (!isMatch) allMatch = false
     }
     
     // 如果长度不同，不可能全部匹配
     if (clean1.length !== clean2.length) allMatch = false
+    
+    // 构建 matches 对象：key 为 "char@position" 格式，确保唯一性
+    const matches = {}
+    positionMatches.forEach(item => {
+      matches[`${item.char}@${item.position}`] = item.isMatch
+    })
     
     return { matches, hasMatch, allMatch }
   }
@@ -850,7 +856,7 @@ export default function IdiomGamePage() {
                                 if (isToneChar) {
                                   // 带声调的字符：拆分为基础字母 + 声调类型
                                   const [baseLetter, toneNumber] = splitToneChar(char)
-                                  const isLetterMatch = charData.letterMatches?.[baseLetter] || false
+                                  const isLetterMatch = charData.letterMatches?.[`${baseLetter}@${idx}`] || false
                                   
                                   // 基础字母颜色：根据字母匹配情况
                                   const letterColor = isLetterMatch ? '#22c55e' : 'var(--fg)'
@@ -884,7 +890,7 @@ export default function IdiomGamePage() {
                                   )
                                 } else {
                                   // 普通字母字符：根据字母匹配情况显示颜色
-                                  const isLetterMatch = charData.letterMatches?.[char] || false
+                                  const isLetterMatch = charData.letterMatches?.[`${char}@${idx}`] || false
                                   const letterColor = isLetterMatch ? '#22c55e' : 'var(--fg)'
                                   
                                   return (
@@ -915,7 +921,7 @@ export default function IdiomGamePage() {
                 type="text"
                 value={userInput}
                 onChange={(e) => { setUserInput(e.target.value.trim()); setInlineMsg('') }}
-                placeholder={(!isDevMode && dailyLimit.count >= DAILY_MAX) ? (lang === 'zh' ? '今日已达上限，请明天再来' : 'Daily limit reached') : (lang === 'zh' ? '输入四字成语...' : 'Enter a 4-character idiom...')}
+                placeholder={(!isDevMode && dailyLimit.count >= DAILY_MAX) ? (lang === 'zh' ? '今日已达上限，请明天再来' : 'Daily limit reached') : (gameHistory.length === 0 ? (lang === 'zh' ? '请先输入一个四字成语...' : 'Please enter a 4-character idiom...') : (lang === 'zh' ? '输入四字成语...' : 'Enter a 4-character idiom...'))}
                 maxLength={4}
                 disabled={!isDevMode && dailyLimit.count >= DAILY_MAX}
                 className="font-mono text-lg"
