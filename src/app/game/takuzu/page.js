@@ -11,7 +11,6 @@ const LEVELS = [
   { size: 8, name_zh: '8\u00d78', name_en: '8\u00d78' },
   { size: 10, name_zh: '10\u00d710', name_en: '10\u00d710', desktop: true },
   { size: 12, name_zh: '12\u00d712', name_en: '12\u00d712', desktop: true },
-  { size: 14, name_zh: '14\u00d714', name_en: '14\u00d714', desktop: true },
 ]
 
 // ============ 谜题生成算法 ============
@@ -667,7 +666,7 @@ export default function TakuzuGamePage() {
             display: 'grid',
             gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
             gap: gridSize <= 6 ? '3px' : '2px',
-            maxWidth: gridSize <= 4 ? '240px' : gridSize <= 6 ? '320px' : gridSize <= 8 ? '400px' : gridSize <= 10 ? '480px' : gridSize <= 12 ? '540px' : '620px',
+            maxWidth: gridSize <= 4 ? '240px' : gridSize <= 6 ? '320px' : gridSize <= 8 ? '400px' : gridSize <= 10 ? '480px' : '540px',
             margin: '0 auto 20px auto',
           }}>
             {board.map((row, r) =>
