@@ -1,5 +1,3 @@
-// Prisma Schema - tbtparent.me
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
@@ -10,7 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ========== 首页 ==========
 model Home {
   id        Int      @id @default(1)
   name_zh   String
@@ -18,13 +15,12 @@ model Home {
   nameZh    String
   title_zh  String
   title_en  String
-  bio_zh    String   @db.Text
-  bio_en    String   @db.Text
+  bio_zh    String
+  bio_en    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// ========== 社交链接 ==========
 model SocialLink {
   id        Int      @id @default(autoincrement())
   name      String
@@ -35,15 +31,12 @@ model SocialLink {
   updatedAt DateTime @updatedAt
 }
 
-// ========== 项目 ==========
 model Project {
   id             Int      @id @default(autoincrement())
   name_zh        String
   name_en        String
-  description_zh String   @db.Text
-  description_en String   @db.Text
-  content_zh     String?  @db.Text
-  content_en     String?  @db.Text
+  description_zh String
+  description_en String
   tags_zh        String[]
   tags_en        String[]
   deadline_zh    String
@@ -51,54 +44,52 @@ model Project {
   link           String
   github         String?
   demo_url       String?
-  project_type   String   @default("pc") // mobile, pc, dashboard
-  recent_focus   Boolean  @default(false) // 近期聚焦标识
+  project_type   String   @default("pc")
   sortOrder      Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  content_en     String?
+  content_zh     String?
+  recent_focus   Boolean  @default(false)
 }
 
-// ========== 博客 ==========
 model Blog {
-  id           Int          @id @default(autoincrement())
+  id           Int         @id @default(autoincrement())
   title_zh     String
   title_en     String
-  slug         String       @unique
-  excerpt_zh   String       @db.Text
-  excerpt_en   String       @db.Text
-  content_zh   String       @db.Text
-  content_en   String       @db.Text
-  tags_zh      String[]     @default([])
-  tags_en      String[]     @default([])
+  slug         String      @unique
+  excerpt_zh   String
+  excerpt_en   String
+  content_zh   String
+  content_en   String
+  status       String      @default("draft")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  pinned       Boolean     @default(false)
   cover_image  String?
   published_at DateTime?
-  status       String       @default("draft")
-  pinned       Boolean      @default(false)  // 置顶标记
+  tags_en      String[]    @default([])
+  tags_zh      String[]    @default([])
   images       BlogImage[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
 }
 
-// ========== 博客图片（MinIO） ==========
 model BlogImage {
   id        Int      @id @default(autoincrement())
   blogId    Int
-  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
   url       String
   filename  String
   createdAt DateTime @default(now())
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
 }
 
-// ========== 关于 ==========
 model About {
   id        Int      @id @default(1)
-  bio_zh    String   @db.Text
-  bio_en    String   @db.Text
+  bio_zh    String
+  bio_en    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// ========== 技术栈 ==========
 model TechStack {
   id        Int      @id @default(autoincrement())
   name      String
@@ -106,115 +97,119 @@ model TechStack {
   createdAt DateTime @default(now())
 }
 
-// ========== 工具 ==========
 model Tool {
-  id          Int      @id @default(autoincrement())
-  name_zh     String
-  name_en     String
-  description_zh String @db.Text
-  description_en String @db.Text
-  link        String
-  available   Boolean  @default(false)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  name_zh        String
+  name_en        String
+  description_zh String
+  description_en String
+  link           String
+  available      Boolean  @default(false)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
-// ========== 收录 - 视频创作 ==========
 model ArchiveVideo {
-  id          Int      @id @default(autoincrement())
-  title_zh    String
-  title_en    String
-  description_zh String? @db.Text
-  description_en String? @db.Text
-  cover_url   String?
-  video_url   String?
-  sortOrder   Int      @default(0)
-  published_at DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             Int       @id @default(autoincrement())
+  title_zh       String
+  title_en       String
+  description_zh String?
+  description_en String?
+  cover_url      String?
+  video_url      String?
+  sortOrder      Int       @default(0)
+  published_at   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
-// ========== 收录 - 小说作品 ==========
 model ArchiveNovel {
-  id          Int      @id @default(autoincrement())
-  title_zh    String
-  title_en    String
-  description_zh String? @db.Text
-  description_en String? @db.Text
-  cover_url   String?
-  external_link String?
-  status      String   @default("ongoing") // ongoing: 连载中, completed: 已完结, discontinued: 停更
-  sortOrder   Int      @default(0)
-  chapters    NovelChapter[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             Int            @id @default(autoincrement())
+  title_zh       String
+  title_en       String
+  description_zh String?
+  description_en String?
+  cover_url      String?
+  external_link  String?
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  status         String         @default("ongoing")
+  chapters       NovelChapter[]
 }
 
-// ========== 收录 - 小说章节 ==========
 model NovelChapter {
-  id          Int      @id @default(autoincrement())
-  novelId     Int
-  novel       ArchiveNovel @relation(fields: [novelId], references: [id], onDelete: Cascade)
-  chapter_number Int   // 章节序号
-  title_zh    String
-  title_en    String
-  content_zh  String   @db.Text
-  content_en  String?  @db.Text
-  sortOrder   Int      @default(0)
-  published_at DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             Int          @id @default(autoincrement())
+  novelId        Int
+  title_zh       String
+  title_en       String
+  content_zh     String
+  content_en     String?
+  sortOrder      Int          @default(0)
+  published_at   DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  chapter_number Int
+  novel          ArchiveNovel @relation(fields: [novelId], references: [id], onDelete: Cascade)
 }
 
-// ========== 收录 - 采访报道 ==========
 model ArchiveInterview {
-  id          Int      @id @default(autoincrement())
-  title_zh    String
-  title_en    String
-  summary_zh  String?  @db.Text
-  summary_en  String?  @db.Text
-  cover_url   String?
-  link        String
+  id           Int       @id @default(autoincrement())
+  title_zh     String
+  title_en     String
+  summary_zh   String?
+  summary_en   String?
+  link         String
   published_at DateTime?
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  cover_url    String?
 }
 
-// ========== 收录 - 王者集锦 ==========
 model ArchiveHighlight {
-  id          Int      @id @default(autoincrement())
-  title_zh    String
-  title_en    String
-  description_zh String? @db.Text
-  description_en String? @db.Text
-  cover_url   String?
-  video_url   String?
-  published_at DateTime?
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             Int       @id @default(autoincrement())
+  title_zh       String
+  title_en       String
+  description_zh String?
+  description_en String?
+  cover_url      String?
+  video_url      String?
+  published_at   DateTime?
+  sortOrder      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
-// ========== 问题集 Q&A ==========
 model QA {
-  id          Int      @id @default(autoincrement())
-  title_zh    String
-  title_en    String
-  tags_zh     String[] // 标签数组
-  tags_en     String[]
-  content_zh  String   @db.Text // Markdown 内容
-  content_en  String?  @db.Text
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  title_zh   String
+  title_en   String
+  tags_zh    String[]
+  tags_en    String[]
+  content_zh String
+  content_en String?
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
-// ========== 访客统计 ==========
 model SiteVisit {
   id        Int      @id @default(autoincrement())
-  date      String   @unique // YYYY-MM-DD
+  date      String   @unique
   count     Int      @default(0)
   createdAt DateTime @default(now())
+}
+
+model Visitor {
+  id              Int      @id @default(autoincrement())
+  visitor_id      String   @unique
+  visit_dates     String[]
+  first_visit_date String?
+  last_visit_date  String?
+  total_visits     Int      @default(1)
+  position         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

@@ -9,8 +9,9 @@ const LEVELS = [
   { size: 4, name_zh: '4\u00d74', name_en: '4\u00d74' },
   { size: 6, name_zh: '6\u00d76', name_en: '6\u00d76' },
   { size: 8, name_zh: '8\u00d78', name_en: '8\u00d78' },
-  { size: 10, name_zh: '10\u00d710', name_en: '10\u00d710', desktop: true },
+  { size: 10, name_zh: '10\u00d710', name_en: '10\u00d710' },
   { size: 12, name_zh: '12\u00d712', name_en: '12\u00d712', desktop: true },
+  { size: 14, name_zh: '14\u00d714', name_en: '14\u00d714', desktop: true },
 ]
 
 // ============ 谜题生成算法 ============
@@ -192,9 +193,10 @@ export default function TakuzuGamePage() {
     setIsRunning(true)
   }, [level])
 
-  // 点击格子
+  // 点击格子（锁定格子不可点击，错误格子可修改）
   const handleCellClick = (r, c) => {
-    if (!board || board[r][c].locked || gameStatus !== 'playing') return
+    if (!board || gameStatus === 'won') return
+    if (board[r][c].locked) return
     
     setBoard(prev => {
       const next = prev.map(row => row.map(cell => ({ ...cell })))
@@ -468,7 +470,7 @@ export default function TakuzuGamePage() {
       fontSize: gridSize <= 6 ? '20px' : gridSize <= 8 ? '16px' : '13px',
       fontWeight: cell.locked ? 800 : 'bold',
       fontFamily: 'monospace',
-      cursor: cell.locked ? 'default' : 'pointer',
+      cursor: (cell.locked && !isError) ? 'default' : 'pointer',
       userSelect: 'none',
       backgroundColor: isError 
         ? 'rgba(239, 68, 68, 0.15)' 
@@ -491,7 +493,7 @@ export default function TakuzuGamePage() {
   return (
     <div
       className="max-w-3xl pb-8 md:pb-12"
-      style={{ margin: '0 auto', minHeight: '100vh', padding: '0 16px' }}
+      style={{ margin: '0 auto', minHeight: '100vh', padding: '0 16px 32px' }}
     >
       {/* 头部 */}
       <div style={{ marginBottom: '24px' }}>
@@ -565,7 +567,7 @@ export default function TakuzuGamePage() {
             display: 'grid',
             gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
             gap: gridSize <= 6 ? '3px' : '2px',
-            maxWidth: gridSize <= 4 ? '240px' : gridSize <= 6 ? '320px' : gridSize <= 8 ? '400px' : gridSize <= 10 ? '480px' : '540px',
+            maxWidth: gridSize <= 4 ? '240px' : gridSize <= 6 ? '320px' : gridSize <= 8 ? '400px' : gridSize <= 10 ? '480px' : gridSize <= 12 ? '540px' : '620px',
             margin: '0 auto 20px auto',
           }}>
             {board.map((row, r) =>

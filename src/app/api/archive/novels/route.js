@@ -1,12 +1,38 @@
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
 
-// 获取所有小说及章节（公开）
-export async function GET() {
+// 获取所有小说及章节元信息（公开，列表不含章节正文）
+export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (id) {
+      // 单个小说详情（含章节正文）
+      const novel = await prisma.archiveNovel.findUnique({
+        where: { id: parseInt(id) },
+        include: {
+          chapters: {
+            orderBy: [{ sortOrder: 'asc' }, { published_at: 'desc' }],
+          },
+        },
+      })
+      return Response.json(novel)
+    }
+
+    // 列表：章节只返回元信息，不包含 content 字段
     const novels = await prisma.archiveNovel.findMany({
       include: {
         chapters: {
+          select: {
+            id: true,
+            novelId: true,
+            chapter_number: true,
+            title_zh: true,
+            title_en: true,
+            sortOrder: true,
+            published_at: true,
+          },
           orderBy: [{ sortOrder: 'asc' }, { published_at: 'desc' }],
         },
       },

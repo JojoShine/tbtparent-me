@@ -3,31 +3,38 @@
 import { useState, useEffect } from 'react'
 import { useLang } from '@/hooks/useLang'
 
+// 生成或获取浏览器唯一标识
+function getVisitorId() {
+  let id = localStorage.getItem('visitor-id')
+  if (!id) {
+    id = crypto.randomUUID ? crypto.randomUUID() : 
+      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+      })
+    localStorage.setItem('visitor-id', id)
+  }
+  return id
+}
+
 export default function Footer() {
   const { lang } = useLang()
   const [stats, setStats] = useState(null)
 
   useEffect(() => {
-    // 检查今天是否已经记录过访问
-    const today = new Date().toISOString().split('T')[0]
-    const lastVisitDate = localStorage.getItem('last-visit-date')
+    const visitorId = getVisitorId()
     
-    // 只有今天首次访问才调用 API
-    if (lastVisitDate !== today) {
-      fetch('/api/visits', { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          setStats(data)
-          localStorage.setItem('last-visit-date', today)
-        })
-        .catch(() => {})
-    } else {
-      // 今天已经访问过,只获取统计数据
-      fetch('/api/visits')
-        .then(res => res.json())
-        .then(data => setStats(data))
-        .catch(() => {})
-    }
+    // 始终调用 POST，服务端基于 visitorId 判断是否今日首次
+    fetch('/api/visits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorId }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) setStats(data)
+      })
+      .catch(() => {})
   }, [])
 
   return (

@@ -30,9 +30,41 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = 'https://tbtparent.me'
+
 export const metadata = {
-  title: "甜宝塔家长",
-  description: "极简黑白 · 全局微动画 · 数字宠物小猫",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: '甜宝塔家长 | tbtparent',
+    template: '%s | 甜宝塔家长',
+  },
+  description: '极简黑白个人站 - 技术博客、开源项目、在线工具、小游戏。涵盖运维、开发、AI、数据等领域。',
+  keywords: ['tbtparent', '甜宝塔家长', '个人博客', '技术博客', '运维', '开发', 'AI', '在线工具', '小游戏'],
+  authors: [{ name: 'tbtparent', url: SITE_URL }],
+  creator: 'tbtparent',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'zh_CN',
+    url: SITE_URL,
+    siteName: '甜宝塔家长',
+    title: '甜宝塔家长 | tbtparent',
+    description: '极简黑白个人站 - 技术博客、开源项目、在线工具、小游戏',
+    images: [{ url: '/assets/logo.jpg', width: 512, height: 512, alt: '甜宝塔家长' }],
+  },
+  twitter: {
+    card: 'summary',
+    title: '甜宝塔家长 | tbtparent',
+    description: '极简黑白个人站 - 技术博客、开源项目、在线工具、小游戏',
+    images: ['/assets/logo.jpg'],
+  },
   icons: {
     icon: '/assets/logo.jpg',
   },
@@ -58,6 +90,25 @@ export default function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: initScript }} />
       </head>
       <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: '甜宝塔家长',
+              alternateName: 'tbtparent',
+              url: SITE_URL,
+              description: '极简黑白个人站 - 技术博客、开源项目、在线工具、小游戏',
+              author: { '@type': 'Person', name: 'tbtparent', url: SITE_URL },
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: `${SITE_URL}/?q={search_term_string}`,
+                'query-input': 'required name=search_term_string',
+              },
+            }),
+          }}
+        />
         {children}
       </body>
     </html>

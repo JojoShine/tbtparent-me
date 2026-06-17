@@ -47,6 +47,15 @@ export default function AdminBlog() {
     setEditing(prev => ({ ...prev, [field]: value }))
   }
 
+  const handleEdit = async (blog) => {
+    try {
+      const data = await apiGet(`/api/blog?slug=${blog.slug}`)
+      setEditing(data)
+    } catch (e) {
+      setMsg('加载文章失败: ' + e.message)
+    }
+  }
+
   const handleSave = async () => {
     try {
       if (editing.id) {
@@ -182,7 +191,7 @@ export default function AdminBlog() {
                 <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: 'var(--muted)' }}>/{b.slug}</span>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button style={secondaryButtonStyle} onClick={() => setEditing(b)}>编辑</button>
+                <button style={secondaryButtonStyle} onClick={() => handleEdit(b)}>编辑</button>
                 <button style={secondaryButtonStyle} onClick={() => handleDelete(b.id)}>删除</button>
               </div>
             </div>

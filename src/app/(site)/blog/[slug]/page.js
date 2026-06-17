@@ -91,7 +91,8 @@ export default function BlogDetailPage() {
     const updatePos = () => {
       if (tocAreaRef.current) {
         const rect = tocAreaRef.current.getBoundingClientRect()
-        setTocPos({ left: rect.left + 40, top: rect.top })
+        // 图标 sticky top:100px + 32px 高度 + 12px 间距 = 144px
+        setTocPos({ left: Math.max(12, rect.left), top: 144 })
       }
     }
     updatePos()
@@ -145,7 +146,7 @@ export default function BlogDetailPage() {
             </svg>
           </button>
           {/* 目录内容 */}
-          <nav className="blog-toc" style={{ left: `${tocPos.left}px`, top: '100px' }}>
+          <nav className="blog-toc" style={{ left: `${tocPos.left}px`, top: `${tocPos.top}px` }}>
             <div className="blog-toc-inner">
               <p className="font-mono" style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border)', letterSpacing: '0.05em', fontWeight: 600 }}>
                 {lang === 'zh' ? '目录' : 'CONTENTS'}
@@ -243,6 +244,60 @@ export default function BlogDetailPage() {
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeRaw, rehypeSlug]}
           components={{
+            pre: ({ children }) => {
+              // 检查子元素是否是已处理的代码块（有 language-* class）
+              const codeChild = children?.props || {}
+              const hasLang = /language-/.test(codeChild.className || '')
+              if (hasLang) {
+                // 有语言的代码块由 code 组件处理，这里直接透传
+                return <>{children}</>
+              }
+              // 无语言的代码块，包裹在背景容器中
+              return (
+                <div style={{ position: 'relative', margin: '1rem 0' }}>
+                  <pre style={{
+                    background: '#282c34',
+                    color: '#abb2bf',
+                    borderRadius: '6px',
+                    padding: '1rem',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.6,
+                    fontFamily: 'monospace',
+                    overflowX: 'auto',
+                    margin: 0,
+                  }}>
+                    {children}
+                  </pre>
+                  <button
+                    className="code-copy-btn"
+                    onClick={() => {
+                      const text = typeof children?.props?.children === 'string'
+                        ? children.props.children.replace(/\n$/, '')
+                        : ''
+                      navigator.clipboard.writeText(text)
+                      const btn = document.activeElement
+                      btn.textContent = '✓'
+                      setTimeout(() => { btn.textContent = 'Copy' }, 1500)
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      padding: '4px 10px',
+                      fontSize: '0.7rem',
+                      fontFamily: 'monospace',
+                      background: 'rgba(255,255,255,0.1)',
+                      color: '#abb2bf',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              )
+            },
             code: ({ className, children, ...props }) => {
               const match = /language-(\w+)/.exec(className || '')
               const isInline = !match
@@ -253,8 +308,7 @@ export default function BlogDetailPage() {
                     style={{
                       fontFamily: 'monospace',
                       fontSize: '0.85rem',
-                      background: 'var(--border)',
-                      padding: '0.15rem 0.4rem',
+                      padding: '0.15rem 0.2rem',
                       borderRadius: '2px',
                     }}
                     {...props}
@@ -343,13 +397,14 @@ export default function BlogDetailPage() {
 
       <style jsx global>{`
         .blog-layout {
-          max-width: 1100px;
+          max-width: 1200px;
           margin: 0 auto;
+          padding: 0 24px;
           display: flex;
-          gap: 40px;
+          gap: 32px;
         }
         .blog-toc-area {
-          width: 180px;
+          width: 200px;
           flex-shrink: 0;
           order: -1;
           position: relative;
@@ -372,7 +427,8 @@ export default function BlogDetailPage() {
         }
         .blog-toc {
           position: fixed;
-          width: 220px;
+          width: 200px;
+          padding-right: 16px;
           opacity: 0;
           transform: translateX(-8px);
           transition: opacity 0.3s ease, transform 0.3s ease;
@@ -386,8 +442,8 @@ export default function BlogDetailPage() {
         }
         .blog-toc-inner {
           position: sticky;
-          top: 100px;
-          max-height: calc(100vh - 140px);
+          top: 144px;
+          max-height: calc(100vh - 184px);
           overflow-y: auto;
           padding-right: 4px;
         }
@@ -432,10 +488,22 @@ export default function BlogDetailPage() {
         .blog-main {
           flex: 1;
           min-width: 0;
-          padding-left: 40px;
         }
         @media (max-width: 1023px) {
           .blog-toc-area { display: none; }
+          .blog-layout {
+            overflow-x: hidden;
+            max-width: 100vw;
+            padding: 0 16px;
+            gap: 0;
+          }
+          .blog-main {
+            padding-left: 0 !important;
+            width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+          }
         }
         .blog-content h1 { font-family: monospace; font-weight: 700; font-size: 1.5rem; margin: 2rem 0 0.8rem; }
         .blog-content h2 { font-family: monospace; font-weight: 700; font-size: 1.3rem; margin: 1.8rem 0 0.6rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
@@ -443,6 +511,8 @@ export default function BlogDetailPage() {
         .blog-content h4 { font-family: monospace; font-weight: 600; font-size: 1rem; margin: 1.2rem 0 0.4rem; }
         .blog-content p { margin: 0.8rem 0; font-size: 0.95rem; }
         .blog-content ul, .blog-content ol { margin: 0.6rem 0; padding-left: 1.5rem; }
+        .blog-content ul { list-style-type: disc; }
+        .blog-content ol { list-style-type: decimal; }
         .blog-content li { margin: 0.3rem 0; font-size: 0.95rem; }
         .blog-content a { color: var(--fg); text-decoration: underline; text-underline-offset: 2px; }
         .blog-content a:hover { opacity: 0.7; }
@@ -456,9 +526,6 @@ export default function BlogDetailPage() {
         .blog-content code {
           font-family: monospace;
           font-size: 0.85rem;
-          background: var(--border);
-          padding: 0.15rem 0.4rem;
-          border-radius: 2px;
         }
         .blog-content pre {
           margin: 0;
@@ -472,6 +539,8 @@ export default function BlogDetailPage() {
           border-collapse: collapse;
           margin: 1rem 0;
           font-size: 0.9rem;
+          display: block;
+          overflow-x: auto;
         }
         .blog-content th, .blog-content td {
           border: 1px solid var(--border);
@@ -512,7 +581,7 @@ export default function BlogDetailPage() {
           border-radius: 4px;
           color: var(--muted);
           cursor: pointer;
-          z-index: 20;
+          z-index: 9999;
           animation: fadeIn 0.2s ease;
         }
         @keyframes fadeIn {

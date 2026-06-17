@@ -181,6 +181,8 @@ const builtinTools = [
 
 const searchPages = [
   { key: 'idiom-game', label_zh: '成语闯关', label_en: 'Idiom Game', description_zh: '猜成语小游戏', path: '/game/idiom' },
+  { key: 'takuzu-game', label_zh: 'XXOO', label_en: 'Takuzu', description_zh: 'XXOO逻辑棋游戏', path: '/game/takuzu' },
+  { key: 'guess-number-game', label_zh: '猜数字', label_en: 'Guess Number', description_zh: '猜数字xAyB游戏', path: '/game/guess-number' },
 ]
 
 function SearchModal({ onClose }) {
@@ -261,8 +263,8 @@ function SearchModal({ onClose }) {
       onClick={onClose}
     >
       <div 
-        className="w-[calc(100%-16px)] max-w-2xl mx-2 md:mx-4 rounded-lg shadow-2xl border overflow-hidden"
-        style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg)', maxHeight: '80vh', maxWidth: 'calc(100vw - 32px)' }}
+        className="w-full max-w-[calc(100vw-2rem)] md:max-w-lg lg:max-w-2xl mx-4 rounded-lg shadow-2xl border overflow-hidden"
+        style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg)', maxHeight: '80vh', overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}
       >
         {/* 搜索输入框 */}
@@ -281,7 +283,7 @@ function SearchModal({ onClose }) {
               setSearch(e.target.value)
             }}
             placeholder="搜索博客、项目、工具、游戏..."
-            className="flex-1 bg-transparent outline-none font-mono text-sm placeholder:text-[color:var(--muted)]"
+            className="flex-1 min-w-0 bg-transparent outline-none font-mono text-sm placeholder:text-[color:var(--muted)]"
             style={{ color: 'var(--fg)' }}
             autoFocus
           />

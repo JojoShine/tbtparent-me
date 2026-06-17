@@ -74,11 +74,10 @@ export default function ProjectDetailPage() {
 
   useEffect(() => {
     if (!id) return
-    fetch('/api/projects')
+    fetch(`/api/projects?id=${id}`)
       .then(r => r.json())
       .then(data => {
-        const found = Array.isArray(data) ? data.find(p => String(p.id) === String(id)) : null
-        setProject(found)
+        setProject(data || null)
         setLoading(false)
       })
       .catch(e => {

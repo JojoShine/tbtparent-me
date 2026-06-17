@@ -11,7 +11,7 @@ export async function GET() {
     ])
     return NextResponse.json({
       todayCount: todayVisit?.count || 0,
-      todayPosition: todayVisit?.count || 0,
+      todayPosition: 0,
       total: totalResult._sum.count || 0,
     })
   } catch (error) {
@@ -20,89 +20,80 @@ export async function GET() {
   }
 }
 
-// POST - 记录一次访问，返回今日第几位（基于浏览器唯一标识）
+// POST - 记录访问，基于浏览器指纹分配今日次序（事务保证并发安全）
 export async function POST(request) {
   try {
     const today = new Date().toISOString().split('T')[0]
     
-    // 从请求头或 body 中获取 visitorId
     let visitorId = ''
     try {
       const body = await request.json()
       visitorId = body.visitorId || ''
-    } catch (e) {
-      // 如果没有 body，尝试从 headers 获取
-    }
+    } catch (e) {}
     
     if (!visitorId) {
-      return NextResponse.json({ 
-        error: 'visitorId required',
-        todayCount: 0, 
-        todayPosition: 0, 
-        total: 0 
-      }, { status: 400 })
+      return NextResponse.json({ error: 'visitorId required' }, { status: 400 })
     }
 
-    // 查找或创建访客记录
-    let visitor = await prisma.visitor.findUnique({
-      where: { visitorId }
-    })
+    // 事务：原子性地检查 + 分配次序，防止并发竞争
+    const result = await prisma.$transaction(async (tx) => {
+      const visitor = await tx.visitor.findUnique({ where: { visitor_id: visitorId } })
 
-    let isNewVisitorToday = false
-
-    if (!visitor) {
-      // 新访客
-      visitor = await prisma.visitor.create({
-        data: {
-          visitorId,
-          visitDates: [today]
+      // 今天已访问过 → 直接返回之前分配的次序
+      if (visitor && visitor.last_visit_date === today) {
+        const todayVisit = await tx.siteVisit.findUnique({ where: { date: today } })
+        const totalResult = await tx.siteVisit.aggregate({ _sum: { count: true } })
+        return {
+          todayCount: todayVisit?.count || 0,
+          todayPosition: visitor.position || 0,
+          total: totalResult._sum.count || 0,
+          isNewVisitor: false,
         }
-      })
-      isNewVisitorToday = true
-    } else {
-      // 检查今天是否已经访问过
-      if (!visitor.visitDates.includes(today)) {
-        // 今天首次访问
-        await prisma.visitor.update({
-          where: { visitorId },
-          data: {
-            visitDates: [...visitor.visitDates, today]
-          }
-        })
-        isNewVisitorToday = true
       }
-    }
 
-    // 如果是今天的新访客，增加计数
-    let updatedVisit
-    if (isNewVisitorToday) {
-      updatedVisit = await prisma.siteVisit.upsert({
+      // 今日首次访问 → 原子递增计数并分配新次序
+      const updatedVisit = await tx.siteVisit.upsert({
         where: { date: today },
         update: { count: { increment: 1 } },
         create: { date: today, count: 1 },
       })
-    } else {
-      // 不是新访客，只获取当前计数
-      updatedVisit = await prisma.siteVisit.findUnique({
-        where: { date: today }
-      })
-      if (!updatedVisit) {
-        updatedVisit = await prisma.siteVisit.create({
-          data: { date: today, count: 0 }
+      const myPosition = updatedVisit.count
+
+      if (!visitor) {
+        // 全新访客
+        await tx.visitor.create({
+          data: {
+            visitor_id: visitorId,
+            visit_dates: [today],
+            first_visit_date: today,
+            last_visit_date: today,
+            total_visits: 1,
+            position: myPosition,
+          }
+        })
+      } else {
+        // 老访客，更新访问信息
+        await tx.visitor.update({
+          where: { visitor_id: visitorId },
+          data: {
+            visit_dates: [...visitor.visit_dates, today],
+            last_visit_date: today,
+            total_visits: (visitor.total_visits || visitor.visit_dates.length) + 1,
+            position: myPosition,
+          }
         })
       }
-    }
 
-    const totalResult = await prisma.siteVisit.aggregate({
-      _sum: { count: true }
+      const totalResult = await tx.siteVisit.aggregate({ _sum: { count: true } })
+      return {
+        todayCount: myPosition,
+        todayPosition: myPosition,
+        total: totalResult._sum.count || 0,
+        isNewVisitor: true,
+      }
     })
 
-    return NextResponse.json({
-      todayCount: updatedVisit.count,    // 今日总访客数
-      todayPosition: updatedVisit.count, // 当前是今日第几位
-      total: totalResult._sum.count || 0,
-      isNewVisitor: isNewVisitorToday,
-    })
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Failed to record visit:', error)
     return NextResponse.json({ todayCount: 0, todayPosition: 0, total: 0 })

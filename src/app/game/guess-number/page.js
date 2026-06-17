@@ -135,8 +135,8 @@ export default function GuessNumberPage() {
 
   return (
     <div
-      className="max-w-3xl pb-8 md:pb-12"
-      style={{ margin: '0 auto', minHeight: '100vh', padding: '0 16px' }}
+      className="max-w-3xl"
+      style={{ margin: '0 auto', minHeight: '100vh', padding: '0 16px 32px' }}
     >
       {/* 头部 */}
       <div style={{ marginBottom: '24px' }}>

@@ -213,9 +213,9 @@ export default function ToolsPage() {
         </motion.main>
       </div>
 
-      {/* 外部链接工具 - 固定在底部 */}
+      {/* 外部链接工具 - 固定在底部（移动端隐藏） */}
       {externalTools.filter(tool => tool.available).length > 0 && (
-        <motion.section variants={fadeUp} style={{ marginTop: '48px', paddingTop: '32px', borderTop: '2px solid var(--border)' }}>
+        <motion.section className="external-tools-section" variants={fadeUp} style={{ marginTop: '48px', paddingTop: '32px', borderTop: '2px solid var(--border)' }}>
           <h2 className="text-xl font-mono font-bold" style={{ color: 'var(--fg)', marginBottom: '16px' }}>
             {lang === 'zh' ? '外部工具' : 'External Tools'}
           </h2>
@@ -257,8 +257,27 @@ export default function ToolsPage() {
           opacity: 0.85;
         }
         @media (max-width: 768px) {
+          .external-tools-section {
+            display: none !important;
+          }
           .external-tools-grid {
             grid-template-columns: 1fr !important;
+          }
+          
+          /* 移动端防止输入框擑开页面 */
+          .tools-main-content {
+            width: 100% !important;
+            overflow-x: hidden !important;
+          }
+          .tools-main-content input,
+          .tools-main-content select,
+          .tools-main-content textarea {
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+          .tools-main-content div[style*="display: flex"] {
+            flex-wrap: wrap !important;
           }
           
           /* 移动端改为垂直布局：菜单在上，工具在下 */

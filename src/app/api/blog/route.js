@@ -49,7 +49,22 @@ export async function GET(request) {
       orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: { images: true },
+      select: {
+        id: true,
+        title_zh: true,
+        title_en: true,
+        slug: true,
+        excerpt_zh: true,
+        excerpt_en: true,
+        tags_zh: true,
+        tags_en: true,
+        cover_image: true,
+        published_at: true,
+        status: true,
+        pinned: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     })
     return Response.json({ blogs, total, page, pageSize, allTags })
   } catch (error) {

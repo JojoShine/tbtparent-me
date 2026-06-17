@@ -22,6 +22,12 @@
   /* 游戏锁定格子：深灰底白字 */
   --cell-locked-bg: rgba(128, 128, 128, 0.6);
   --cell-locked-fg: rgba(255, 255, 255, 0.9);
+  
+  /* 俄罗斯方块格子 — 黑色方块 */
+  --cell-fill: rgba(0, 0, 0, 0.75);
+  --cell-border: rgba(0, 0, 0, 0.55);
+  --cell-grid: rgba(0, 0, 0, 0.15);
+  --cell-empty-bg: rgba(0, 0, 0, 0.03);
 }
 
 .dark {
@@ -39,6 +45,12 @@
   /* 游戏锁定格子：浅灰底深灰字 */
   --cell-locked-bg: rgba(40, 40, 40, 0.7);
   --cell-locked-fg: rgba(255, 255, 255, 0.9);
+  
+  /* 俄罗斯方块格子 — 白色方块 */
+  --cell-fill: rgba(255, 255, 255, 0.7);
+  --cell-border: rgba(255, 255, 255, 0.45);
+  --cell-grid: rgba(255, 255, 255, 0.12);
+  --cell-empty-bg: rgba(255, 255, 255, 0.03);
 }
 
 /* 强制确保主题切换时颜色正确应用 */
