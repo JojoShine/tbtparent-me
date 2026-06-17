@@ -59,7 +59,7 @@ export const inputStyle = {
   backgroundColor: 'var(--bg)',
   color: 'var(--fg)',
   fontFamily: 'monospace',
-  fontSize: '0.85rem',
+  fontSize: '16px',
   outline: 'none',
 }
 
@@ -77,7 +77,7 @@ export const buttonStyle = {
   fontFamily: 'monospace',
   fontWeight: 600,
   cursor: 'pointer',
-  fontSize: '0.85rem',
+  fontSize: '16px',
   width: 'fit-content',
 }
 

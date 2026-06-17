@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
-import { ArrowLeft, RotateCcw, CheckCircle } from 'lucide-react'
+import { ArrowLeft, RotateCcw, CheckCircle, Undo2, FlaskConical } from 'lucide-react'
 
 const LEVELS = [
   { size: 4, name_zh: '4\u00d74', name_en: '4\u00d74' },
   { size: 6, name_zh: '6\u00d76', name_en: '6\u00d76' },
   { size: 8, name_zh: '8\u00d78', name_en: '8\u00d78' },
-  { size: 10, name_zh: '10\u00d710', name_en: '10\u00d710' },
+  { size: 10, name_zh: '10\u00d710', name_en: '10\u00d710', desktop: true },
   { size: 12, name_zh: '12\u00d712', name_en: '12\u00d712', desktop: true },
   { size: 14, name_zh: '14\u00d714', name_en: '14\u00d714', desktop: true },
 ]
@@ -155,6 +155,9 @@ export default function TakuzuGamePage() {
   const [timer, setTimer] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [trialMode, setTrialMode] = useState(false)
+  const [trialMoves, setTrialMoves] = useState([]) // [{r, c, value}]
+  const [sealedCells, setSealedCells] = useState(new Set()) // "r,c" keys
   const gridSize = LEVELS[level].size
 
   // 检测移动端
@@ -191,27 +194,97 @@ export default function TakuzuGamePage() {
     setErrorMessages([])
     setTimer(0)
     setIsRunning(true)
+    setTrialMode(false)
+    setTrialMoves([])
+    setSealedCells(new Set())
   }, [level])
 
-  // 点击格子（锁定格子不可点击，错误格子可修改）
+  // 点击格子（锁定格子不可点击）
   const handleCellClick = (r, c) => {
     if (!board || gameStatus === 'won') return
     if (board[r][c].locked) return
+    // 试算模式下封存格子不可修改
+    if (trialMode && sealedCells.has(`${r},${c}`)) return
+    
+    const key = `${r},${c}`
+    const currentVal = board[r][c].value
+    const newVal = currentVal === '' ? 'X' : currentVal === 'X' ? 'O' : ''
     
     setBoard(prev => {
       const next = prev.map(row => row.map(cell => ({ ...cell })))
-      const current = next[r][c].value
-      next[r][c].value = current === '' ? 'X' : current === 'X' ? 'O' : ''
+      next[r][c].value = newVal
       return next
     })
+    
+    // 试算模式下记录操作（每次点击都压栈）
+    if (trialMode) {
+      setTrialMoves(prev => [...prev, { r, c, value: newVal }])
+    }
     
     // 清除该格子的错误标记
     setErrors(prev => {
       const next = new Set(prev)
-      next.delete(`${r},${c}`)
+      next.delete(key)
       return next
     })
     setErrorMessages([])
+  }
+
+  // 进入试算模式
+  const enterTrialMode = () => {
+    if (!board) return
+    const sealed = new Set()
+    for (let r = 0; r < board.length; r++)
+      for (let c = 0; c < board.length; c++)
+        if (!board[r][c].locked && board[r][c].value !== '')
+          sealed.add(`${r},${c}`)
+    setSealedCells(sealed)
+    setTrialMoves([])
+    setTrialMode(true)
+  }
+
+  // 退出试算模式
+  const exitTrialMode = (keep) => {
+    if (!keep) {
+      // 回退所有试算操作：非封存格子恢复到进入试算时的状态（空）
+      setBoard(prev => {
+        const next = prev.map(row => row.map(cell => ({ ...cell })))
+        const affected = new Set(trialMoves.map(m => `${m.r},${m.c}`))
+        for (const key of affected) {
+          if (!sealedCells.has(key)) {
+            const [r, c] = key.split(',').map(Number)
+            next[r][c].value = ''
+          }
+        }
+        return next
+      })
+    }
+    setTrialMode(false)
+    setTrialMoves([])
+    setSealedCells(new Set())
+  }
+
+  // 回退一步
+  const undoTrial = () => {
+    if (trialMoves.length === 0) return
+    const last = trialMoves[trialMoves.length - 1]
+    const newMoves = trialMoves.slice(0, -1)
+    
+    // 从剩余moves中找该格子最后一次操作的值
+    let restoreVal = ''
+    for (let i = newMoves.length - 1; i >= 0; i--) {
+      if (newMoves[i].r === last.r && newMoves[i].c === last.c) {
+        restoreVal = newMoves[i].value
+        break
+      }
+    }
+    
+    setBoard(prev => {
+      const next = prev.map(row => row.map(cell => ({ ...cell })))
+      next[last.r][last.c].value = restoreVal
+      return next
+    })
+    setTrialMoves(newMoves)
   }
 
   // 检查当前答案
@@ -443,6 +516,9 @@ export default function TakuzuGamePage() {
     setGameStatus('playing')
     setTimer(0)
     setIsRunning(true)
+    setTrialMode(false)
+    setTrialMoves([])
+    setSealedCells(new Set())
   }
 
   // 格式化时间
@@ -456,13 +532,16 @@ export default function TakuzuGamePage() {
   const getCellStyle = (r, c) => {
     if (!board) return {}
     const cell = board[r][c]
-    const isError = errors.has(`${r},${c}`)
+    const key = `${r},${c}`
+    const isError = errors.has(key)
     const isWon = gameStatus === 'won'
+    const isSealed = sealedCells.has(key)
+    const isTrial = trialMode && !cell.locked && !isSealed && cell.value !== ''
     
     return {
       width: '100%',
       aspectRatio: '1',
-      border: '1px solid var(--border)',
+      border: isSealed ? '1px solid var(--border)' : '1px solid var(--border)',
       borderRadius: '2px',
       display: 'flex',
       alignItems: 'center',
@@ -472,22 +551,43 @@ export default function TakuzuGamePage() {
       fontFamily: 'monospace',
       cursor: (cell.locked && !isError) ? 'default' : 'pointer',
       userSelect: 'none',
+      position: 'relative',
       backgroundColor: isError 
         ? 'rgba(239, 68, 68, 0.15)' 
         : isWon 
           ? cell.value === 'X' ? 'var(--fg)' : 'var(--fg)'
           : cell.locked 
             ? 'var(--cell-locked-bg)' 
-            : 'transparent',
+            : isSealed
+              ? 'var(--cell-sealed-bg)'
+              : 'transparent',
       color: isWon
         ? cell.value === 'X' ? 'var(--bg)' : 'var(--bg)'
         : isError
           ? '#ef4444'
           : cell.locked
             ? 'var(--cell-locked-fg)'
-            : 'var(--fg)',
+            : isSealed
+              ? 'var(--cell-sealed-fg)'
+              : 'var(--fg)',
+      opacity: isSealed ? 0.85 : 1,
       transition: 'none',
     }
+  }
+
+  // 获取试算角标（显示该格子最近一次操作的序号）
+  const getTrialOrder = (r, c) => {
+    if (!trialMode) return null
+    const key = `${r},${c}`
+    if (sealedCells.has(key)) return null
+    // 从后往前找该格子最近一次操作
+    for (let i = trialMoves.length - 1; i >= 0; i--) {
+      if (trialMoves[i].r === r && trialMoves[i].c === c) {
+        if (trialMoves[i].value === '') return null
+        return i + 1
+      }
+    }
+    return null
   }
 
   return (
@@ -571,15 +671,30 @@ export default function TakuzuGamePage() {
             margin: '0 auto 20px auto',
           }}>
             {board.map((row, r) =>
-              row.map((cell, c) => (
-                <div
-                  key={`${r}-${c}`}
-                  onClick={() => handleCellClick(r, c)}
-                  style={getCellStyle(r, c)}
-                >
-                  {cell.locked ? cell.value : cell.value || ''}
-                </div>
-              ))
+              row.map((cell, c) => {
+                const order = getTrialOrder(r, c)
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    onClick={() => handleCellClick(r, c)}
+                    style={getCellStyle(r, c)}
+                  >
+                    {cell.locked ? cell.value : cell.value || ''}
+                    {order !== null && (
+                      <span style={{
+                        position: 'absolute',
+                        top: '1px',
+                        right: '2px',
+                        fontSize: '9px',
+                        fontWeight: 600,
+                        color: 'var(--muted)',
+                        lineHeight: 1,
+                        fontFamily: 'monospace',
+                      }}>{order}</span>
+                    )}
+                  </div>
+                )
+              })
             )}
           </div>
 
@@ -620,7 +735,7 @@ export default function TakuzuGamePage() {
       )}
 
       {/* 操作按钮 */}
-      <div style={{ display: 'flex', gap: '12px', marginTop: '20px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', gap: '12px', marginTop: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
         <button
           onClick={resetBoard}
           className="inline-flex items-center gap-2 font-mono text-sm"
@@ -669,7 +784,92 @@ export default function TakuzuGamePage() {
         >
           {lang === 'zh' ? '新题' : 'New'}
         </button>
+
+        {/* 试算模式按钮 */}
+        {!trialMode && gameStatus !== 'won' && gridSize >= 10 && (
+          <button
+            onClick={enterTrialMode}
+            className="inline-flex items-center gap-2 font-mono text-sm"
+            style={{
+              padding: '8px 16px',
+              border: '1px solid var(--border)',
+              borderRadius: '3px',
+              backgroundColor: 'transparent',
+              color: 'var(--muted)',
+              cursor: 'pointer',
+            }}
+          >
+            <FlaskConical className="w-4 h-4" />
+            {lang === 'zh' ? '试算' : 'Trial'}
+          </button>
+        )}
+
+        {trialMode && (
+          <>
+            <button
+              onClick={undoTrial}
+              disabled={trialMoves.length === 0}
+              className="inline-flex items-center gap-2 font-mono text-sm"
+              style={{
+                padding: '8px 16px',
+                border: '1px solid var(--border)',
+                borderRadius: '3px',
+                backgroundColor: 'transparent',
+                color: trialMoves.length === 0 ? 'var(--border)' : 'var(--muted)',
+                cursor: trialMoves.length === 0 ? 'default' : 'pointer',
+              }}
+            >
+              <Undo2 className="w-4 h-4" />
+              {lang === 'zh' ? `回退 (${trialMoves.length})` : `Undo (${trialMoves.length})`}
+            </button>
+
+            <button
+              onClick={() => exitTrialMode(true)}
+              className="inline-flex items-center gap-2 font-mono text-sm"
+              style={{
+                padding: '8px 16px',
+                border: '1px solid var(--fg)',
+                borderRadius: '3px',
+                backgroundColor: 'var(--fg)',
+                color: 'var(--bg)',
+                cursor: 'pointer',
+              }}
+            >
+              {lang === 'zh' ? '确认试算' : 'Keep'}
+            </button>
+
+            <button
+              onClick={() => exitTrialMode(false)}
+              className="inline-flex items-center gap-2 font-mono text-sm"
+              style={{
+                padding: '8px 16px',
+                border: '1px solid var(--border)',
+                borderRadius: '3px',
+                backgroundColor: 'transparent',
+                color: 'var(--muted)',
+                cursor: 'pointer',
+              }}
+            >
+              {lang === 'zh' ? '放弃试算' : 'Discard'}
+            </button>
+          </>
+        )}
       </div>
+
+      {/* 试算模式提示 */}
+      {trialMode && (
+        <div className="font-mono text-xs" style={{
+          color: 'var(--muted)',
+          padding: '8px 12px',
+          border: '1px dashed var(--border)',
+          borderRadius: '4px',
+          marginBottom: '20px',
+        }}>
+          {lang === 'zh'
+            ? '试算模式: 已填入的格子已封存(半透明)，新填入的显示角标序号，可随时回退'
+            : 'Trial mode: Filled cells are sealed (dimmed). New entries show order number. Undo anytime.'}
+        </div>
+      )}
 
       <style jsx>{`
         .social-link:hover .social-link-underline {

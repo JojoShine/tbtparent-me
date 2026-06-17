@@ -283,7 +283,7 @@ function SearchModal({ onClose }) {
               setSearch(e.target.value)
             }}
             placeholder="搜索博客、项目、工具、游戏..."
-            className="flex-1 min-w-0 bg-transparent outline-none font-mono text-sm placeholder:text-[color:var(--muted)]"
+            className="flex-1 min-w-0 bg-transparent outline-none font-mono text-base placeholder:text-[color:var(--muted)]"
             style={{ color: 'var(--fg)' }}
             autoFocus
           />

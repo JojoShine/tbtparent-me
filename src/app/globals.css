@@ -22,6 +22,8 @@
   /* 游戏锁定格子：深灰底白字 */
   --cell-locked-bg: rgba(128, 128, 128, 0.6);
   --cell-locked-fg: rgba(255, 255, 255, 0.9);
+  --cell-sealed-bg: rgba(180, 140, 80, 0.25);
+  --cell-sealed-fg: var(--fg);
   
   /* 俄罗斯方块格子 — 黑色方块 */
   --cell-fill: rgba(0, 0, 0, 0.75);
@@ -45,6 +47,8 @@
   /* 游戏锁定格子：浅灰底深灰字 */
   --cell-locked-bg: rgba(40, 40, 40, 0.7);
   --cell-locked-fg: rgba(255, 255, 255, 0.9);
+  --cell-sealed-bg: rgba(200, 170, 100, 0.2);
+  --cell-sealed-fg: var(--fg);
   
   /* 俄罗斯方块格子 — 白色方块 */
   --cell-fill: rgba(255, 255, 255, 0.7);
@@ -90,6 +94,13 @@ textarea::placeholder,
 select::placeholder {
   color: var(--muted);
   opacity: 0.7;
+}
+
+/* 移动端/平板输入框至少 16px，防止 iOS Safari 自动缩放 */
+@media (max-width: 1023px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* View Transitions API - 主题切换动画 */
