@@ -439,49 +439,52 @@ export default function TakuzuGamePage() {
       }
     }
     if (rules.has(2)) {
-      // 找出哪些行或列有连续3个
-      const problemRows = []
-      const problemCols = []
+      // 找出哪些行或列有连续3个，并记录具体位置
+      const rowIssues = [] // {row, cols, value}
+      const colIssues = [] // {col, rows, value}
       for (let i = 0; i < n; i++) {
         for (let j = 0; j < n - 2; j++) {
           if (board[i][j].value && board[i][j].value === board[i][j + 1].value && board[i][j].value === board[i][j + 2].value) {
-            if (!problemRows.includes(i + 1)) problemRows.push(i + 1)
+            rowIssues.push({ row: i + 1, cols: [j + 1, j + 2, j + 3], value: board[i][j].value })
             break
           }
         }
         for (let j = 0; j < n - 2; j++) {
           if (board[j][i].value && board[j][i].value === board[j + 1][i].value && board[j][i].value === board[j + 2][i].value) {
-            if (!problemCols.includes(i + 1)) problemCols.push(i + 1)
+            colIssues.push({ col: i + 1, rows: [j + 1, j + 2, j + 3], value: board[j][i].value })
             break
           }
         }
       }
       
-      if (problemRows.length > 0 && problemCols.length > 0) {
-        msgs.push(zh 
-          ? `② 第 ${problemRows.join(', ')} 行和第 ${problemCols.join(', ')} 列存在3个连续相同的 X 或 O`
-          : `② Rows ${problemRows.join(', ')} and columns ${problemCols.join(', ')} have 3 consecutive X or O`)
-      } else if (problemRows.length > 0) {
-        msgs.push(zh 
-          ? `② 第 ${problemRows.join(', ')} 行存在3个连续相同的 X 或 O`
-          : `② Rows ${problemRows.join(', ')} have 3 consecutive X or O`)
-      } else if (problemCols.length > 0) {
-        msgs.push(zh 
-          ? `② 第 ${problemCols.join(', ')} 列存在3个连续相同的 X 或 O`
-          : `② Columns ${problemCols.join(', ')} have 3 consecutive X or O`)
+      const rowDescs = rowIssues.map(r => zh
+        ? `第${r.row}行第${r.cols.join('-')}列连续3个${r.value}`
+        : `Row ${r.row}, cols ${r.cols.join('-')}: 3 consecutive ${r.value}`)
+      const colDescs = colIssues.map(c => zh
+        ? `第${c.col}列第${c.rows.join('-')}行连续3个${c.value}`
+        : `Col ${c.col}, rows ${c.rows.join('-')}: 3 consecutive ${c.value}`)
+      
+      const allDescs = [...rowDescs, ...colDescs]
+      if (allDescs.length > 0) {
+        msgs.push(`② ${allDescs.join(zh ? '；' : '; ')}`)
       }
     }
     if (rules.has(3)) {
-      // 找出哪些行或列重复
+      // 找出哪些行或列重复，并配对显示
       const rowStrs = board.map(r => r.map(c => c.value).join(''))
-      const duplicateRows = new Set()
-      const duplicateCols = new Set()
+      const rowPairs = []
+      const colPairs = []
+      const addedRows = new Set()
+      const addedCols = new Set()
       
       for (let i = 0; i < n; i++) {
         for (let j = i + 1; j < n; j++) {
           if (rowStrs[i] === rowStrs[j]) {
-            duplicateRows.add(i + 1)
-            duplicateRows.add(j + 1)
+            const key = `${i}-${j}`
+            if (!addedRows.has(key)) {
+              rowPairs.push([i + 1, j + 1])
+              addedRows.add(key)
+            }
           }
         }
       }
@@ -491,27 +494,30 @@ export default function TakuzuGamePage() {
         for (let c2 = c + 1; c2 < n; c2++) {
           const col2 = board.map(r => r[c2].value).join('')
           if (col === col2) {
-            duplicateCols.add(c + 1)
-            duplicateCols.add(c2 + 1)
+            const key = `${c}-${c2}`
+            if (!addedCols.has(key)) {
+              colPairs.push([c + 1, c2 + 1])
+              addedCols.add(key)
+            }
           }
         }
       }
       
-      const dupRows = Array.from(duplicateRows).sort((a, b) => a - b)
-      const dupCols = Array.from(duplicateCols).sort((a, b) => a - b)
+      const rowDescs = rowPairs.map(([a, b]) => zh ? `第${a}行和第${b}行` : `Row ${a} & ${b}`)
+      const colDescs = colPairs.map(([a, b]) => zh ? `第${a}列和第${b}列` : `Col ${a} & ${b}`)
       
-      if (dupRows.length > 0 && dupCols.length > 0) {
+      if (rowDescs.length > 0 && colDescs.length > 0) {
         msgs.push(zh 
-          ? `③ 第 ${dupRows.join(', ')} 行和第 ${dupCols.join(', ')} 列的排列重复`
-          : `③ Rows ${dupRows.join(', ')} and columns ${dupCols.join(', ')} are duplicated`)
-      } else if (dupRows.length > 0) {
+          ? `③ 排列重复：${rowDescs.join('、')}；${colDescs.join('、')}`
+          : `③ Duplicates: ${rowDescs.join(', ')}; ${colDescs.join(', ')}`)
+      } else if (rowDescs.length > 0) {
         msgs.push(zh 
-          ? `③ 第 ${dupRows.join(', ')} 行的排列重复`
-          : `③ Rows ${dupRows.join(', ')} are duplicated`)
-      } else if (dupCols.length > 0) {
+          ? `③ 排列重复：${rowDescs.join('、')}`
+          : `③ Duplicates: ${rowDescs.join(', ')}`)
+      } else if (colDescs.length > 0) {
         msgs.push(zh 
-          ? `③ 第 ${dupCols.join(', ')} 列的排列重复`
-          : `③ Columns ${dupCols.join(', ')} are duplicated`)
+          ? `③ 排列重复：${colDescs.join('、')}`
+          : `③ Duplicates: ${colDescs.join(', ')}`)
       }
     }
 
