@@ -29,7 +29,7 @@ export default function IdiomGamePage() {
   const [usedIdioms, setUsedIdioms] = useState({}) // 记录每关已使用的成语
   const [isComposing, setIsComposing] = useState(false) // 跟踪输入法状态
   const [dailyLimit, setDailyLimit] = useState({ date: '', count: 0 }) // 每日限制
-  const DAILY_MAX = 10
+  const DAILY_MAX = 3
   const [countdown, setCountdown] = useState('')
   const [devModeClicks, setDevModeClicks] = useState(0) // 开发者模式点击计数
   const [isDevMode, setIsDevMode] = useState(false) // 开发者模式状态
@@ -509,7 +509,30 @@ export default function IdiomGamePage() {
         
         <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginTop: '8px' }}>
           {isDevMode 
-            ? (lang === 'zh' ? '∞ 无限模式' : '∞ Unlimited')
+            ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+                <span>{lang === 'zh' ? '∞ 无限模式' : '∞ Unlimited'}</span>
+                <button
+                  onClick={() => {
+                    setIsDevMode(false)
+                    localStorage.removeItem('idiom-dev-mode')
+                    setDevModeClicks(0)
+                  }}
+                  style={{
+                    background: 'none',
+                    border: '1px solid var(--border)',
+                    color: 'var(--muted)',
+                    fontFamily: 'monospace',
+                    fontSize: '0.7rem',
+                    padding: '2px 8px',
+                    cursor: 'pointer',
+                    borderRadius: '2px',
+                  }}
+                >
+                  {lang === 'zh' ? '退出' : 'Exit'}
+                </button>
+              </span>
+            )
             : `${dailyLimit.count >= DAILY_MAX ? DAILY_MAX : dailyLimit.count + 1} / ${DAILY_MAX}`
           }
         </div>

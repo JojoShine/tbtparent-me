@@ -19,14 +19,14 @@ export async function GET(request) {
     if (novelId) {
       const chapters = await prisma.novelChapter.findMany({
         where: { novelId: parseInt(novelId) },
-        orderBy: [{ sortOrder: 'asc' }, { published_at: 'desc' }],
+        orderBy: { chapter_number: 'asc' },
       })
       return Response.json(chapters)
     }
     
     // 如果没有参数，返回所有章节
     const allChapters = await prisma.novelChapter.findMany({
-      orderBy: [{ sortOrder: 'asc' }, { published_at: 'desc' }],
+      orderBy: { chapter_number: 'asc' },
     })
     return Response.json(allChapters)
   } catch (error) {

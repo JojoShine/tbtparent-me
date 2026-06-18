@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Smartphone, Monitor, Tv, QrCode } from 'lucide-react'
 import QRCode from 'qrcode'
@@ -58,6 +58,8 @@ export default function ProjectDetailPage() {
   const { id } = useParams()
   const { lang } = useLang()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const fromHome = searchParams.get('from') === 'home'
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showQr, setShowQr] = useState(false)
@@ -149,7 +151,7 @@ export default function ProjectDetailPage() {
     >
       {/* 返回按钮 */}
       <button
-        onClick={() => router.push('/projects')}
+        onClick={() => router.push(fromHome ? '/' : '/projects')}
         className="font-mono"
         style={{
           display: 'inline-flex',
@@ -168,7 +170,7 @@ export default function ProjectDetailPage() {
         onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
       >
         <ArrowLeftIcon />
-        {lang === 'zh' ? '返回项目' : 'Back'}
+        {fromHome ? (lang === 'zh' ? '返回首页' : 'Back') : (lang === 'zh' ? '返回项目' : 'Back')}
       </button>
 
       {/* 标题 */}

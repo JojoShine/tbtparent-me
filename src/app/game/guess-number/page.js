@@ -67,6 +67,8 @@ export default function GuessNumberPage() {
   const [gameStatus, setGameStatus] = useState('playing') // playing, won
   const [timer, setTimer] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
+  const [dailyLimit, setDailyLimit] = useState({ date: '', counts: {} }) // 每日限制
+  const DAILY_MAX = 1
   const digits = LEVELS[level].digits
 
   // 计时器
@@ -78,13 +80,29 @@ export default function GuessNumberPage() {
 
   // 初始化游戏
   useEffect(() => {
+    // 加载每日限制
+    try {
+      const raw = localStorage.getItem('guess-number-daily')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        const today = new Date().toISOString().split('T')[0]
+        if (parsed.date === today) {
+          setDailyLimit(parsed)
+        }
+      }
+    } catch (e) {}
     startNewGame(0)
   }, [])
 
   // 开始新游戏
   const startNewGame = (lvl) => {
     const targetLevel = lvl !== undefined ? lvl : level
-    const newSecret = generateSecretNumber(LEVELS[targetLevel].digits)
+    const d = LEVELS[targetLevel].digits
+    const today = new Date().toISOString().split('T')[0]
+    const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+    const usedToday = counts[d] || 0
+    if (usedToday >= DAILY_MAX) return
+    const newSecret = generateSecretNumber(d)
     setLevel(targetLevel)
     setSecretNumber(newSecret)
     setUserInput('')
@@ -121,6 +139,15 @@ export default function GuessNumberPage() {
     if (feedback === `${digits}A0B`) {
       setGameStatus('won')
       setIsRunning(false)
+      // 增加每日计数
+      const today = new Date().toISOString().split('T')[0]
+      setDailyLimit(prev => {
+        const counts = prev.date === today ? { ...prev.counts } : {}
+        counts[digits] = (counts[digits] || 0) + 1
+        const updated = { date: today, counts }
+        localStorage.setItem('guess-number-daily', JSON.stringify(updated))
+        return updated
+      })
     }
 
     setUserInput('')
@@ -157,6 +184,14 @@ export default function GuessNumberPage() {
           {gameStatus === 'won'
             ? (lang === 'zh' ? `恭喜！用时 ${formatTime(timer)}` : `Done in ${formatTime(timer)}`)
             : (lang === 'zh' ? '猜出系统生成的无重复数字' : 'Guess the secret number')}
+        </div>
+        <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginTop: '4px' }}>
+          {(() => {
+            const today = new Date().toISOString().split('T')[0]
+            const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+            const used = counts[digits] || 0
+            return `${LEVELS[level].name_zh}: ${used}/${DAILY_MAX}`
+          })()}
         </div>
       </div>
 
@@ -245,6 +280,29 @@ export default function GuessNumberPage() {
           </div>
         </div>
       )}
+
+      {/* 每日限额提示 */}
+      {(() => {
+        const today = new Date().toISOString().split('T')[0]
+        const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+        const used = counts[digits] || 0
+        if (used >= DAILY_MAX && gameStatus !== 'won') {
+          return (
+            <div style={{
+              padding: '12px 16px',
+              border: '1px solid var(--border)',
+              borderRadius: '4px',
+              marginBottom: '16px',
+              textAlign: 'center',
+            }}>
+              <div className="font-mono text-sm" style={{ color: '#ef4444' }}>
+                {lang === 'zh' ? `${LEVELS[level].name_zh} 今日已通关 ${DAILY_MAX} 关，请明天再来或切换其他难度` : `${LEVELS[level].name_zh} daily limit reached (${DAILY_MAX}/${DAILY_MAX})`}
+              </div>
+            </div>
+          )
+        }
+        return null
+      })()}
 
       {/* 输入区域 */}
       {gameStatus === 'playing' && (
@@ -354,6 +412,9 @@ export default function GuessNumberPage() {
           </li>
           <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
             {lang === 'zh' ? `目标：猜出 ${digits}A0B（全部正确）` : `Goal: Guess until you get ${digits}A0B (all correct)`}
+          </li>
+          <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginTop: '6px', lineHeight: 1.5 }}>
+            {lang === 'zh' ? `每个难度每天可玩 ${DAILY_MAX} 局` : `${DAILY_MAX} game/size/day`}
           </li>
         </ul>
       </div>

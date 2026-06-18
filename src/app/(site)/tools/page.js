@@ -51,7 +51,6 @@ export default function ToolsPage() {
   const { lang, t } = useLang()
   const [externalTools, setExternalTools] = useState([])
   const [activeTool, setActiveTool] = useState('image-compressor') // 默认选中第一个工具
-  const [expandedCategories, setExpandedCategories] = useState(['office', 'network']) // 默认全部展开
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -60,24 +59,6 @@ export default function ToolsPage() {
       setLoaded(true) 
     }).catch(console.error)
   }, [])
-
-  const toggleCategory = (categoryKey) => {
-    setExpandedCategories(prev => 
-      prev.includes(categoryKey) 
-        ? prev.filter(k => k !== categoryKey)
-        : [...prev, categoryKey]
-    )
-  }
-
-  // 获取当前激活的工具所属的分类
-  const getActiveCategory = () => {
-    for (const cat of toolStructure) {
-      if (cat.children.some(child => child.key === activeTool)) {
-        return cat.key
-      }
-    }
-    return null
-  }
 
   return (
     <motion.div
@@ -113,36 +94,26 @@ export default function ToolsPage() {
         >
           {toolStructure.map(category => (
             <div key={category.key} style={{ marginBottom: '12px' }}>
-              {/* 分类标题 - 只有一个子分类时不显示折叠按钮 */}
+              {/* 分类标题 */}
               {toolStructure.length > 1 && (
-                <button
-                  onClick={() => toggleCategory(category.key)}
+                <div
                   style={{
                     width: '100%',
                     padding: '12px 0',
-                    backgroundColor: 'transparent',
-                    border: 'none',
                     fontFamily: 'monospace',
                     fontSize: '0.85rem',
                     fontWeight: 700,
                     color: 'var(--fg)',
-                    cursor: 'pointer',
                     textAlign: 'left',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
                   }}
                 >
-                  <span>{lang === 'zh' ? category.label : category.key}</span>
-                  <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>
-                    {expandedCategories.includes(category.key) ? '▼' : '▶'}
-                  </span>
-                </button>
+                  {lang === 'zh' ? category.label : category.key}
+                </div>
               )}
 
-              {/* 子功能列表 - 始终显示 */}
+              {/* 子功能列表 */}
               {category.children.length > 0 && (
-                <div style={{ marginTop: expandedCategories.includes(category.key) || toolStructure.length === 1 ? '4px' : '0' }}>
+                <div style={{ marginTop: '4px' }}>
                   {category.children.map(child => (
                     <button
                       key={child.key}

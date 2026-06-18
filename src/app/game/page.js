@@ -15,10 +15,13 @@ const GAMES = [
     title_en: 'Idiom Quest',
     desc_zh: '根据拼音线索猜出四字成语，最多8次机会',
     desc_en: 'Guess the 4-character idiom from pinyin clues, max 8 attempts',
-    limit_zh: '每日10题',
-    limit_en: '10/day',
+    limit_zh: '每日3题',
+    limit_en: '3/day',
     statsKey: 'idiom-game-stats',
-    maxDaily: 10,
+    dailyKey: 'idiom-game-stats-daily',
+    action_zh: '已答',
+    unit_zh: '题',
+    maxDaily: 3,
   },
   {
     id: 'takuzu',
@@ -28,10 +31,13 @@ const GAMES = [
     title_en: 'Takuzu',
     desc_zh: '填满棋盘，遵守三条规则：数量均分、无三连、无重复',
     desc_en: 'Fill the board: equal X/O, no 3-in-a-row, no duplicate lines',
-    limit_zh: '畅玩',
-    limit_en: 'Unlimited',
-    statsKey: 'takuzu-game-stats',
-    maxDaily: Infinity,
+    limit_zh: '每阵列每日3局',
+    limit_en: '3/size/day',
+    statsKey: 'takuzu-daily',
+    dailyKey: 'takuzu-daily',
+    action_zh: '已通关',
+    unit_zh: '关',
+    maxDaily: 15, // 5 sizes * 3
   },
   {
     id: 'guess-number',
@@ -41,10 +47,13 @@ const GAMES = [
     title_en: 'Guess Number',
     desc_zh: '猜出系统生成的无重复数字，反馈xAyB提示',
     desc_en: 'Guess secret number with xAyB feedback (A=position, B=digit)',
-    limit_zh: '畅玩',
-    limit_en: 'Unlimited',
-    statsKey: 'guess-number-game-stats',
-    maxDaily: Infinity,
+    limit_zh: '每阵列每日1局',
+    limit_en: '1/size/day',
+    statsKey: 'guess-number-daily',
+    dailyKey: 'guess-number-daily',
+    action_zh: '已通关',
+    unit_zh: '关',
+    maxDaily: 3, // 3 sizes * 1
   },
 ]
 
@@ -58,11 +67,17 @@ export default function GameHubPage() {
     const stats = {}
     GAMES.forEach(game => {
       try {
-        const raw = localStorage.getItem(`${game.statsKey}-daily`)
+        const raw = localStorage.getItem(game.dailyKey)
         if (raw) {
           const parsed = JSON.parse(raw)
           if (parsed.date === today) {
-            stats[game.id] = parsed
+            // 支持两种格式: { count } 或 { counts: { size: count } }
+            if (parsed.counts) {
+              const totalCount = Object.values(parsed.counts).reduce((a, b) => a + b, 0)
+              stats[game.id] = { count: totalCount }
+            } else {
+              stats[game.id] = parsed
+            }
           }
         }
       } catch (e) {}
@@ -188,8 +203,8 @@ export default function GameHubPage() {
                     <>
                       <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: countdowns[game.id] ? '8px' : '0' }}>
                         {exhausted
-                          ? (lang === 'zh' ? `今日已答 ${maxDaily} 题` : `Done today (${maxDaily}/${maxDaily})`)
-                          : (lang === 'zh' ? `今日已答 ${usedToday} / ${maxDaily} 题` : `Today: ${usedToday}/${maxDaily}`)}
+                          ? (lang === 'zh' ? `今日${game.action_zh} ${maxDaily} ${game.unit_zh}` : `Done today (${maxDaily}/${maxDaily})`)
+                          : (lang === 'zh' ? `今日${game.action_zh} ${usedToday} / ${maxDaily} ${game.unit_zh}` : `Today: ${usedToday}/${maxDaily}`)}
                       </div>
                       {countdowns[game.id] && (
                         <div className="font-mono text-lg font-bold" style={{ color: 'var(--fg)', letterSpacing: '3px' }}>

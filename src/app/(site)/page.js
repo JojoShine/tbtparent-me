@@ -222,7 +222,7 @@ export default function Home() {
           </h2>
           <div className="grid gap-4 md:gap-6">
             {projects.map(project => (
-              <ProjectCard key={project.id} project={localizeProject(project, lang)} />
+              <ProjectCard key={project.id} project={localizeProject(project, lang)} fromHome />
             ))}
           </div>
           <Link

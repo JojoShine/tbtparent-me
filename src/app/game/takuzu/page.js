@@ -157,6 +157,8 @@ export default function TakuzuGamePage() {
   const [trialMode, setTrialMode] = useState(false)
   const [trialMoves, setTrialMoves] = useState([]) // [{r, c, value}]
   const [sealedCells, setSealedCells] = useState(new Set()) // "r,c" keys
+  const [dailyLimit, setDailyLimit] = useState({ date: '', counts: {} }) // 每日限制
+  const DAILY_MAX = 3
   const gridSize = LEVELS[level].size
 
   // 检测移动端
@@ -165,6 +167,20 @@ export default function TakuzuGamePage() {
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // 加载每日限制
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('takuzu-daily')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        const today = new Date().toISOString().split('T')[0]
+        if (parsed.date === today) {
+          setDailyLimit(parsed)
+        }
+      }
+    } catch (e) {}
   }, [])
 
   // 计时器
@@ -183,6 +199,10 @@ export default function TakuzuGamePage() {
   const startNewGame = useCallback((lvl) => {
     const targetLevel = lvl !== undefined ? lvl : level
     const size = LEVELS[targetLevel].size
+    const today = new Date().toISOString().split('T')[0]
+    const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+    const usedToday = counts[size] || 0
+    if (usedToday >= DAILY_MAX) return
     const fullBoard = generateFullBoard(size)
     const puzzle = createPuzzle(fullBoard, size)
     setLevel(targetLevel)
@@ -196,7 +216,7 @@ export default function TakuzuGamePage() {
     setTrialMode(false)
     setTrialMoves([])
     setSealedCells(new Set())
-  }, [level])
+  }, [level, dailyLimit])
 
   // 点击格子（锁定格子不可点击）
   const handleCellClick = (r, c) => {
@@ -501,6 +521,15 @@ export default function TakuzuGamePage() {
     if (allCorrect) {
       setGameStatus('won')
       setIsRunning(false)
+      // 增加每日计数
+      const today = new Date().toISOString().split('T')[0]
+      setDailyLimit(prev => {
+        const counts = prev.date === today ? { ...prev.counts } : {}
+        counts[gridSize] = (counts[gridSize] || 0) + 1
+        const updated = { date: today, counts }
+        localStorage.setItem('takuzu-daily', JSON.stringify(updated))
+        return updated
+      })
     }
   }
 
@@ -614,6 +643,14 @@ export default function TakuzuGamePage() {
             ? (lang === 'zh' ? `完成! 用时 ${formatTime(timer)}` : `Done in ${formatTime(timer)}`)
             : (lang === 'zh' ? '填满棋盘，遵守三条规则' : 'Fill the board following 3 rules')}
         </div>
+        <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginTop: '4px' }}>
+          {(() => {
+            const today = new Date().toISOString().split('T')[0]
+            const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+            const used = counts[gridSize] || 0
+            return `${LEVELS[level].name_zh}: ${used}/${DAILY_MAX}`
+          })()}
+        </div>
       </div>
 
       {/* 关卡选择 */}
@@ -646,6 +683,29 @@ export default function TakuzuGamePage() {
       <div className="font-mono text-sm" style={{ color: 'var(--muted)', marginBottom: '16px' }}>
         {formatTime(timer)}
       </div>
+
+      {/* 每日限额提示 */}
+      {(() => {
+        const today = new Date().toISOString().split('T')[0]
+        const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+        const used = counts[gridSize] || 0
+        if (used >= DAILY_MAX && gameStatus !== 'won') {
+          return (
+            <div style={{
+              padding: '12px 16px',
+              border: '1px solid var(--border)',
+              borderRadius: '4px',
+              marginBottom: '16px',
+              textAlign: 'center',
+            }}>
+              <div className="font-mono text-sm" style={{ color: '#ef4444' }}>
+                {lang === 'zh' ? `${LEVELS[level].name_zh} 今日已通关 ${DAILY_MAX} 关，请明天再来或切换其他难度` : `${LEVELS[level].name_zh} daily limit reached (${DAILY_MAX}/${DAILY_MAX})`}
+              </div>
+            </div>
+          )
+        }
+        return null
+      })()}
 
       {/* 操作提示 */}
       <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '12px' }}>
@@ -771,14 +831,28 @@ export default function TakuzuGamePage() {
 
         <button
           onClick={() => startNewGame(level)}
-          className="font-mono text-sm"
+          disabled={(() => {
+            const today = new Date().toISOString().split('T')[0]
+            const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+            return (counts[gridSize] || 0) >= DAILY_MAX
+          })()}
+          className="inline-flex items-center gap-2 font-mono text-sm"
           style={{
             padding: '8px 16px',
             border: '1px solid var(--border)',
             borderRadius: '3px',
             backgroundColor: 'transparent',
             color: 'var(--muted)',
-            cursor: 'pointer',
+            cursor: (() => {
+              const today = new Date().toISOString().split('T')[0]
+              const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+              return (counts[gridSize] || 0) >= DAILY_MAX ? 'not-allowed' : 'pointer'
+            })(),
+            opacity: (() => {
+              const today = new Date().toISOString().split('T')[0]
+              const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+              return (counts[gridSize] || 0) >= DAILY_MAX ? 0.4 : 1
+            })(),
           }}
         >
           {lang === 'zh' ? '新题' : 'New'}

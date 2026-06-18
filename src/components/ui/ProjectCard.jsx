@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { Smartphone, Monitor, Tv, QrCode, ExternalLink } from 'lucide-react'
 import QRCode from 'qrcode'
 
@@ -26,7 +27,8 @@ const typeLabelMap = {
   dashboard: '大屏',
 }
 
-export default function ProjectCard({ project }) {
+export default function ProjectCard({ project, fromHome = false }) {
+  const router = useRouter()
   const [showQr, setShowQr] = useState(false)
   const [isSmallScreen, setIsSmallScreen] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState(null)
@@ -70,8 +72,13 @@ export default function ProjectCard({ project }) {
     <div style={{ position: 'relative' }}>
       <motion.div
         className="block border transition-all duration-200 ease-out"
-        style={{ borderColor: 'var(--border)', padding: '20px 24px' }}
+        style={{ borderColor: 'var(--border)', padding: '20px 24px', cursor: 'pointer' }}
         whileHover={{ y: -3 }}
+        onClick={(e) => {
+          if (e.target.closest('a') || e.target.closest('span[style*="cursor: pointer"]')) return
+          e.stopPropagation()
+          router.push(fromHome ? `/projects/${project.id}?from=home` : `/projects/${project.id}`)
+        }}
       >
         {/* 标题行 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>

@@ -16,7 +16,7 @@ export default function AdminChapters() {
   const [msg, setMsg] = useState('')
   const [novelTitle, setNovelTitle] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize] = useState(20)
+  const [pageSize] = useState(10)
 
   useEffect(() => {
     if (!novelId) {

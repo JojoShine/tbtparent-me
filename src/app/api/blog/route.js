@@ -92,7 +92,7 @@ export const POST = withAuth(async (request) => {
 export const PUT = withAuth(async (request) => {
   try {
     const body = await request.json()
-    const { id, ...data } = body
+    const { id, images, ...data } = body
     if (data.status === 'published' && !data.published_at) {
       data.published_at = new Date()
     }
