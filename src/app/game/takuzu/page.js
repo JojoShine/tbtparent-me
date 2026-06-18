@@ -169,19 +169,25 @@ export default function TakuzuGamePage() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  // 加载每日限制
-  useEffect(() => {
+  // 加载每日限制（同步从 localStorage 读取）
+  const loadDailyLimit = () => {
     try {
       const raw = localStorage.getItem('takuzu-daily')
       if (raw) {
         const parsed = JSON.parse(raw)
         const today = new Date().toISOString().split('T')[0]
-        if (parsed.date === today) {
-          setDailyLimit(parsed)
-        }
+        if (parsed.date === today) return parsed
       }
     } catch (e) {}
-  }, [])
+    return { date: new Date().toISOString().split('T')[0], counts: {} }
+  }
+
+  // 检查是否达到每日限额
+  const isLimitReached = (size) => {
+    const today = new Date().toISOString().split('T')[0]
+    const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+    return (counts[size || gridSize] || 0) >= DAILY_MAX
+  }
 
   // 计时器
   useEffect(() => {
@@ -190,19 +196,30 @@ export default function TakuzuGamePage() {
     return () => clearInterval(interval)
   }, [isRunning, gameStatus])
 
-  // 首次加载
+  // 首次加载：先读 localStorage 限额，再开始游戏
   useEffect(() => {
-    startNewGame(0)
+    const limit = loadDailyLimit()
+    setDailyLimit(limit)
+    // 限额检查在 startNewGame 内进行，此处直接触发
+    startNewGame(0, limit)
   }, [])
 
   // 开始新游戏（同步生成）
-  const startNewGame = useCallback((lvl) => {
+  const startNewGame = useCallback((lvl, limitOverride) => {
     const targetLevel = lvl !== undefined ? lvl : level
     const size = LEVELS[targetLevel].size
     const today = new Date().toISOString().split('T')[0]
-    const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+    const limit = limitOverride || dailyLimit
+    const counts = limit.date === today ? limit.counts : {}
     const usedToday = counts[size] || 0
-    if (usedToday >= DAILY_MAX) return
+    if (usedToday >= DAILY_MAX) {
+      // 达到限额：设置状态但不生成棋盘
+      setLevel(targetLevel)
+      setBoard(null)
+      setGameStatus('playing')
+      setIsRunning(false)
+      return
+    }
     const fullBoard = generateFullBoard(size)
     const puzzle = createPuzzle(fullBoard, size)
     setLevel(targetLevel)
@@ -221,6 +238,7 @@ export default function TakuzuGamePage() {
   // 点击格子（锁定格子不可点击）
   const handleCellClick = (r, c) => {
     if (!board || gameStatus === 'won') return
+    if (isLimitReached()) return
     if (board[r][c].locked) return
     // 试算模式下封存格子不可修改
     if (trialMode && sealedCells.has(`${r},${c}`)) return
@@ -309,6 +327,7 @@ export default function TakuzuGamePage() {
   // 检查当前答案
   const checkAnswer = () => {
     if (!board || !solution) return
+    if (isLimitReached()) return
     
     const n = board.length
     const half = n / 2
