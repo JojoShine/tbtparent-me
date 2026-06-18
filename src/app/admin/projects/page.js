@@ -9,7 +9,7 @@ const emptyProject = {
   content_zh: '', content_en: '',
   tags_zh: [], tags_en: [],
   deadline_zh: '', deadline_en: '',
-  link: '#', github: '', demo_url: '',
+  link: '#', github: '', demo_url: '', video_url: '',
   project_type: 'pc', recent_focus: false, sortOrder: 0,
 }
 
@@ -75,6 +75,15 @@ export default function AdminProjects() {
       load()
     } catch (e) {
       setMsg('保存失败: ' + e.message)
+    }
+  }
+
+  const handleEdit = async (p) => {
+    try {
+      const full = await apiGet(`/api/projects?id=${p.id}`)
+      setEditing(full)
+    } catch (e) {
+      setMsg('加载详情失败: ' + e.message)
     }
   }
 
@@ -152,7 +161,7 @@ export default function AdminProjects() {
                 )}
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button style={secondaryButtonStyle} onClick={() => setEditing(p)}>编辑</button>
+                <button style={secondaryButtonStyle} onClick={() => handleEdit(p)}>编辑</button>
                 <button style={secondaryButtonStyle} onClick={() => handleDelete(p.id)}>删除</button>
               </div>
             </div>
@@ -320,7 +329,7 @@ export default function AdminProjects() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
             <div>
               <label style={labelStyle}>GitHub 地址</label>
               <input style={inputStyle} value={editing.github || ''} onChange={e => handleChange('github', e.target.value)} placeholder="https://github.com/..." />
@@ -328,6 +337,10 @@ export default function AdminProjects() {
             <div>
               <label style={labelStyle}>演示地址</label>
               <input style={inputStyle} value={editing.demo_url || ''} onChange={e => handleChange('demo_url', e.target.value)} placeholder="https://..." />
+            </div>
+            <div>
+              <label style={labelStyle}>演示视频地址</label>
+              <input style={inputStyle} value={editing.video_url || ''} onChange={e => handleChange('video_url', e.target.value)} placeholder="https://...mp4" />
             </div>
             <div>
               <label style={labelStyle}>项目类型</label>

@@ -139,6 +139,7 @@ export default function ProjectDetailPage() {
   const tags = localized.tags || []
   const content = localizedField(project, 'content', lang)
   const hasDemo = !!project.demo_url
+  const hasVideo = !!project.video_url
   const isMobile = project.project_type === 'mobile'
 
   return (
@@ -214,7 +215,7 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* 链接图标 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '32px', position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: hasVideo ? '24px' : '32px', position: 'relative' }}>
         {project.github && (
           <a
             href={project.github}
@@ -337,6 +338,31 @@ export default function ProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {/* 视频区域 */}
+      {hasVideo && (
+        <div
+          id="video-section"
+          style={{
+            marginBottom: '32px',
+            border: '1px solid var(--border)',
+            borderRadius: '4px',
+            overflow: 'hidden',
+          }}
+        >
+          <video
+            src={project.video_url}
+            controls
+            preload="metadata"
+            style={{
+              width: '100%',
+              maxHeight: '500px',
+              display: 'block',
+              backgroundColor: '#000',
+            }}
+          />
+        </div>
+      )}
 
       {/* 描述 */}
       <div

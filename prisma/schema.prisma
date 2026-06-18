@@ -51,6 +51,7 @@ model Project {
   content_en     String?
   content_zh     String?
   recent_focus   Boolean  @default(false)
+  video_url      String?
 }
 
 model Blog {

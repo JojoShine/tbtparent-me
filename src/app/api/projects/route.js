@@ -33,6 +33,7 @@ export async function GET(request) {
         demo_url: true,
         project_type: true,
         recent_focus: true,
+        video_url: true,
         sortOrder: true,
         createdAt: true,
         updatedAt: true,

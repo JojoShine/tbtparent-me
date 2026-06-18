@@ -268,6 +268,7 @@ export default function ProjectCard({ project, fromHome = false }) {
           </p>
         </div>
       )}
+
     </div>
   )
 }
