@@ -81,29 +81,39 @@ export default function GuessNumberPage() {
   // 初始化游戏
   useEffect(() => {
     // 加载每日限制
+    let loaded = { date: '', counts: {} }
     try {
       const raw = localStorage.getItem('guess-number-daily')
       if (raw) {
         const parsed = JSON.parse(raw)
         const today = new Date().toISOString().split('T')[0]
         if (parsed.date === today) {
+          loaded = parsed
           setDailyLimit(parsed)
         }
       }
     } catch (e) {}
-    startNewGame(0)
+    startNewGame(0, loaded)
   }, [])
 
   // 开始新游戏
-  const startNewGame = (lvl) => {
+  const startNewGame = (lvl, _dl) => {
     const targetLevel = lvl !== undefined ? lvl : level
     const d = LEVELS[targetLevel].digits
     const today = new Date().toISOString().split('T')[0]
-    const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+    const dl = _dl || dailyLimit
+    const counts = dl.date === today ? dl.counts : {}
     const usedToday = counts[d] || 0
-    if (usedToday >= DAILY_MAX) return
-    const newSecret = generateSecretNumber(d)
     setLevel(targetLevel)
+    if (usedToday >= DAILY_MAX) {
+      setSecretNumber('')
+      setGuessHistory([])
+      setGameStatus('playing')
+      setIsRunning(false)
+      setTimer(0)
+      return
+    }
+    const newSecret = generateSecretNumber(d)
     setSecretNumber(newSecret)
     setUserInput('')
     setGuessHistory([])
@@ -305,7 +315,11 @@ export default function GuessNumberPage() {
       })()}
 
       {/* 输入区域 */}
-      {gameStatus === 'playing' && (
+      {gameStatus === 'playing' && (() => {
+        const today = new Date().toISOString().split('T')[0]
+        const counts = dailyLimit.date === today ? dailyLimit.counts : {}
+        return (counts[digits] || 0) < DAILY_MAX
+      })() && (
         <form onSubmit={handleSubmit} className="mt-8">
           <div className="mb-5">
             <input
