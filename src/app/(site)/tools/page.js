@@ -13,6 +13,7 @@ import NetworkPlanning from './NetworkPlanning'
 import NetworkCommands from './NetworkCommands'
 import NetworkLatency from './NetworkLatency'
 import DNSLookup from './DNSLookup'
+import PhotoTool from './PhotoTool'
 
 const fadeUp = {
   initial: { opacity: 0, y: 10 },
@@ -32,6 +33,7 @@ const toolStructure = [
     children: [
       { key: 'image-compressor', label: '图片压缩' },
       { key: 'qrcode-generator', label: '二维码生成' },
+      { key: 'photo-tool', label: '证件照制作' },
     ]
   },
   {
@@ -181,6 +183,10 @@ export default function ToolsPage() {
           <div style={{ display: activeTool === 'dns-lookup' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
             <DNSLookup />
           </div>
+          
+          <div style={{ display: activeTool === 'photo-tool' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <PhotoTool />
+          </div>
         </motion.main>
       </div>
 
@@ -281,8 +287,8 @@ export default function ToolsPage() {
             min-width: fit-content !important;
           }
           
-          /* 移动端隐藏分类标题按钮 */
-          .tools-sidebar > div > button:first-child {
+          /* 移动端隐藏分类标题 */
+          .tools-sidebar > div > div:first-child {
             display: none !important;
           }
           
