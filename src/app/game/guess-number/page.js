@@ -416,7 +416,11 @@ export default function GuessNumberPage() {
         </div>
         <ul style={{ paddingLeft: '20px', listStyle: 'disc' }}>
           <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '6px', lineHeight: 1.5 }}>
-            {lang === 'zh' ? `系统从 0-9 中生成${digits}位无重复数字（如 1928）` : `System generates ${digits}-digit number from 0-9 with no repeats (e.g., 1928)`}
+            {(() => {
+              const examples = { 4: '1928', 5: '19283', 6: '192837' }
+              const ex = examples[digits] || '1928'
+              return lang === 'zh' ? `系统从 0-9 中生成${digits}位无重复数字（如 ${ex}）` : `System generates ${digits}-digit number from 0-9 with no repeats (e.g., ${ex})`
+            })()}
           </li>
           <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '6px', lineHeight: 1.5 }}>
             {lang === 'zh' ? 'xA：x个数字的位置和数值都正确（优先判断）' : 'xA: x digits are correct in both position and value (checked first)'}
