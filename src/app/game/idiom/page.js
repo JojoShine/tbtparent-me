@@ -6,9 +6,9 @@ import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
 import { pinyin } from 'pinyin-pro'
 import { ArrowLeft } from 'lucide-react'
+import GameRules from '@/components/ui/GameRules'
 
 import COMMON_IDIOMS from '@/data/common-idioms.json'
-import IDIOM_PINYIN_MAP from '@/data/idiom-pinyin.json'
 
 export default function IdiomGamePage() {
   const { lang } = useLang()
@@ -180,13 +180,8 @@ export default function IdiomGamePage() {
     }
   }
 
-  // 获取成语每个字的拼音（优先查预计算映射表，回退 pinyin-pro）
+  // 获取成语每个字的拼音（使用 pinyin-pro，与猜测拼音保持同一来源，避免声调比较不一致）
   const getIdiomPinyins = (idiom) => {
-    // 先查预计算的成语级拼音映射
-    if (IDIOM_PINYIN_MAP[idiom]) {
-      return IDIOM_PINYIN_MAP[idiom]
-    }
-    // 回退：逐字用 pinyin-pro 转换
     return idiom.split('').map(char => pinyin(char, { toneType: 'symbol' }))
   }
 
@@ -537,7 +532,6 @@ export default function IdiomGamePage() {
           }
         </div>
 
-
       </div>
 
       {/* 游戏主区域 */}
@@ -809,6 +803,64 @@ export default function IdiomGamePage() {
                           const pinyin = charData.pinyin
                           const targetPinyin = charData.targetPinyin
                           
+                          // 将带声调字符拆分为基础字母 + 声调类型
+                          const splitToneChar = (char) => {
+                            const toneMap = { 
+                              'ā': ['a', 1], 'á': ['a', 2], 'ǎ': ['a', 3], 'à': ['a', 4],
+                              'ē': ['e', 1], 'é': ['e', 2], 'ě': ['e', 3], 'è': ['e', 4],
+                              'ī': ['i', 1], 'í': ['i', 2], 'ǐ': ['i', 3], 'ì': ['i', 4],
+                              'ō': ['o', 1], 'ó': ['o', 2], 'ǒ': ['o', 3], 'ò': ['o', 4],
+                              'ū': ['u', 1], 'ú': ['u', 2], 'ǔ': ['u', 3], 'ù': ['u', 4],
+                              'ǖ': ['v', 1], 'ǘ': ['v', 2], 'ǚ': ['v', 3], 'ǜ': ['v', 4]
+                            }
+                            return toneMap[char] || [char, null]
+                          }
+                          
+                          // 获取声调符号的文本表示
+                          const getToneMarkText = (toneNumber) => {
+                            const marks = { 1: '¯', 2: '´', 3: 'ˇ', 4: '`' }
+                            return marks[toneNumber] || ''
+                          }
+                          
+                          // 逐个字符渲染拼音
+                          const renderPinyin = (pinyinStr, forceAllGreen) => {
+                            return pinyinStr.split('').map((char, idx) => {
+                              const isToneChar = /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(char)
+                              
+                              if (isToneChar) {
+                                const [baseLetter, toneNumber] = splitToneChar(char)
+                                const letterColor = forceAllGreen ? '#22c55e' : (charData.letterMatches?.[`${baseLetter}@${idx}`] ? '#22c55e' : 'var(--fg)')
+                                const toneColor = forceAllGreen ? '#22c55e' : (charData.toneMatch ? '#22c55e' : '#f97316')
+                                const toneMarkText = getToneMarkText(toneNumber)
+                                
+                                return (
+                                  <span key={idx} style={{ position: 'relative', display: 'inline-block' }}>
+                                    <span style={{ color: letterColor }}>{baseLetter}</span>
+                                    {toneMarkText && (
+                                      <span style={{ 
+                                        color: toneColor,
+                                        position: 'absolute',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        top: '-0.25em',
+                                        fontSize: '1.3em',
+                                        lineHeight: 1,
+                                        fontWeight: 'bold',
+                                      }}>
+                                        {toneMarkText}
+                                      </span>
+                                    )}
+                                  </span>
+                                )
+                              } else {
+                                const letterColor = forceAllGreen ? '#22c55e' : (charData.letterMatches?.[`${char}@${idx}`] ? '#22c55e' : 'var(--fg)')
+                                return (
+                                  <span key={idx} style={{ color: letterColor }}>{char}</span>
+                                )
+                              }
+                            })
+                          }
+                          
                           // 如果完全正确，全部显示绿色
                           if (charData.status === 'correct') {
                             return (
@@ -845,86 +897,7 @@ export default function IdiomGamePage() {
                           // 使用保存的声调匹配结果
                           const isToneCorrect = charData.toneMatch === true
                           
-                          // 将带声调字符拆分为基础字母 + 声调类型
-                          const splitToneChar = (char) => {
-                            const toneMap = { 
-                              'ā': ['a', 1], 'á': ['a', 2], 'ǎ': ['a', 3], 'à': ['a', 4],
-                              'ē': ['e', 1], 'é': ['e', 2], 'ě': ['e', 3], 'è': ['e', 4],
-                              'ī': ['i', 1], 'í': ['i', 2], 'ǐ': ['i', 3], 'ì': ['i', 4],
-                              'ō': ['o', 1], 'ó': ['o', 2], 'ǒ': ['o', 3], 'ò': ['o', 4],
-                              'ū': ['u', 1], 'ú': ['u', 2], 'ǔ': ['u', 3], 'ù': ['u', 4],
-                              'ǖ': ['v', 1], 'ǘ': ['v', 2], 'ǚ': ['v', 3], 'ǜ': ['v', 4]
-                            }
-                            return toneMap[char] || [char, null]
-                          }
-                          
-                          // 获取声调符号的文本表示
-                          const getToneMarkText = (toneNumber) => {
-                            const marks = {
-                              1: '¯',  // 一声
-                              2: '´',  // 二声
-                              3: 'ˇ',  // 三声
-                              4: '`',  // 四声
-                            }
-                            return marks[toneNumber] || ''
-                          }
-                          
-                          // 逐个字符渲染，判断每个字母是否按位置匹配
-                          return (
-                            <>
-                              {pinyin.split('').map((char, idx) => {
-                                // 判断是否是声调字符
-                                const isToneChar = /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(char)
-                                
-                                if (isToneChar) {
-                                  // 带声调的字符：拆分为基础字母 + 声调类型
-                                  const [baseLetter, toneNumber] = splitToneChar(char)
-                                  const isLetterMatch = charData.letterMatches?.[`${baseLetter}@${idx}`] || false
-                                  
-                                  // 基础字母颜色：根据字母匹配情况
-                                  const letterColor = isLetterMatch ? '#22c55e' : 'var(--fg)'
-                                  
-                                  // 声调符号颜色：根据声调匹配情况
-                                  const toneColor = isToneCorrect ? '#22c55e' : '#f97316'
-                                  
-                                  // 获取声调符号文本
-                                  const toneMarkText = getToneMarkText(toneNumber)
-                                  
-                                  return (
-                                    <span key={idx} style={{ position: 'relative', display: 'inline-block' }}>
-                                      {/* 基础字母 */}
-                                      <span style={{ color: letterColor }}>{baseLetter}</span>
-                                      {/* 声调符号 */}
-                                      {toneMarkText && (
-                                        <span style={{ 
-                                          color: toneColor,
-                                          position: 'absolute',
-                                          left: '50%',
-                                          transform: 'translateX(-50%)',
-                                          top: '-0.25em',
-                                          fontSize: '1.3em',
-                                          lineHeight: 1,
-                                          fontWeight: 'bold',
-                                        }}>
-                                          {toneMarkText}
-                                        </span>
-                                      )}
-                                    </span>
-                                  )
-                                } else {
-                                  // 普通字母字符：根据字母匹配情况显示颜色
-                                  const isLetterMatch = charData.letterMatches?.[`${char}@${idx}`] || false
-                                  const letterColor = isLetterMatch ? '#22c55e' : 'var(--fg)'
-                                  
-                                  return (
-                                    <span key={idx} style={{ color: letterColor }}>
-                                      {char}
-                                    </span>
-                                  )
-                                }
-                              })}
-                            </>
-                          )
+                          return <>{renderPinyin(pinyin, false)}</>
                         })()}
                       </div>
                     </div>
@@ -950,7 +923,7 @@ export default function IdiomGamePage() {
                 className="font-mono text-lg"
                 style={{
                   width: '100%',
-                  maxWidth: '320px',
+                  maxWidth: (!isDevMode && dailyLimit.count >= DAILY_MAX) ? 'none' : '320px',
                   margin: '0 auto',
                   display: 'block',
                   padding: '0',
@@ -960,7 +933,7 @@ export default function IdiomGamePage() {
                   backgroundColor: 'transparent',
                   color: 'var(--fg)',
                   fontSize: '1.5rem',
-                  letterSpacing: '8px',
+                  letterSpacing: (!isDevMode && dailyLimit.count >= DAILY_MAX) ? 'normal' : '8px',
                   fontFamily: 'monospace',
                 }}
               />
@@ -1060,37 +1033,36 @@ export default function IdiomGamePage() {
           </form>
         )}
 
-        {/* 游戏规则 */}
-        <div style={{
-          marginTop: '30px',
-          padding: '16px',
-          border: '1px solid var(--border)',
-          borderRadius: '4px',
-        }}>
-          <div className="font-mono text-sm font-bold" style={{ color: 'var(--fg)', marginBottom: '12px' }}>
-            {lang === 'zh' ? '游戏规则' : 'How to Play'}
-          </div>
-          <ul style={{ paddingLeft: '20px', listStyle: 'disc' }}>
-            <li className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '6px' }}>
-              {lang === 'zh' ? '输入四字成语，最多猜8次' : 'Enter a 4-character idiom, max 8 guesses'}
-            </li>
-            <li className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '6px' }}>
-              {lang === 'zh' ? '绿色拼音字母：该位置字母正确' : 'Green letter: correct at this position'}
-            </li>
-            <li className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '6px' }}>
-              {lang === 'zh' ? '声调绿色：声调正确；声调橙色：声调错误' : 'Green tone: correct; Orange tone: wrong'}
-            </li>
-            <li className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '6px' }}>
-              {lang === 'zh' ? '首次猜测后可使用提示' : 'Hint available after first guess'}
-            </li>
-            <li className="font-mono text-xs" style={{ color: 'var(--muted)' }}>
-              {lang === 'zh' ? `每天可答 ${DAILY_MAX} 题` : `${DAILY_MAX} questions/day`}
-            </li>
-          </ul>
-        </div>
       </div>
 
-
+      <GameRules>
+        <div className="font-mono text-sm font-bold" style={{ color: 'var(--fg)', marginBottom: '8px' }}>
+          {lang === 'zh' ? '游戏规则' : 'How to Play'}
+        </div>
+        <div className="font-mono text-xs" style={{ color: 'var(--muted)', lineHeight: 2 }}>
+          {lang === 'zh' ? (
+            <>
+              <div>系统随机出一个四字成语，你来猜</div>
+              <div>每次猜后逐字反馈拼音匹配：</div>
+              <div style={{ paddingLeft: '12px' }}>
+                <span style={{ color: '#22c55e' }}>绿色字母</span> = 该位置的拼音字母正确{' · '}<span style={{ color: '#f97316' }}>橙色声调</span> = 声调不对
+              </div>
+              <div>首次猜后可点「提示」揭示一个字</div>
+              <div>最多 8 次，共 3 关，每日 3 题</div>
+            </>
+          ) : (
+            <>
+              <div>System picks a random 4-char idiom</div>
+              <div>Each guess shows per-char pinyin feedback:</div>
+              <div style={{ paddingLeft: '12px' }}>
+                <span style={{ color: '#22c55e' }}>Green letter</span> = correct letter at this position{' · '}<span style={{ color: '#f97316' }}>Orange tone</span> = wrong tone
+              </div>
+              <div>Hint available after first guess</div>
+              <div>Max 8 tries, 3 levels, 3/day</div>
+            </>
+          )}
+        </div>
+      </GameRules>
 
       <style jsx>{`
         .social-link:hover .social-link-underline {

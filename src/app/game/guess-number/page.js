@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
 import { ArrowLeft, RotateCcw, CheckCircle } from 'lucide-react'
+import GameRules from '@/components/ui/GameRules'
 
 const LEVELS = [
   { digits: 4, name_zh: '4位数', name_en: '4 Digits' },
@@ -70,6 +71,7 @@ export default function GuessNumberPage() {
   const [dailyLimit, setDailyLimit] = useState({ date: '', counts: {} }) // 每日限制
   const DAILY_MAX = 1
   const digits = LEVELS[level].digits
+  const [inlineMsg, setInlineMsg] = useState('')
 
   // 计时器
   useEffect(() => {
@@ -132,12 +134,13 @@ export default function GuessNumberPage() {
 
     // 检查是否有重复数字
     if (new Set(userInput.split('')).size !== digits) {
+      setInlineMsg(lang === 'zh' ? '数字不能重复' : 'Digits must be unique')
       return
     }
 
     // 检查是否已猜过
     if (guessHistory.some(h => h.guess === userInput)) {
-      alert(lang === 'zh' ? '这个数字已经猜过了！' : 'Already guessed this number!')
+      setInlineMsg(lang === 'zh' ? '这个数字已经猜过了' : 'Already guessed this number')
       return
     }
 
@@ -234,10 +237,10 @@ export default function GuessNumberPage() {
       </div>
 
       {/* 操作提示 */}
-      <div className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '12px', lineHeight: 1.6 }}>
+      <div className="font-mono text-xs" style={{ color: 'var(--muted)', marginBottom: '12px' }}>
         {lang === 'zh' 
-          ? `从 0-9 中选择${digits}个不重复数字，系统会反馈 xAyB（A=位置和数字都对，B=仅数字对但位置错，A优先于B）` 
-          : `Select ${digits} unique digits from 0-9, system returns xAyB (A=correct position & digit, B=digit only but wrong position, A takes priority)`}
+          ? `从0-9中输入${digits}位无重复数字，反馈 xAyB` 
+          : `Enter ${digits} unique digits from 0-9, get xAyB feedback`}
       </div>
 
       {/* 猜测历史 */}
@@ -328,6 +331,7 @@ export default function GuessNumberPage() {
               onChange={(e) => {
                 const val = e.target.value.replace(/[^0-9]/g, '').slice(0, digits)
                 setUserInput(val)
+                setInlineMsg('')
               }}
               placeholder={lang === 'zh' ? `输入${digits}位无重复数字...` : `Enter ${digits} unique digits...`}
               maxLength={digits}
@@ -368,6 +372,28 @@ export default function GuessNumberPage() {
                 />
               ))}
             </div>
+
+            {/* 实时重复提示 */}
+            {userInput.length >= 2 && new Set(userInput.split('')).size !== userInput.length && (
+              <div className="font-mono text-xs" style={{
+                textAlign: 'center',
+                color: '#ef4444',
+                marginTop: '8px',
+              }}>
+                {lang === 'zh' ? '数字不能重复' : 'Digits must be unique'}
+              </div>
+            )}
+
+            {/* 提交错误提示 */}
+            {inlineMsg && (
+              <div className="font-mono text-xs" style={{
+                textAlign: 'center',
+                color: 'var(--muted)',
+                marginTop: '8px',
+              }}>
+                {inlineMsg}
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
@@ -409,33 +435,38 @@ export default function GuessNumberPage() {
         </form>
       )}
 
-      {/* 游戏规则 */}
-      <div className="mt-10 p-4 border rounded" style={{ borderColor: 'var(--border)' }}>
-        <div className="font-mono text-sm font-bold" style={{ color: 'var(--fg)', marginBottom: '12px' }}>
+      <GameRules>
+        <div className="font-mono text-sm font-bold" style={{ color: 'var(--fg)', marginBottom: '8px' }}>
           {lang === 'zh' ? '游戏规则' : 'How to Play'}
         </div>
-        <ul style={{ paddingLeft: '20px', listStyle: 'disc' }}>
-          <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '6px', lineHeight: 1.5 }}>
-            {(() => {
-              const examples = { 4: '1928', 5: '19283', 6: '192837' }
-              const ex = examples[digits] || '1928'
-              return lang === 'zh' ? `系统从 0-9 中生成${digits}位无重复数字（如 ${ex}）` : `System generates ${digits}-digit number from 0-9 with no repeats (e.g., ${ex})`
-            })()}
-          </li>
-          <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '6px', lineHeight: 1.5 }}>
-            {lang === 'zh' ? 'xA：x个数字的位置和数值都正确（优先判断）' : 'xA: x digits are correct in both position and value (checked first)'}
-          </li>
-          <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginBottom: '6px', lineHeight: 1.5 }}>
-            {lang === 'zh' ? 'yB：y个数字的数值正确但位置错误（排除A后统计）' : 'yB: y digits have correct value but wrong position (counted after excluding A)'}
-          </li>
-          <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
-            {lang === 'zh' ? `目标：猜出 ${digits}A0B（全部正确）` : `Goal: Guess until you get ${digits}A0B (all correct)`}
-          </li>
-          <li className="font-mono text-xs md:text-sm" style={{ color: 'var(--muted)', marginTop: '6px', lineHeight: 1.5 }}>
-            {lang === 'zh' ? `每个难度每天可玩 ${DAILY_MAX} 局` : `${DAILY_MAX} game/size/day`}
-          </li>
-        </ul>
-      </div>
+        <div className="font-mono text-xs" style={{ color: 'var(--muted)', lineHeight: 2 }}>
+          {lang === 'zh' ? (
+            <>
+              <div>从 0-9 中选{digits}个不重复数字组成答案，你来猜</div>
+              <div style={{ fontWeight: 'bold', color: 'var(--fg)', marginTop: '4px' }}>反馈说明：</div>
+              <div><strong style={{ color: 'var(--fg)' }}>xA</strong> = x个数字位置和值都对</div>
+              <div><strong style={{ color: 'var(--fg)' }}>yB</strong> = y个数字值对但位置错</div>
+              <div style={{ marginTop: '6px', padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '4px' }}>
+                <div style={{ color: 'var(--fg)' }}>例：答案 1234，猜 1325</div>
+                <div>→ <strong style={{ color: 'var(--fg)' }}>1A2B</strong>（1对位，3和2值对但位错）</div>
+              </div>
+              <div style={{ marginTop: '6px' }}>目标：猜出 {digits}A0B，每难度每日 1 局</div>
+            </>
+          ) : (
+            <>
+              <div>Pick {digits} unique digits from 0-9 to form the answer</div>
+              <div style={{ fontWeight: 'bold', color: 'var(--fg)', marginTop: '4px' }}>Feedback:</div>
+              <div><strong style={{ color: 'var(--fg)' }}>xA</strong> = correct digit & position</div>
+              <div><strong style={{ color: 'var(--fg)' }}>yB</strong> = correct digit, wrong position</div>
+              <div style={{ marginTop: '6px', padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '4px' }}>
+                <div style={{ color: 'var(--fg)' }}>e.g. Answer 1234, guess 1325</div>
+                <div>→ <strong style={{ color: 'var(--fg)' }}>1A2B</strong></div>
+              </div>
+              <div style={{ marginTop: '6px' }}>Goal: {digits}A0B · 1 game/size/day</div>
+            </>
+          )}
+        </div>
+      </GameRules>
 
       <style jsx>{`
         .social-link:hover .social-link-underline {

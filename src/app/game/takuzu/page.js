@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
 import { ArrowLeft, RotateCcw, CheckCircle, Undo2, FlaskConical } from 'lucide-react'
+import GameRules from '@/components/ui/GameRules'
 
 const LEVELS = [
   { size: 4, name_zh: '4\u00d74', name_en: '4\u00d74' },
@@ -782,22 +783,7 @@ export default function TakuzuGamePage() {
             )}
           </div>
 
-          {/* 规则提示 */}
-          <div className="font-mono text-xs" style={{ color: 'var(--muted)', lineHeight: 1.8 }}>
-            {lang === 'zh' ? (
-              <>
-                <div>① 每行每列 X 和 O 数量相等（各 {gridSize / 2} 个）</div>
-                <div>② 每行每列不能有3个连续的 X 或 O</div>
-                <div>③ 每行每列的排列不能重复</div>
-              </>
-            ) : (
-              <>
-                <div>① Equal X and O in each row/column ({gridSize / 2} each)</div>
-                <div>② No 3 consecutive X or O in any row/column</div>
-                <div>③ No duplicate rows or columns</div>
-              </>
-            )}
-          </div>
+
         </div>
       )}
 
@@ -968,6 +954,45 @@ export default function TakuzuGamePage() {
             : 'Trial mode: Filled cells are sealed (dimmed). New entries show order number. Undo anytime.'}
         </div>
       )}
+
+      <GameRules>
+        <div className="font-mono text-sm font-bold" style={{ color: 'var(--fg)', marginBottom: '8px' }}>
+          {lang === 'zh' ? '游戏规则' : 'How to Play'}
+        </div>
+        <div className="font-mono text-xs" style={{ color: 'var(--muted)', lineHeight: 2 }}>
+          {lang === 'zh' ? (
+            <>
+              <div style={{ marginBottom: '4px' }}>点击空格子：空 → X → O → 空</div>
+              <div style={{ fontWeight: 'bold', color: 'var(--fg)' }}>三条规则：</div>
+              <div>① <strong style={{ color: 'var(--fg)' }}>均分</strong> — 每行每列 X 和 O 各占一半</div>
+              <div>② <strong style={{ color: 'var(--fg)' }}>禁三连</strong> — 不能有连续 3 个相同的</div>
+              <div>③ <strong style={{ color: 'var(--fg)' }}>不重复</strong> — 任意两行/两列不能完全相同</div>
+              <div style={{ marginTop: '8px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {['X','X','X'].map((v, i) => (
+                    <span key={i} style={{
+                      width: '22px', height: '22px', display: 'inline-flex',
+                      alignItems: 'center', justifyContent: 'center',
+                      border: '1px solid #ef4444', borderRadius: '2px',
+                      color: '#ef4444', fontWeight: 'bold', fontSize: '12px',
+                      backgroundColor: 'rgba(239,68,68,0.1)',
+                    }}>{v}</span>
+                  ))}
+                </div>
+                <span style={{ color: '#ef4444' }}>← 违反规则②</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ marginBottom: '4px' }}>Click cell: empty → X → O → empty</div>
+              <div style={{ fontWeight: 'bold', color: 'var(--fg)' }}>Three rules:</div>
+              <div>① <strong style={{ color: 'var(--fg)' }}>Equal</strong> — Equal X and O per row/col</div>
+              <div>② <strong style={{ color: 'var(--fg)' }}>No triples</strong> — No 3 consecutive same</div>
+              <div>③ <strong style={{ color: 'var(--fg)' }}>Unique</strong> — No duplicate rows/cols</div>
+            </>
+          )}
+        </div>
+      </GameRules>
 
       <style jsx>{`
         .social-link:hover .social-link-underline {
