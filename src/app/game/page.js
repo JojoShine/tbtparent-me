@@ -92,7 +92,7 @@ export default function GameHubPage() {
       const midnight = new Date(now)
       midnight.setHours(24, 0, 0, 0)
       const diff = midnight - now
-      if (diff <= 0) return
+      if (diff <= 0) { window.location.reload(); return }
       const h = String(Math.floor(diff / 3600000)).padStart(2, '0')
       const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0')
       const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0')

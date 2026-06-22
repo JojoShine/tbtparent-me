@@ -197,6 +197,19 @@ export default function TakuzuGamePage() {
     return () => clearInterval(interval)
   }, [isRunning, gameStatus])
 
+  // 跨日检测：用户切回页面时检查日期是否变化
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState !== 'visible') return
+      const today = new Date().toISOString().split('T')[0]
+      if (dailyLimit.date && dailyLimit.date !== today) {
+        window.location.reload()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [dailyLimit.date])
+
   // 首次加载：先读 localStorage 限额，再开始游戏
   useEffect(() => {
     const limit = loadDailyLimit()

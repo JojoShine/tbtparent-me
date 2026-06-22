@@ -98,6 +98,19 @@ export default function GuessNumberPage() {
     startNewGame(0, loaded)
   }, [])
 
+  // 跨日检测：用户切回页面时检查日期是否变化
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState !== 'visible') return
+      const today = new Date().toISOString().split('T')[0]
+      if (dailyLimit.date && dailyLimit.date !== today) {
+        window.location.reload()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [dailyLimit.date])
+
   // 开始新游戏
   const startNewGame = (lvl, _dl) => {
     const targetLevel = lvl !== undefined ? lvl : level
