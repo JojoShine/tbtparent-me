@@ -52,6 +52,7 @@ model Project {
   content_zh     String?
   recent_focus   Boolean  @default(false)
   video_url      String?
+  deleted_at     DateTime?
 }
 
 model Blog {
@@ -72,6 +73,7 @@ model Blog {
   tags_en      String[]    @default([])
   tags_zh      String[]    @default([])
   images       BlogImage[]
+  deleted_at   DateTime?
 }
 
 model BlogImage {

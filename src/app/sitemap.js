@@ -32,7 +32,7 @@ export default async function sitemap() {
   let blogEntries = []
   try {
     const blogs = await prisma.blog.findMany({
-      where: { status: 'published' },
+      where: { status: 'published', deleted_at: null },
       select: { slug: true, updatedAt: true },
     })
     blogEntries = blogs.map(blog => ({
@@ -47,6 +47,7 @@ export default async function sitemap() {
   let projectEntries = []
   try {
     const projects = await prisma.project.findMany({
+      where: { deleted_at: null },
       select: { id: true, updatedAt: true },
     })
     projectEntries = projects.map(p => ({

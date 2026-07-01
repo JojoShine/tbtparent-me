@@ -22,7 +22,7 @@ export async function GET(request) {
     const page = parseInt(searchParams.get('page') || '1')
     const pageSize = parseInt(searchParams.get('pageSize') || '10')
 
-    const where = {}
+    const where = { deleted_at: null }
     if (status) where.status = status
     if (tag) {
       where.OR = [
@@ -31,9 +31,9 @@ export async function GET(request) {
       ]
     }
 
-    // 查询所有标签（仅已发布）
+    // 查询所有标签（仅已发布且未删除）
     const tagBlogs = await prisma.blog.findMany({
-      where: { status: 'published' },
+      where: { status: 'published', deleted_at: null },
       select: { tags_zh: true, tags_en: true },
     })
     const tagSet = new Set()
@@ -108,7 +108,7 @@ export const DELETE = withAuth(async (request) => {
   try {
     const { searchParams } = new URL(request.url)
     const id = parseInt(searchParams.get('id'))
-    await prisma.blog.delete({ where: { id } })
+    await prisma.blog.update({ where: { id }, data: { deleted_at: new Date() } })
     return Response.json({ success: true })
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 })

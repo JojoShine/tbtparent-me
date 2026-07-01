@@ -7,7 +7,7 @@ export async function GET() {
     // 并行查询所有内容
     const [blogs, projects, tools] = await Promise.all([
       prisma.blog.findMany({
-        where: { status: 'published' },
+        where: { status: 'published', deleted_at: null },
         orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
         take: 20,
         select: {
@@ -19,6 +19,7 @@ export async function GET() {
         },
       }),
       prisma.project.findMany({
+        where: { deleted_at: null },
         orderBy: { createdAt: 'desc' },
         select: {
           name_en: true,

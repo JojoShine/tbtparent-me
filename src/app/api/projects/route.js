@@ -15,8 +15,9 @@ export async function GET(request) {
       return Response.json(project)
     }
 
-    // 列表：排除 content 字段以提升性能
+    // 列表：排除 content 字段以提升性能，排除已删除
     const projects = await prisma.project.findMany({
+      where: { deleted_at: null },
       orderBy: { sortOrder: 'asc' },
       select: {
         id: true,
@@ -73,7 +74,7 @@ export const DELETE = withAuth(async (request) => {
   try {
     const { searchParams } = new URL(request.url)
     const id = parseInt(searchParams.get('id'))
-    await prisma.project.delete({ where: { id } })
+    await prisma.project.update({ where: { id }, data: { deleted_at: new Date() } })
     return Response.json({ success: true })
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 })

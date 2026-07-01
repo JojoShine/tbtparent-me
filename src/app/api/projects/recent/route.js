@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     const projects = await prisma.project.findMany({
-      where: { recent_focus: true },
+      where: { recent_focus: true, deleted_at: null },
       orderBy: { sortOrder: 'asc' },
     })
     return Response.json(projects)
