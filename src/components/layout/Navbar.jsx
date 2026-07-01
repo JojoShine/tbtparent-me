@@ -89,6 +89,21 @@ export default function Navbar() {
           >
             <Gamepad2 className="w-5 h-5" />
           </Link>
+
+          {/* 素问入口 */}
+          <Link
+            href="/suwen"
+            title="素问 · 卜卦"
+            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
+            style={{ color: 'var(--fg)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4"/>
+              <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2" fill="currentColor"/>
+              <circle cx="50" cy="26" r="5" fill="none" stroke="currentColor" strokeWidth="3"/>
+              <circle cx="50" cy="74" r="5" fill="currentColor"/>
+            </svg>
+          </Link>
           
           {/* 搜索按钮 */}
           <button
@@ -156,6 +171,20 @@ export default function Navbar() {
                 style={{ color: 'var(--fg)' }}
               >
                 <Gamepad2 className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/suwen"
+                onClick={handleNavClick}
+                title="素问 · 卜卦"
+                className="p-2 hover:opacity-70 transition-opacity cursor-pointer inline-flex items-center justify-center"
+                style={{ color: 'var(--fg)' }}
+              >
+                <svg width="16" height="16" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4"/>
+                  <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2" fill="currentColor"/>
+                  <circle cx="50" cy="26" r="5" fill="none" stroke="currentColor" strokeWidth="3"/>
+                  <circle cx="50" cy="74" r="5" fill="currentColor"/>
+                </svg>
               </Link>
             </div>
           </div>

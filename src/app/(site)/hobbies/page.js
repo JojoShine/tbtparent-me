@@ -86,7 +86,6 @@ export default function HobbiesPage() {
             { key: 'all', label: lang === 'zh' ? '全部' : 'All' },
             { key: 'novels', label: lang === 'zh' ? '小说' : 'Novels' },
             { key: 'videos', label: lang === 'zh' ? '视频' : 'Videos' },
-            { key: 'audios', label: lang === 'zh' ? '音频' : 'Audios' },
           ].map(cat => (
             <button
               key={cat.key}

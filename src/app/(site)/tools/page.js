@@ -135,7 +135,17 @@ export default function ToolsPage() {
                       }}
                       className="tool-menu-item"
                     >
-                      {lang === 'zh' ? child.label : child.key}
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {child.key === 'suwen' && (
+                          <svg width="14" height="14" viewBox="0 0 100 100" style={{ flexShrink: 0 }}>
+                            <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4"/>
+                            <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2" fill="currentColor"/>
+                            <circle cx="50" cy="26" r="6" fill="none" stroke="currentColor" strokeWidth="3"/>
+                            <circle cx="50" cy="74" r="6" fill="currentColor"/>
+                          </svg>
+                        )}
+                        {lang === 'zh' ? child.label : child.key}
+                      </span>
                     </button>
                   ))}
                 </div>
