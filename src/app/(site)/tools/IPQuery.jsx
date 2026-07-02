@@ -47,13 +47,13 @@ export default function IPQuery() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || (lang === 'zh' ? '查询失败' : 'Query failed'))
+        throw new Error(data.error || data.message || (lang === 'zh' ? '查询失败' : 'Query failed'))
       }
 
       setResult(data.data)
     } catch (err) {
       console.error('IP query error:', err)
-      setError(lang === 'zh' ? '查询失败，请检查网络连接' : 'Query failed, please check your connection')
+      setError(err.message || (lang === 'zh' ? '查询失败，请检查网络连接' : 'Query failed, please check your connection'))
     } finally {
       setLoading(false)
     }

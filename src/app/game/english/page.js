@@ -21,9 +21,9 @@ function dateSeed(dateStr) {
   return hash
 }
 
-// 归一化：去掉首尾空格、标点、转小写
+// 归一化：去掉首尾空格、句末标点（保留撇号）、转小写
 function normalize(str) {
-  return str.trim().toLowerCase().replace(/[.,!?;:'"()\-–—]/g, '').replace(/\s+/g, ' ')
+  return str.trim().toLowerCase().replace(/[.,!?;:"()\-–—]/g, '').replace(/\s+/g, ' ')
 }
 
 // 计算相似度（0~1），用于部分正确的判定
@@ -330,15 +330,8 @@ export default function EnglishPractice() {
       }
     }
     if (e.key === 'Backspace' && !compositionRef.current && input.length > 0) {
-      e.preventDefault()
-      // 删除整个最后一个单词（含前置空格）
-      setInput(prev => {
-        const trimmed = prev.replace(/\s+$/, '') // 先去尾空格
-        const lastSpace = trimmed.lastIndexOf(' ')
-        const next = lastSpace >= 0 ? trimmed.slice(0, lastSpace) : ''
-        setCursorPos(next.length)
-        return next
-      })
+      // 允许默认的单字符删除行为
+      // 如果 status 是 wrong/close，清除状态
       if (status === 'wrong' || status === 'close') setStatus(null)
     }
   }
@@ -725,7 +718,10 @@ export default function EnglishPractice() {
 
         {/* 播放按钮 */}
         <button
-          onClick={() => activeAudio && speak(activeAudio)}
+          onClick={() => {
+            activeAudio && speak(activeAudio)
+            setTimeout(() => inputRef.current?.focus(), 150)
+          }}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -756,8 +752,8 @@ export default function EnglishPractice() {
             // 过滤非 ASCII 字符（防止中文输入法残留）
             const filtered = e.target.value.replace(/[^\x00-\x7F]/g, '')
             setInput(filtered)
-            // 光标始终在末尾
-            setCursorPos(filtered.length)
+            // 使用浏览器原生光标位置
+            setCursorPos(e.target.selectionStart ?? filtered.length)
             if (status === 'wrong' || status === 'close') setStatus(null)
             if (showAnswer) setShowAnswer(false)
           }}
@@ -845,10 +841,10 @@ export default function EnglishPractice() {
                 }}>{word}</span>
               ))
             : (() => {
-                // 保留单词内撇号（it's/I'm等），只去句末标点
+                // 保留单词内撇号（it's/I'm等），只去句末标点和其他标点
                 const answerWords = phrase.en.replace(/[.,!?;:]+$/, '').split(/\s+/)
-                // 用于对比的标准化：去掉所有标点（含撇号）
-                const stripAll = (w) => w.toLowerCase().replace(/['".!,;:?]/g, '')
+                // 用于对比的标准化：保留撇号，只去掉其他标点和首尾标点
+                const stripForCompare = (w) => w.toLowerCase().replace(/^[.,!?;:"()\-–—]+|[.,!?;:"()\-–—]+$/g, '')
 
                 // 构建输入单词
                 const inputWords = input.trim().split(/\s+/).filter(Boolean)
@@ -857,7 +853,7 @@ export default function EnglishPractice() {
 
                 return answerWords.map((answerWord, wi) => {
                   const typed = inputWords[wi] || ''
-                  const isCorrect = stripAll(typed) === stripAll(answerWord)
+                  const isCorrect = stripForCompare(typed) === stripForCompare(answerWord)
                   const isPartial = typed.length > 0 && !isCorrect
                   // 光标始终在当前输入末尾
                   const isCursorWord = !showAnswer && status !== 'correct' && (

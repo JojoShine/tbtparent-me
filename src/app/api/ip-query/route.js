@@ -3,7 +3,15 @@ import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 const DAILY_LIMIT = 100
 
+// 创建带超时的 fetch
+function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId))
+}
+
 export async function POST(request) {
+  let ip = null
   try {
     // 限流检查
     const { allowed } = checkRateLimit(request, DAILY_LIMIT)
@@ -11,11 +19,12 @@ export async function POST(request) {
       return rateLimitResponse(DAILY_LIMIT)
     }
 
-    const { ip } = await request.json()
+    const body = await request.json()
+    ip = body.ip
 
     if (!ip) {
       return NextResponse.json(
-        { error: 'IP address is required' },
+        { error: '请输入IP地址' },
         { status: 400 }
       )
     }
@@ -24,7 +33,23 @@ export async function POST(request) {
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/
     if (!ipRegex.test(ip)) {
       return NextResponse.json(
-        { error: 'Invalid IP address format' },
+        { error: 'IP地址格式不正确' },
+        { status: 400 }
+      )
+    }
+
+    // 检测私有/内网IP，外部API无法查询
+    const isPrivateIP = (addr) => {
+      const parts = addr.split('.').map(Number)
+      return parts[0] === 10 ||
+        (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+        (parts[0] === 192 && parts[1] === 168) ||
+        parts[0] === 127 ||
+        parts[0] === 0
+    }
+    if (isPrivateIP(ip)) {
+      return NextResponse.json(
+        { error: '无法查询内网/私有IP地址，请输入公网IP' },
         { status: 400 }
       )
     }
@@ -36,13 +61,20 @@ export async function POST(request) {
     }
     const apiUrl = `https://api.map.baidu.com/location/ip?ak=${baiduAK}&ip=${encodeURIComponent(ip)}&coor=bd09ll`
 
-    const response = await fetch(apiUrl, {
+    // 百度查地理位置，ipwho.is 查运营商+时区，并行发起
+    const baiduPromise = fetchWithTimeout(apiUrl, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-      next: { revalidate: 300 }, // 缓存5分钟
-    })
+      headers: { 'Accept': 'application/json' },
+    }, 5000)
+
+    // ipwho.is 返回 connection.isp + timezone.id
+    const ispPromise = fetchWithTimeout(
+      `https://ipwho.is/${ip}`,
+      { method: 'GET' },
+      4000
+    ).catch(() => null)
+
+    const response = await baiduPromise
 
     if (!response.ok) {
       throw new Error(`Baidu IP query failed: ${response.status} ${response.statusText}`)
@@ -70,8 +102,21 @@ export async function POST(request) {
     const topAddressParts = data.address ? data.address.split('|') : []
     const countryCode2 = topAddressParts[0] || '' // 2字母代码如 SA
 
-    // 运营商从顶层 address 提取
-    let ispFromAddress = topAddressParts.length >= 5 && topAddressParts[4] !== 'None' ? topAddressParts[4] : null
+    // 运营商从顶层 address 提取（百度通常不返回，作为优先源）
+    let isp = topAddressParts.length >= 5 && topAddressParts[4] !== 'None' ? topAddressParts[4] : null
+    let timezone = null
+
+    // 百度没有运营商时，用已并行的 ipwho.is 补充
+    if (!isp) {
+      try {
+        const ispResp = await ispPromise
+        if (ispResp && ispResp.ok) {
+          const ispData = await ispResp.json()
+          if (ispData.connection?.isp) isp = ispData.connection.isp
+          if (ispData.timezone?.id) timezone = ispData.timezone.id
+        }
+      } catch { /* 备用失败不影响主流程 */ }
+    }
 
     // 3字母国家代码映射为中文名
     const countryMap3 = {
@@ -111,28 +156,10 @@ export async function POST(request) {
     }
     const country = countryMap3[nationCode3] || countryMap2[countryCode2] || nationName || countryCode2 || 'N/A'
 
-    // 根据 countryCode 决定时区
-    const isCN = countryCode2 === 'CN' || nationCode3 === 'CHN'
-    const timezone = isCN ? 'Asia/Shanghai' : 'N/A'
-
-    // 如果百度API没有返回运营商信息，尝试使用备用API查询
-    if (!ispFromAddress || ispFromAddress === 'None') {
-      try {
-        const backupUrl = `http://ip-api.com/json/${ip}?fields=isp`
-        
-        const backupResponse = await fetch(backupUrl, {
-          method: 'GET',
-        })
-
-        if (backupResponse.ok) {
-          const backupData = await backupResponse.json()
-          if (backupData.isp) {
-            ispFromAddress = backupData.isp
-          }
-        }
-      } catch (backupError) {
-        // 备用API失败不影响主流程，继续使用N/A
-      }
+    // 时区：优先用 ipwho.is 返回的，否则中国IP默认 Asia/Shanghai
+    if (!timezone) {
+      const isCN = countryCode2 === 'CN' || nationCode3 === 'CHN'
+      timezone = isCN ? 'Asia/Shanghai' : 'N/A'
     }
 
     // 转换为前端需要的格式
@@ -141,10 +168,10 @@ export async function POST(request) {
       data: {
         ip: ip,
         country: country,
-        region: addressDetail.province || 'N/A',  // 省份
-        city: addressDetail.city || 'N/A',        // 城市（地级市）
-        location: point.x && point.y ? `${point.y}, ${point.x} (BD09)` : 'N/A',  // 纬度, 经度 (百度坐标系)
-        isp: ispFromAddress || 'N/A',  // 运营商（直接返回原始值）
+        region: addressDetail.province || 'N/A',
+        city: addressDetail.city || 'N/A',
+        location: point.x && point.y ? `${point.y}, ${point.x} (BD09)` : 'N/A',
+        isp: isp || 'N/A',
         timezone: timezone,
       }
     })
@@ -152,16 +179,14 @@ export async function POST(request) {
   } catch (error) {
     console.error('IP query error:', error)
     
-    // 如果淘宝API失败，尝试备用API（ip-api.com）
+    // 如果百度API失败，尝试备用API（ipwho.is）
     try {
-      const { ip } = await request.json()
-      const backupUrl = `http://ip-api.com/json/${ip}?lang=zh-CN`
+      if (!ip) throw new Error('No IP address')
+      const backupUrl = `https://ipwho.is/${ip}`
       
       console.log('Trying backup API:', backupUrl)
       
-      const backupResponse = await fetch(backupUrl, {
-        method: 'GET',
-      })
+      const backupResponse = await fetchWithTimeout(backupUrl, { method: 'GET' }, 5000)
 
       if (!backupResponse.ok) {
         throw new Error(`Backup API failed: ${backupResponse.status}`)
@@ -169,20 +194,20 @@ export async function POST(request) {
 
       const backupData = await backupResponse.json()
 
-      if (backupData.status === 'fail') {
+      if (!backupData.success) {
         throw new Error(backupData.message || 'Backup API failed')
       }
 
       return NextResponse.json({
         success: true,
         data: {
-          ip: backupData.query,
-          country: backupData.country,
-          region: backupData.regionName,
-          city: backupData.city,
-          location: `${backupData.lat}, ${backupData.lon}`,
-          isp: backupData.isp,
-          timezone: backupData.timezone,
+          ip: backupData.ip,
+          country: backupData.country || 'N/A',
+          region: backupData.region || 'N/A',
+          city: backupData.city || 'N/A',
+          location: backupData.latitude && backupData.longitude ? `${backupData.latitude}, ${backupData.longitude}` : 'N/A',
+          isp: backupData.connection?.isp || 'N/A',
+          timezone: backupData.timezone?.id || 'N/A',
         },
         source: 'backup'
       })
