@@ -60,10 +60,60 @@ export async function POST(request) {
     const addressDetail = content.address_detail
     const point = content.point
 
-    // 尝试从address字段提取更多信息
-    // address格式: "CN|北京|北京|None|CHINANET|0|0"
-    const addressParts = content.address ? content.address.split('|') : []
-    let ispFromAddress = addressParts.length >= 5 && addressParts[4] !== 'None' ? addressParts[4] : null
+    // 从 address_detail 获取国家信息（更可靠）
+    // nation: "Saudi Arabia", nation_code: "SAU"
+    const nationCode3 = addressDetail.nation_code || '' // 3字母代码如 SAU
+    const nationName = addressDetail.nation || '' // 英文名如 Saudi Arabia
+
+    // 从顶层 address 提取2字母国家代码作为备用
+    // 顶层 data.address 格式: "SA|Riyadh|Riyadh|None|None|100|0|0"
+    const topAddressParts = data.address ? data.address.split('|') : []
+    const countryCode2 = topAddressParts[0] || '' // 2字母代码如 SA
+
+    // 运营商从顶层 address 提取
+    let ispFromAddress = topAddressParts.length >= 5 && topAddressParts[4] !== 'None' ? topAddressParts[4] : null
+
+    // 3字母国家代码映射为中文名
+    const countryMap3 = {
+      'CHN': '中国',
+      'USA': '美国',
+      'JPN': '日本',
+      'KOR': '韩国',
+      'GBR': '英国',
+      'DEU': '德国',
+      'FRA': '法国',
+      'SAU': '沙特阿拉伯',
+      'RUS': '俄罗斯',
+      'AUS': '澳大利亚',
+      'CAN': '加拿大',
+      'SGP': '新加坡',
+      'HKG': '中国香港',
+      'TWN': '中国台湾',
+      'MAC': '中国澳门',
+    }
+    // 2字母国家代码映射为中文名
+    const countryMap2 = {
+      'CN': '中国',
+      'US': '美国',
+      'JP': '日本',
+      'KR': '韩国',
+      'GB': '英国',
+      'DE': '德国',
+      'FR': '法国',
+      'SA': '沙特阿拉伯',
+      'RU': '俄罗斯',
+      'AU': '澳大利亚',
+      'CA': '加拿大',
+      'SG': '新加坡',
+      'HK': '中国香港',
+      'TW': '中国台湾',
+      'MO': '中国澳门',
+    }
+    const country = countryMap3[nationCode3] || countryMap2[countryCode2] || nationName || countryCode2 || 'N/A'
+
+    // 根据 countryCode 决定时区
+    const isCN = countryCode2 === 'CN' || nationCode3 === 'CHN'
+    const timezone = isCN ? 'Asia/Shanghai' : 'N/A'
 
     // 如果百度API没有返回运营商信息，尝试使用备用API查询
     if (!ispFromAddress || ispFromAddress === 'None') {
@@ -90,12 +140,12 @@ export async function POST(request) {
       success: true,
       data: {
         ip: ip,
-        country: '中国',  // 百度API默认返回中国数据
+        country: country,
         region: addressDetail.province || 'N/A',  // 省份
         city: addressDetail.city || 'N/A',        // 城市（地级市）
         location: point.x && point.y ? `${point.y}, ${point.x} (BD09)` : 'N/A',  // 纬度, 经度 (百度坐标系)
         isp: ispFromAddress || 'N/A',  // 运营商（直接返回原始值）
-        timezone: 'Asia/Shanghai',  // 默认中国时区
+        timezone: timezone,
       }
     })
 
