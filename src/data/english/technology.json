@@ -1,0 +1,107 @@
+{
+  "id": "technology",
+  "title": "网络科技",
+  "desc": "手机、电脑、互联网",
+  "phrases": [
+    {
+      "en": "The Wi-Fi isn't working.",
+      "zh": "Wi-Fi连不上。"
+    },
+    {
+      "en": "Can I have the password?",
+      "zh": "能告诉我密码吗？"
+    },
+    {
+      "en": "I need to charge my phone.",
+      "zh": "我需要给手机充电。"
+    },
+    {
+      "en": "My computer crashed.",
+      "zh": "我电脑死机了。"
+    },
+    {
+      "en": "Let me Google it.",
+      "zh": "让我谷歌一下。"
+    },
+    {
+      "en": "I'll send you a message.",
+      "zh": "我给你发消息。"
+    },
+    {
+      "en": "The screen is frozen.",
+      "zh": "屏幕卡住了。"
+    },
+    {
+      "en": "I need to update my software.",
+      "zh": "我需要更新软件。"
+    },
+    {
+      "en": "Do you have a charger I can borrow?",
+      "zh": "有充电器能借我用吗？"
+    },
+    {
+      "en": "The battery is dead.",
+      "zh": "电池没电了。"
+    },
+    {
+      "en": "I can't connect to the internet.",
+      "zh": "我连不上网。"
+    },
+    {
+      "en": "Let me share my screen.",
+      "zh": "让我共享屏幕。"
+    },
+    {
+      "en": "I'll add you on social media.",
+      "zh": "我在社交媒体上加你。"
+    },
+    {
+      "en": "The app keeps crashing.",
+      "zh": "这个应用一直崩溃。"
+    },
+    {
+      "en": "I need to back up my data.",
+      "zh": "我需要备份数据。"
+    },
+    {
+      "en": "Have you tried restarting it?",
+      "zh": "你试过重启吗？"
+    },
+    {
+      "en": "The download is almost done.",
+      "zh": "下载快完成了。"
+    },
+    {
+      "en": "I'm setting up a new device.",
+      "zh": "我在设置一个新设备。"
+    },
+    {
+      "en": "The signal is very weak here.",
+      "zh": "这里信号很弱。"
+    },
+    {
+      "en": "I prefer working remotely.",
+      "zh": "我更喜欢远程办公。"
+    },
+    {
+      "en": "Can you cast to the TV?",
+      "zh": "你能投屏到电视吗？"
+    },
+    {
+      "en": "I need more storage space.",
+      "zh": "我需要更多存储空间。"
+    },
+    {
+      "en": "The system is down.",
+      "zh": "系统宕机了。"
+    },
+    {
+      "en": "Let me check my email.",
+      "zh": "让我查一下邮件。"
+    },
+    {
+      "en": "I'll video call you later.",
+      "zh": "我稍后给你打视频。"
+    }
+  ]
+}

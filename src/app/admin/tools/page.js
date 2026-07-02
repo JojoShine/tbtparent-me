@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete, apiTranslate, inputStyle, textareaStyle, buttonStyle, secondaryButtonStyle, translateButtonStyle, labelStyle } from '@/lib/admin-utils'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const emptyTool = {
   name_zh: '', name_en: '',
@@ -53,15 +54,22 @@ export default function AdminTools() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('确定删除？')) return
+  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  const handleDelete = (id) => {
+    setDeleteTarget(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await apiDelete('/api/tools', id)
+      await apiDelete('/api/tools', deleteTarget)
       setMsg('已删除 ✓')
       load()
     } catch (e) {
       setMsg('删除失败: ' + e.message)
     }
+    setDeleteTarget(null)
   }
 
   return (
@@ -174,6 +182,14 @@ export default function AdminTools() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="确认删除"
+        message="确定要删除这个工具吗？删除后无法恢复。"
+      />
     </div>
   )
 }

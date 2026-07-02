@@ -1,0 +1,107 @@
+{
+  "id": "social",
+  "title": "社交聚会",
+  "desc": "约朋友、聊天、告别",
+  "phrases": [
+    {
+      "en": "Do you want to grab a coffee?",
+      "zh": "要不要去喝杯咖啡？"
+    },
+    {
+      "en": "Let's hang out this weekend.",
+      "zh": "这周末一起出去玩吧。"
+    },
+    {
+      "en": "I have to get going.",
+      "zh": "我得走了。"
+    },
+    {
+      "en": "Keep in touch!",
+      "zh": "保持联系！"
+    },
+    {
+      "en": "See you later.",
+      "zh": "回头见。"
+    },
+    {
+      "en": "It was fun!",
+      "zh": "玩得很开心！"
+    },
+    {
+      "en": "Let me introduce you.",
+      "zh": "我来给你介绍一下。"
+    },
+    {
+      "en": "Make yourself at home.",
+      "zh": "别客气，当自己家。"
+    },
+    {
+      "en": "Would you like something to drink?",
+      "zh": "你想喝点什么？"
+    },
+    {
+      "en": "Are you free tonight?",
+      "zh": "你今晚有空吗？"
+    },
+    {
+      "en": "Let me know when you're ready.",
+      "zh": "准备好了告诉我。"
+    },
+    {
+      "en": "It was lovely seeing you.",
+      "zh": "见到你真高兴。"
+    },
+    {
+      "en": "We should do this more often.",
+      "zh": "我们应该多聚聚。"
+    },
+    {
+      "en": "I had a wonderful time.",
+      "zh": "我度过了愉快的时光。"
+    },
+    {
+      "en": "Say hello to your family for me.",
+      "zh": "代我向你家人问好。"
+    },
+    {
+      "en": "Do you want to come along?",
+      "zh": "你想一起来吗？"
+    },
+    {
+      "en": "I'm hosting a party next week.",
+      "zh": "我下周要办个派对。"
+    },
+    {
+      "en": "Let's catch up soon.",
+      "zh": "我们找个时间聚聚吧。"
+    },
+    {
+      "en": "It was nice chatting with you.",
+      "zh": "和你聊天很开心。"
+    },
+    {
+      "en": "Don't be a stranger!",
+      "zh": "别不常联系！"
+    },
+    {
+      "en": "Would you like to join us?",
+      "zh": "你想加入我们吗？"
+    },
+    {
+      "en": "I'm so glad you could make it.",
+      "zh": "很高兴你能来。"
+    },
+    {
+      "en": "Let's plan something for next week.",
+      "zh": "我们计划下周的活动吧。"
+    },
+    {
+      "en": "It was a great party!",
+      "zh": "派对很棒！"
+    },
+    {
+      "en": "I'd love to take a rain check.",
+      "zh": "我想改天再约。"
+    }
+  ]
+}

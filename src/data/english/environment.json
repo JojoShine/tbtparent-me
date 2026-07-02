@@ -1,0 +1,107 @@
+{
+  "id": "environment",
+  "title": "环境保护",
+  "desc": "环保、气候变化、可持续发展",
+  "phrases": [
+    {
+      "en": "We should protect the environment.",
+      "zh": "我们应该保护环境。"
+    },
+    {
+      "en": "Climate change is a serious issue.",
+      "zh": "气候变化是个严重问题。"
+    },
+    {
+      "en": "I try to reduce my carbon footprint.",
+      "zh": "我尽量减少碳足迹。"
+    },
+    {
+      "en": "Let's use reusable bags.",
+      "zh": "我们用可重复使用的袋子吧。"
+    },
+    {
+      "en": "We need to recycle more.",
+      "zh": "我们需要更多地回收。"
+    },
+    {
+      "en": "The air quality is poor today.",
+      "zh": "今天空气质量很差。"
+    },
+    {
+      "en": "I ride my bike to work.",
+      "zh": "我骑自行车上班。"
+    },
+    {
+      "en": "Plastic pollution is a big problem.",
+      "zh": "塑料污染是个大问题。"
+    },
+    {
+      "en": "We should save water.",
+      "zh": "我们应该节约用水。"
+    },
+    {
+      "en": "I use solar panels at home.",
+      "zh": "我家里用太阳能板。"
+    },
+    {
+      "en": "The ocean is getting warmer.",
+      "zh": "海洋越来越暖了。"
+    },
+    {
+      "en": "Let's plant more trees.",
+      "zh": "我们多种些树吧。"
+    },
+    {
+      "en": "I bought an electric car.",
+      "zh": "我买了一辆电动车。"
+    },
+    {
+      "en": "We need to cut down on waste.",
+      "zh": "我们需要减少浪费。"
+    },
+    {
+      "en": "The forest is being destroyed.",
+      "zh": "森林正在被破坏。"
+    },
+    {
+      "en": "I bring my own cup to the cafe.",
+      "zh": "我去咖啡馆自带杯子。"
+    },
+    {
+      "en": "Renewable energy is the future.",
+      "zh": "可再生能源是未来。"
+    },
+    {
+      "en": "The glaciers are melting.",
+      "zh": "冰川正在融化。"
+    },
+    {
+      "en": "I compost my food waste.",
+      "zh": "我把食物残渣做堆肥。"
+    },
+    {
+      "en": "We should use public transport.",
+      "zh": "我们应该使用公共交通。"
+    },
+    {
+      "en": "The smog is really bad today.",
+      "zh": "今天雾霾很严重。"
+    },
+    {
+      "en": "I'm trying to live more sustainably.",
+      "zh": "我在尝试更可持续的生活方式。"
+    },
+    {
+      "en": "Don't litter on the street.",
+      "zh": "不要在街上乱扔垃圾。"
+    },
+    {
+      "en": "The wildlife is endangered.",
+      "zh": "野生动物濒临灭绝。"
+    },
+    {
+      "en": "Let's go carpooling.",
+      "zh": "我们拼车吧。"
+    }
+  ]
+}

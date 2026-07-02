@@ -1,0 +1,107 @@
+{
+  "id": "dining",
+  "title": "餐厅点餐",
+  "desc": "吃饭、点菜、结账",
+  "phrases": [
+    {
+      "en": "Can I see the menu, please?",
+      "zh": "能看一下菜单吗？"
+    },
+    {
+      "en": "I'd like to order.",
+      "zh": "我想点餐。"
+    },
+    {
+      "en": "What do you recommend?",
+      "zh": "你推荐什么？"
+    },
+    {
+      "en": "I'll have this one.",
+      "zh": "我要这个。"
+    },
+    {
+      "en": "Could we have the bill, please?",
+      "zh": "能买单吗？"
+    },
+    {
+      "en": "Is service included?",
+      "zh": "包含服务费吗？"
+    },
+    {
+      "en": "It's on me.",
+      "zh": "我请客。"
+    },
+    {
+      "en": "The food was delicious.",
+      "zh": "食物很好吃。"
+    },
+    {
+      "en": "A table for two, please.",
+      "zh": "请安排两人桌。"
+    },
+    {
+      "en": "I'm allergic to nuts.",
+      "zh": "我对坚果过敏。"
+    },
+    {
+      "en": "Could I have some water?",
+      "zh": "能给我一些水吗？"
+    },
+    {
+      "en": "I'd like a cup of coffee.",
+      "zh": "我想要一杯咖啡。"
+    },
+    {
+      "en": "Do you have vegetarian options?",
+      "zh": "有素食选项吗？"
+    },
+    {
+      "en": "I'd like to make a reservation.",
+      "zh": "我想预订座位。"
+    },
+    {
+      "en": "Can I have the dressing on the side?",
+      "zh": "酱料可以单独放吗？"
+    },
+    {
+      "en": "I'd like a glass of wine.",
+      "zh": "我想要一杯葡萄酒。"
+    },
+    {
+      "en": "Could we sit by the window?",
+      "zh": "我们能坐窗边吗？"
+    },
+    {
+      "en": "I'll have the same.",
+      "zh": "我要一样的。"
+    },
+    {
+      "en": "Can I get this to go?",
+      "zh": "这个能打包吗？"
+    },
+    {
+      "en": "Let's split the bill.",
+      "zh": "我们分摊账单吧。"
+    },
+    {
+      "en": "Could I have some more bread?",
+      "zh": "能再给我一些面包吗？"
+    },
+    {
+      "en": "What's today's special?",
+      "zh": "今天的特色菜是什么？"
+    },
+    {
+      "en": "I'd like a dessert menu.",
+      "zh": "我想要甜点菜单。"
+    },
+    {
+      "en": "This is too salty for me.",
+      "zh": "这个对我来说太咸了。"
+    },
+    {
+      "en": "We're ready to order now.",
+      "zh": "我们现在准备好点餐了。"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "shopping",
+  "title": "购物砍价",
+  "desc": "买东西、问价格、砍价",
+  "phrases": [
+    {
+      "en": "How much is this?",
+      "zh": "这个多少钱？"
+    },
+    {
+      "en": "Can I get a discount?",
+      "zh": "能打折吗？"
+    },
+    {
+      "en": "That's too expensive.",
+      "zh": "太贵了。"
+    },
+    {
+      "en": "Do you have a smaller size?",
+      "zh": "有小一号的吗？"
+    },
+    {
+      "en": "Can I try this on?",
+      "zh": "我能试穿吗？"
+    },
+    {
+      "en": "I'm just looking.",
+      "zh": "我只是随便看看。"
+    },
+    {
+      "en": "Do you accept credit cards?",
+      "zh": "能刷信用卡吗？"
+    },
+    {
+      "en": "I'll take it.",
+      "zh": "我买了。"
+    },
+    {
+      "en": "Do you have this in black?",
+      "zh": "有黑色的吗？"
+    },
+    {
+      "en": "Where is the fitting room?",
+      "zh": "试衣间在哪里？"
+    },
+    {
+      "en": "Can I return this?",
+      "zh": "这个能退吗？"
+    },
+    {
+      "en": "Is there a sale on?",
+      "zh": "现在有打折吗？"
+    },
+    {
+      "en": "Could you wrap it as a gift?",
+      "zh": "能帮我包装成礼物吗？"
+    },
+    {
+      "en": "Do you have a bigger one?",
+      "zh": "有大一号的吗？"
+    },
+    {
+      "en": "I'll pay in cash.",
+      "zh": "我付现金。"
+    },
+    {
+      "en": "Can you give me a better price?",
+      "zh": "能给我个更优惠的价格吗？"
+    },
+    {
+      "en": "I'm looking for a pair of shoes.",
+      "zh": "我在找一双鞋。"
+    },
+    {
+      "en": "Do you have this in a different color?",
+      "zh": "有其他颜色吗？"
+    },
+    {
+      "en": "I'd like to exchange this.",
+      "zh": "我想换这个。"
+    },
+    {
+      "en": "Is this the latest model?",
+      "zh": "这是最新款吗？"
+    },
+    {
+      "en": "Can I get a receipt, please?",
+      "zh": "能给我一张收据吗？"
+    },
+    {
+      "en": "Do you offer free shipping?",
+      "zh": "你们提供免费配送吗？"
+    },
+    {
+      "en": "I found a defect on this item.",
+      "zh": "这件商品有瑕疵。"
+    },
+    {
+      "en": "Is this brand new?",
+      "zh": "这是全新的吗？"
+    },
+    {
+      "en": "I'd like to buy two of these.",
+      "zh": "我想买两个这个。"
+    }
+  ]
+}

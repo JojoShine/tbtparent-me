@@ -1,0 +1,107 @@
+{
+  "id": "banking",
+  "title": "银行金融",
+  "desc": "存取款、换汇、转账",
+  "phrases": [
+    {
+      "en": "I'd like to open a bank account.",
+      "zh": "我想开一个银行账户。"
+    },
+    {
+      "en": "How do I exchange currency?",
+      "zh": "我怎么换汇？"
+    },
+    {
+      "en": "I need to withdraw some cash.",
+      "zh": "我需要取一些现金。"
+    },
+    {
+      "en": "What's the exchange rate today?",
+      "zh": "今天的汇率是多少？"
+    },
+    {
+      "en": "I'd like to transfer money.",
+      "zh": "我想转账。"
+    },
+    {
+      "en": "Where is the nearest ATM?",
+      "zh": "最近的ATM在哪？"
+    },
+    {
+      "en": "I need to deposit a check.",
+      "zh": "我需要存一张支票。"
+    },
+    {
+      "en": "Can I get my bank statement?",
+      "zh": "能给我银行对账单吗？"
+    },
+    {
+      "en": "I lost my credit card.",
+      "zh": "我的信用卡丢了。"
+    },
+    {
+      "en": "I'd like to apply for a loan.",
+      "zh": "我想申请贷款。"
+    },
+    {
+      "en": "What's the interest rate?",
+      "zh": "利率是多少？"
+    },
+    {
+      "en": "I need to fill out this form.",
+      "zh": "我需要填这张表。"
+    },
+    {
+      "en": "Can I pay by installments?",
+      "zh": "可以分期付款吗？"
+    },
+    {
+      "en": "I'd like to report a fraudulent charge.",
+      "zh": "我想报告一笔欺诈消费。"
+    },
+    {
+      "en": "How much is the transfer fee?",
+      "zh": "转账手续费多少？"
+    },
+    {
+      "en": "I need to reset my PIN.",
+      "zh": "我需要重置密码。"
+    },
+    {
+      "en": "Is there a minimum deposit?",
+      "zh": "有最低存款要求吗？"
+    },
+    {
+      "en": "I'd like to close my account.",
+      "zh": "我想注销账户。"
+    },
+    {
+      "en": "The transaction was declined.",
+      "zh": "交易被拒绝了。"
+    },
+    {
+      "en": "Can I use mobile payment?",
+      "zh": "能用手机支付吗？"
+    },
+    {
+      "en": "I need to set up direct deposit.",
+      "zh": "我需要设置直接存款。"
+    },
+    {
+      "en": "My card was declined.",
+      "zh": "我的卡被拒了。"
+    },
+    {
+      "en": "I'd like to convert to a different account.",
+      "zh": "我想换一种账户类型。"
+    },
+    {
+      "en": "How long does the transfer take?",
+      "zh": "转账需要多长时间？"
+    },
+    {
+      "en": "I need to verify my identity.",
+      "zh": "我需要验证身份。"
+    }
+  ]
+}

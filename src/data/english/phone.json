@@ -1,0 +1,107 @@
+{
+  "id": "phone",
+  "title": "电话沟通",
+  "desc": "打电话、接电话、留言",
+  "phrases": [
+    {
+      "en": "Hello, this is... speaking.",
+      "zh": "你好，我是……"
+    },
+    {
+      "en": "Could I speak to... please?",
+      "zh": "能和……说话吗？"
+    },
+    {
+      "en": "Hold on a moment, please.",
+      "zh": "请稍等一下。"
+    },
+    {
+      "en": "I'll call you back later.",
+      "zh": "我稍后给你回电话。"
+    },
+    {
+      "en": "Can you hear me?",
+      "zh": "你能听到我说话吗？"
+    },
+    {
+      "en": "The line is bad.",
+      "zh": "信号不好。"
+    },
+    {
+      "en": "Could you say that again?",
+      "zh": "你能再说一遍吗？"
+    },
+    {
+      "en": "I'm calling about...",
+      "zh": "我打电话是关于……"
+    },
+    {
+      "en": "Can I leave a message?",
+      "zh": "我能留个消息吗？"
+    },
+    {
+      "en": "I'll get back to you on that.",
+      "zh": "我会就此事回复你。"
+    },
+    {
+      "en": "Sorry, I didn't catch that.",
+      "zh": "抱歉，我没听清。"
+    },
+    {
+      "en": "Is this a good time to talk?",
+      "zh": "现在方便说话吗？"
+    },
+    {
+      "en": "I'm afraid he's not available.",
+      "zh": "恐怕他不在。"
+    },
+    {
+      "en": "Could you take a message?",
+      "zh": "你能帮忙带个话吗？"
+    },
+    {
+      "en": "Thanks for calling.",
+      "zh": "谢谢你的来电。"
+    },
+    {
+      "en": "Who's calling, please?",
+      "zh": "请问是哪位？"
+    },
+    {
+      "en": "Let me transfer you.",
+      "zh": "我帮你转接。"
+    },
+    {
+      "en": "I've been trying to reach you.",
+      "zh": "我一直在联系你。"
+    },
+    {
+      "en": "Can you speak up a little?",
+      "zh": "你能说大声点吗？"
+    },
+    {
+      "en": "I'll put you on hold.",
+      "zh": "我让你稍等一下。"
+    },
+    {
+      "en": "I missed a call from you.",
+      "zh": "我漏了你的电话。"
+    },
+    {
+      "en": "Please call me back when you can.",
+      "zh": "方便时请给我回电话。"
+    },
+    {
+      "en": "I think you have the wrong number.",
+      "zh": "我想你打错电话了。"
+    },
+    {
+      "en": "Can I send you a text instead?",
+      "zh": "我给你发短信行吗？"
+    },
+    {
+      "en": "Let me give you my number.",
+      "zh": "我把号码给你。"
+    }
+  ]
+}

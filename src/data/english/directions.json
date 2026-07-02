@@ -1,0 +1,107 @@
+{
+  "id": "directions",
+  "title": "问路指路",
+  "desc": "问怎么走、描述方向",
+  "phrases": [
+    {
+      "en": "Excuse me, where is the subway station?",
+      "zh": "请问地铁站在哪？"
+    },
+    {
+      "en": "How do I get to the museum?",
+      "zh": "去博物馆怎么走？"
+    },
+    {
+      "en": "Is it within walking distance?",
+      "zh": "走路能到吗？"
+    },
+    {
+      "en": "Turn left at the traffic light.",
+      "zh": "在红绿灯左转。"
+    },
+    {
+      "en": "Go straight for two blocks.",
+      "zh": "直走两个街区。"
+    },
+    {
+      "en": "It's on your right.",
+      "zh": "在你右手边。"
+    },
+    {
+      "en": "I think I'm lost.",
+      "zh": "我好像迷路了。"
+    },
+    {
+      "en": "Can you show me on the map?",
+      "zh": "能在地图上指给我看吗？"
+    },
+    {
+      "en": "Is it far from here?",
+      "zh": "离这里远吗？"
+    },
+    {
+      "en": "Which bus should I take?",
+      "zh": "我该坐哪路公交？"
+    },
+    {
+      "en": "It's next to the bank.",
+      "zh": "在银行旁边。"
+    },
+    {
+      "en": "Go past the park and you'll see it.",
+      "zh": "经过公园就能看到。"
+    },
+    {
+      "en": "It's across from the hospital.",
+      "zh": "在医院对面。"
+    },
+    {
+      "en": "You can't miss it.",
+      "zh": "你不会错过的。"
+    },
+    {
+      "en": "How long does it take to get there?",
+      "zh": "到那里要多长时间？"
+    },
+    {
+      "en": "Go down this street.",
+      "zh": "沿着这条街走。"
+    },
+    {
+      "en": "It's on the corner.",
+      "zh": "在拐角处。"
+    },
+    {
+      "en": "Take the second right.",
+      "zh": "在第二个路口右转。"
+    },
+    {
+      "en": "It's between the bank and the post office.",
+      "zh": "在银行和邮局之间。"
+    },
+    {
+      "en": "You'd better take a taxi.",
+      "zh": "你最好打出租车。"
+    },
+    {
+      "en": "It's about a ten-minute walk.",
+      "zh": "大约步行十分钟。"
+    },
+    {
+      "en": "Head straight until you see the sign.",
+      "zh": "直走直到看到标志。"
+    },
+    {
+      "en": "It's just around the corner.",
+      "zh": "就在拐角那边。"
+    },
+    {
+      "en": "Could you point me in the right direction?",
+      "zh": "你能给我指个正确的方向吗？"
+    },
+    {
+      "en": "I'm trying to find the nearest hospital.",
+      "zh": "我在找最近的医院。"
+    }
+  ]
+}

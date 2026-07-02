@@ -1,0 +1,107 @@
+{
+  "id": "feelings",
+  "title": "表达感受",
+  "desc": "开心、难过、同意、反对",
+  "phrases": [
+    {
+      "en": "I'm so happy!",
+      "zh": "我太开心了！"
+    },
+    {
+      "en": "That makes sense.",
+      "zh": "有道理。"
+    },
+    {
+      "en": "I don't think so.",
+      "zh": "我不这么认为。"
+    },
+    {
+      "en": "I'm not sure about that.",
+      "zh": "我不太确定。"
+    },
+    {
+      "en": "That's a great idea!",
+      "zh": "好主意！"
+    },
+    {
+      "en": "I'm feeling a bit tired.",
+      "zh": "我有点累。"
+    },
+    {
+      "en": "I couldn't agree more.",
+      "zh": "我完全同意。"
+    },
+    {
+      "en": "Let me think about it.",
+      "zh": "让我想想。"
+    },
+    {
+      "en": "I'm really excited about this.",
+      "zh": "我对此很兴奋。"
+    },
+    {
+      "en": "That's a bit disappointing.",
+      "zh": "有点令人失望。"
+    },
+    {
+      "en": "I'm so sorry to hear that.",
+      "zh": "听到这个我很难过。"
+    },
+    {
+      "en": "I'm looking forward to it.",
+      "zh": "我很期待。"
+    },
+    {
+      "en": "I'm a bit worried about it.",
+      "zh": "我有点担心。"
+    },
+    {
+      "en": "That's wonderful news!",
+      "zh": "那真是好消息！"
+    },
+    {
+      "en": "I totally understand.",
+      "zh": "我完全理解。"
+    },
+    {
+      "en": "I'm feeling much better now.",
+      "zh": "我现在感觉好多了。"
+    },
+    {
+      "en": "That really bothers me.",
+      "zh": "那真的让我烦。"
+    },
+    {
+      "en": "I'm so grateful.",
+      "zh": "我非常感激。"
+    },
+    {
+      "en": "I can't believe it!",
+      "zh": "我简直不敢相信！"
+    },
+    {
+      "en": "I'm a little nervous.",
+      "zh": "我有点紧张。"
+    },
+    {
+      "en": "I'm absolutely thrilled!",
+      "zh": "我简直太激动了！"
+    },
+    {
+      "en": "That really made my day.",
+      "zh": "那真的让我很开心。"
+    },
+    {
+      "en": "I'm feeling under the weather.",
+      "zh": "我感觉不太舒服。"
+    },
+    {
+      "en": "I'm on top of the world.",
+      "zh": "我感觉棒极了。"
+    },
+    {
+      "en": "I'm a bit overwhelmed.",
+      "zh": "我有点不知所措。"
+    }
+  ]
+}

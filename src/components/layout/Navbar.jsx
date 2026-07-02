@@ -212,6 +212,7 @@ const searchPages = [
   { key: 'idiom-game', label_zh: '成语闯关', label_en: 'Idiom Game', description_zh: '猜成语小游戏', path: '/game/idiom' },
   { key: 'takuzu-game', label_zh: 'XXOO', label_en: 'Takuzu', description_zh: 'XXOO逻辑棋游戏', path: '/game/takuzu' },
   { key: 'guess-number-game', label_zh: '猜数字', label_en: 'Guess Number', description_zh: '猜数字xAyB游戏', path: '/game/guess-number' },
+  { key: 'english-game', label_zh: '常用英语', label_en: 'English Practice', description_zh: '听发音看中文打出英文常用英语', path: '/game/english' }
 ]
 
 function SearchModal({ onClose }) {

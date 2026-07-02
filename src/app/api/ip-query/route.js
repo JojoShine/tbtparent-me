@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server'
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit'
+
+const DAILY_LIMIT = 100
 
 export async function POST(request) {
   try {
+    // 限流检查
+    const { allowed } = checkRateLimit(request, DAILY_LIMIT)
+    if (!allowed) {
+      return rateLimitResponse(DAILY_LIMIT)
+    }
+
     const { ip } = await request.json()
 
     if (!ip) {
@@ -21,7 +30,10 @@ export async function POST(request) {
     }
 
     // 优先使用百度地图IP定位API（国内最准确）
-    const baiduAK = 'XGK56chBrXrRbZPIlFwVfmy0VNFIGBtD'
+    const baiduAK = process.env.BAIDU_IP_AK
+    if (!baiduAK) {
+      throw new Error('Baidu IP API key not configured')
+    }
     const apiUrl = `https://api.map.baidu.com/location/ip?ak=${baiduAK}&ip=${encodeURIComponent(ip)}&coor=bd09ll`
 
     const response = await fetch(apiUrl, {

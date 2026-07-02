@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server'
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
-/**
- * 翻译 API - 使用 MyMemory 免费翻译服务
- * 免费额度：每天 5000 字（无需 API Key）
- * 如需更高额度，可注册获取 key: https://mymemory.translated.net/doc/spec.php
- *
- * 请求：POST /api/translate
- * Body: { text: "你好", from: "zh", to: "en" }
- */
+const DAILY_LIMIT = 200
 
 export async function POST(req) {
   try {
+    // 限流检查
+    const { allowed } = checkRateLimit(req, DAILY_LIMIT)
+    if (!allowed) {
+      return rateLimitResponse(DAILY_LIMIT)
+    }
+
     const { text, from = 'zh', to = 'en' } = await req.json()
 
     if (!text || typeof text !== 'string') {

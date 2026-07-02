@@ -21,7 +21,7 @@ export default function SuwenPage() {
       variants={fadeUp}
     >
       {/* 头部 */}
-      <div style={{ marginBottom: '40px' }}>
+      <div style={{ marginBottom: '16px' }}>
         <Link
           href="/"
           className="inline-flex items-center gap-2 font-mono text-sm relative hover:opacity-70 transition-opacity"

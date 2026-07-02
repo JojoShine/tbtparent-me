@@ -1,0 +1,107 @@
+{
+  "id": "health",
+  "title": "医疗健康",
+  "desc": "看病、买药、描述症状",
+  "phrases": [
+    {
+      "en": "I don't feel well.",
+      "zh": "我感觉不舒服。"
+    },
+    {
+      "en": "I have a headache.",
+      "zh": "我头疼。"
+    },
+    {
+      "en": "I need to see a doctor.",
+      "zh": "我需要看医生。"
+    },
+    {
+      "en": "Where is the nearest pharmacy?",
+      "zh": "最近的药店在哪？"
+    },
+    {
+      "en": "I'm allergic to penicillin.",
+      "zh": "我对青霉素过敏。"
+    },
+    {
+      "en": "I have a fever.",
+      "zh": "我发烧了。"
+    },
+    {
+      "en": "Do I need a prescription?",
+      "zh": "我需要处方吗？"
+    },
+    {
+      "en": "I have a sore throat.",
+      "zh": "我嗓子疼。"
+    },
+    {
+      "en": "How often should I take this medicine?",
+      "zh": "这药多久吃一次？"
+    },
+    {
+      "en": "I have a stomachache.",
+      "zh": "我胃疼。"
+    },
+    {
+      "en": "I've been coughing a lot.",
+      "zh": "我一直咳嗽。"
+    },
+    {
+      "en": "Is there a hospital nearby?",
+      "zh": "附近有医院吗？"
+    },
+    {
+      "en": "I twisted my ankle.",
+      "zh": "我扭伤了脚踝。"
+    },
+    {
+      "en": "I need a sick note for work.",
+      "zh": "我需要一张病假条。"
+    },
+    {
+      "en": "Do you have insurance?",
+      "zh": "你有保险吗？"
+    },
+    {
+      "en": "I have a runny nose.",
+      "zh": "我流鼻涕。"
+    },
+    {
+      "en": "My back hurts.",
+      "zh": "我背疼。"
+    },
+    {
+      "en": "I've been feeling dizzy.",
+      "zh": "我一直头晕。"
+    },
+    {
+      "en": "Take two pills after each meal.",
+      "zh": "每顿饭后吃两片药。"
+    },
+    {
+      "en": "You should get some rest.",
+      "zh": "你应该多休息。"
+    },
+    {
+      "en": "I have a bad cold.",
+      "zh": "我得了重感冒。"
+    },
+    {
+      "en": "I need to make a doctor's appointment.",
+      "zh": "我需要预约医生。"
+    },
+    {
+      "en": "My arm is swollen.",
+      "zh": "我的胳膊肿了。"
+    },
+    {
+      "en": "I'm having trouble breathing.",
+      "zh": "我呼吸有困难。"
+    },
+    {
+      "en": "You need to take this three times a day.",
+      "zh": "你需要每天吃三次。"
+    }
+  ]
+}

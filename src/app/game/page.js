@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
-import { ArrowLeft, BookOpen, Grid3x3, Calculator } from 'lucide-react'
+import { ArrowLeft, BookOpen, Grid3x3, Calculator, Languages } from 'lucide-react'
 
 const GAMES = [
   {
@@ -54,6 +54,22 @@ const GAMES = [
     action_zh: '已通关',
     unit_zh: '关',
     maxDaily: 3, // 3 sizes * 1
+  },
+  {
+    id: 'english',
+    href: '/game/english',
+    icon: Languages,
+    title_zh: '常用英语',
+    title_en: 'English Practice',
+    desc_zh: '听发音看中文，打出英文常用英语，含每日10句',
+    desc_en: 'Listen, read Chinese, type English phrases, with daily 10 sentences',
+    limit_zh: '20 个单元',
+    limit_en: '20 units',
+    statsKey: 'english-progress',
+    dailyKey: 'english-progress',
+    action_zh: '已练习',
+    unit_zh: '句',
+    maxDaily: Infinity,
   },
 ]
 

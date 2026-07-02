@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete, inputStyle, textareaStyle, buttonStyle, secondaryButtonStyle, labelStyle } from '@/lib/admin-utils'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const emptyQA = { title_zh: '', title_en: '', tags_zh: [], tags_en: [], content_zh: '', content_en: '', sortOrder: 0 }
 
@@ -37,15 +38,22 @@ export default function AdminQA() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('确定删除？')) return
+  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  const handleDelete = (id) => {
+    setDeleteTarget(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await apiDelete('/api/qa', id)
+      await apiDelete('/api/qa', deleteTarget)
       setMsg('已删除 ✓')
       load()
     } catch (e) {
       setMsg('删除失败: ' + e.message)
     }
+    setDeleteTarget(null)
   }
 
   const addTag = (lang) => {
@@ -286,6 +294,14 @@ export default function AdminQA() {
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="确认删除"
+        message="确定要删除这个问题吗？删除后无法恢复。"
+      />
     </div>
   )
 }

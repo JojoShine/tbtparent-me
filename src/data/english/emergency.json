@@ -1,0 +1,107 @@
+{
+  "id": "emergency",
+  "title": "紧急情况",
+  "desc": "求助、报警、突发状况",
+  "phrases": [
+    {
+      "en": "Please call an ambulance!",
+      "zh": "请叫救护车！"
+    },
+    {
+      "en": "I need help right now!",
+      "zh": "我现在需要帮助！"
+    },
+    {
+      "en": "There's been an accident.",
+      "zh": "出事故了。"
+    },
+    {
+      "en": "My wallet was stolen.",
+      "zh": "我的钱包被偷了。"
+    },
+    {
+      "en": "I need to call the police.",
+      "zh": "我需要报警。"
+    },
+    {
+      "en": "Is there a doctor on duty?",
+      "zh": "有医生值班吗？"
+    },
+    {
+      "en": "I'm lost and I don't know where I am.",
+      "zh": "我迷路了，不知道在哪。"
+    },
+    {
+      "en": "My passport has expired.",
+      "zh": "我的护照过期了。"
+    },
+    {
+      "en": "I need to contact the embassy.",
+      "zh": "我需要联系大使馆。"
+    },
+    {
+      "en": "There's a fire in the building.",
+      "zh": "大楼里着火了。"
+    },
+    {
+      "en": "I locked myself out.",
+      "zh": "我把自己锁在外面了。"
+    },
+    {
+      "en": "My phone was stolen.",
+      "zh": "我的手机被偷了。"
+    },
+    {
+      "en": "I need a tow truck.",
+      "zh": "我需要一辆拖车。"
+    },
+    {
+      "en": "Please hurry!",
+      "zh": "请快点！"
+    },
+    {
+      "en": "I can't find my child.",
+      "zh": "我找不到我的孩子了。"
+    },
+    {
+      "en": "The car broke down.",
+      "zh": "车坏了。"
+    },
+    {
+      "en": "I need to file a police report.",
+      "zh": "我需要报案。"
+    },
+    {
+      "en": "Is anyone hurt?",
+      "zh": "有人受伤吗？"
+    },
+    {
+      "en": "I don't speak the language.",
+      "zh": "我不会说这里的语言。"
+    },
+    {
+      "en": "Can you help me find my way back?",
+      "zh": "你能帮我找到回去的路吗？"
+    },
+    {
+      "en": "Someone broke into my car.",
+      "zh": "有人闯进了我的车。"
+    },
+    {
+      "en": "I need immediate assistance.",
+      "zh": "我需要紧急援助。"
+    },
+    {
+      "en": "The situation is getting worse.",
+      "zh": "情况越来越糟。"
+    },
+    {
+      "en": "Stay calm and follow me.",
+      "zh": "保持冷静，跟我来。"
+    },
+    {
+      "en": "I've lost all my belongings.",
+      "zh": "我所有东西都丢了。"
+    }
+  ]
+}

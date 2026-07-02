@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { apiGet, apiPost, apiPut, apiDelete, inputStyle, textareaStyle, buttonStyle, secondaryButtonStyle, labelStyle } from '@/lib/admin-utils'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const emptyChapter = { novelId: null, chapter_number: 0, title_zh: '', title_en: '', content_zh: '', content_en: '', sortOrder: 0 }
 
@@ -61,15 +62,22 @@ export default function AdminChapters() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('确定删除此章节？')) return
+  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  const handleDelete = (id) => {
+    setDeleteTarget(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await apiDelete('/api/archive/chapters', id)
+      await apiDelete('/api/archive/chapters', deleteTarget)
       setMsg('章节已删除 ✓')
       loadChapters()
     } catch (e) {
       setMsg('删除失败: ' + e.message)
     }
+    setDeleteTarget(null)
   }
 
   // 分页计算
@@ -244,6 +252,14 @@ export default function AdminChapters() {
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="确认删除"
+        message="确定要删除这个章节吗？删除后无法恢复。"
+      />
     </div>
   )
 }

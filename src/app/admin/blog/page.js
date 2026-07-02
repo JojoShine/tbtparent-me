@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete, apiTranslate, getHeaders, inputStyle, textareaStyle, buttonStyle, secondaryButtonStyle, translateButtonStyle, labelStyle } from '@/lib/admin-utils'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const emptyBlog = {
   title_zh: '', title_en: '',
@@ -72,15 +73,22 @@ export default function AdminBlog() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('确定删除？')) return
+  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  const handleDelete = (id) => {
+    setDeleteTarget(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await apiDelete('/api/blog', id)
+      await apiDelete('/api/blog', deleteTarget)
       setMsg('已删除 ✓')
       load()
     } catch (e) {
       setMsg('删除失败: ' + e.message)
     }
+    setDeleteTarget(null)
   }
 
   const handleTranslate = async (fromField, toField) => {
@@ -421,6 +429,14 @@ export default function AdminBlog() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="确认删除"
+        message="确定要删除这篇文章吗？删除后无法恢复。"
+      />
 
       <style jsx global>{`
         @media (max-width: 768px) {

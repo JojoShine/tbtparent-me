@@ -1,0 +1,107 @@
+{
+  "id": "travel",
+  "title": "出行住宿",
+  "desc": "打车、酒店入住、机场",
+  "phrases": [
+    {
+      "en": "I'd like to check in.",
+      "zh": "我想办理入住。"
+    },
+    {
+      "en": "I have a reservation.",
+      "zh": "我有预订。"
+    },
+    {
+      "en": "How much is the fare?",
+      "zh": "车费多少钱？"
+    },
+    {
+      "en": "Can you take me to the airport?",
+      "zh": "能送我去机场吗？"
+    },
+    {
+      "en": "What time is checkout?",
+      "zh": "退房时间是几点？"
+    },
+    {
+      "en": "Is breakfast included?",
+      "zh": "包含早餐吗？"
+    },
+    {
+      "en": "Where is the gate?",
+      "zh": "登机口在哪？"
+    },
+    {
+      "en": "I'd like a window seat.",
+      "zh": "我想要靠窗的座位。"
+    },
+    {
+      "en": "My flight is at six.",
+      "zh": "我的航班在六点。"
+    },
+    {
+      "en": "Could I have a room with a view?",
+      "zh": "能给我一间有风景的房间吗？"
+    },
+    {
+      "en": "Where can I get a taxi?",
+      "zh": "在哪里能打到出租车？"
+    },
+    {
+      "en": "I need to change my booking.",
+      "zh": "我需要改签。"
+    },
+    {
+      "en": "The air conditioning isn't working.",
+      "zh": "空调不工作了。"
+    },
+    {
+      "en": "Could I have an extra blanket?",
+      "zh": "能多给一条毯子吗？"
+    },
+    {
+      "en": "I'd like to extend my stay.",
+      "zh": "我想延长住宿。"
+    },
+    {
+      "en": "Where is baggage claim?",
+      "zh": "行李提取处在哪？"
+    },
+    {
+      "en": "I need to cancel my flight.",
+      "zh": "我需要取消航班。"
+    },
+    {
+      "en": "Do you have a reservation?",
+      "zh": "您有预订吗？"
+    },
+    {
+      "en": "I'd like a non-stop flight.",
+      "zh": "我想要直飞航班。"
+    },
+    {
+      "en": "The Wi-Fi isn't working in my room.",
+      "zh": "我房间的Wi-Fi不能用。"
+    },
+    {
+      "en": "My luggage hasn't arrived.",
+      "zh": "我的行李还没到。"
+    },
+    {
+      "en": "I'd like to upgrade my room.",
+      "zh": "我想升级房间。"
+    },
+    {
+      "en": "Is there a shuttle service?",
+      "zh": "有班车服务吗？"
+    },
+    {
+      "en": "I need to go through customs.",
+      "zh": "我需要过海关。"
+    },
+    {
+      "en": "Please stop here.",
+      "zh": "请在这里停下。"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "introductions",
+  "title": "自我介绍",
+  "desc": "介绍姓名、职业、来自哪里",
+  "phrases": [
+    {
+      "en": "My name is...",
+      "zh": "我的名字是……"
+    },
+    {
+      "en": "I'm from China.",
+      "zh": "我来自中国。"
+    },
+    {
+      "en": "Nice to meet you.",
+      "zh": "很高兴认识你。"
+    },
+    {
+      "en": "What do you do for a living?",
+      "zh": "你做什么工作？"
+    },
+    {
+      "en": "I'm a software engineer.",
+      "zh": "我是一名软件工程师。"
+    },
+    {
+      "en": "Where are you from?",
+      "zh": "你从哪里来？"
+    },
+    {
+      "en": "I work in tech.",
+      "zh": "我在科技行业工作。"
+    },
+    {
+      "en": "It was great talking to you.",
+      "zh": "和你聊天很愉快。"
+    },
+    {
+      "en": "I'm originally from Beijing.",
+      "zh": "我原来是北京人。"
+    },
+    {
+      "en": "What's your name?",
+      "zh": "你叫什么名字？"
+    },
+    {
+      "en": "I'm twenty-five years old.",
+      "zh": "我二十五岁。"
+    },
+    {
+      "en": "Pleased to meet you.",
+      "zh": "很高兴见到你。"
+    },
+    {
+      "en": "I graduated from university last year.",
+      "zh": "我去年大学毕业。"
+    },
+    {
+      "en": "I'm studying English.",
+      "zh": "我在学英语。"
+    },
+    {
+      "en": "Let me introduce myself.",
+      "zh": "让我自我介绍一下。"
+    },
+    {
+      "en": "I have two siblings.",
+      "zh": "我有两个兄弟姐妹。"
+    },
+    {
+      "en": "I live in Shanghai.",
+      "zh": "我住在上海。"
+    },
+    {
+      "en": "What are your hobbies?",
+      "zh": "你的爱好是什么？"
+    },
+    {
+      "en": "I enjoy reading and traveling.",
+      "zh": "我喜欢阅读和旅行。"
+    },
+    {
+      "en": "I'm currently looking for a job.",
+      "zh": "我目前在找工作。"
+    },
+    {
+      "en": "I was born and raised here.",
+      "zh": "我出生并在这里长大。"
+    },
+    {
+      "en": "I work for a multinational company.",
+      "zh": "我在一家跨国公司工作。"
+    },
+    {
+      "en": "I'm passionate about my work.",
+      "zh": "我热爱我的工作。"
+    },
+    {
+      "en": "I'd love to stay in touch.",
+      "zh": "我很想保持联系。"
+    },
+    {
+      "en": "A little bit about myself.",
+      "zh": "简单介绍一下我自己。"
+    }
+  ]
+}

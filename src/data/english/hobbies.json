@@ -1,0 +1,107 @@
+{
+  "id": "hobbies",
+  "title": "兴趣爱好",
+  "desc": "运动、音乐、电影、阅读",
+  "phrases": [
+    {
+      "en": "What do you do for fun?",
+      "zh": "你平时做什么消遣？"
+    },
+    {
+      "en": "I enjoy playing basketball.",
+      "zh": "我喜欢打篮球。"
+    },
+    {
+      "en": "I'm into photography.",
+      "zh": "我爱好摄影。"
+    },
+    {
+      "en": "Have you seen any good movies lately?",
+      "zh": "你最近看了什么好电影吗？"
+    },
+    {
+      "en": "I love listening to music.",
+      "zh": "我喜欢听音乐。"
+    },
+    {
+      "en": "I go to the gym three times a week.",
+      "zh": "我每周去三次健身房。"
+    },
+    {
+      "en": "I'm reading a great book.",
+      "zh": "我在读一本很好的书。"
+    },
+    {
+      "en": "Do you play any instruments?",
+      "zh": "你会什么乐器吗？"
+    },
+    {
+      "en": "I like hiking on weekends.",
+      "zh": "我喜欢周末去徒步。"
+    },
+    {
+      "en": "That movie was amazing!",
+      "zh": "那部电影太棒了！"
+    },
+    {
+      "en": "I'm learning to cook.",
+      "zh": "我在学做饭。"
+    },
+    {
+      "en": "Do you want to play a game?",
+      "zh": "你想玩个游戏吗？"
+    },
+    {
+      "en": "I'm a big fan of jazz.",
+      "zh": "我非常喜欢爵士乐。"
+    },
+    {
+      "en": "I enjoy painting in my free time.",
+      "zh": "我喜欢在空闲时间画画。"
+    },
+    {
+      "en": "Let's go for a walk.",
+      "zh": "我们去散步吧。"
+    },
+    {
+      "en": "I've been learning guitar.",
+      "zh": "我一直在学吉他。"
+    },
+    {
+      "en": "What kind of books do you like?",
+      "zh": "你喜欢什么类型的书？"
+    },
+    {
+      "en": "I'm not very good at swimming.",
+      "zh": "我不太擅长游泳。"
+    },
+    {
+      "en": "This song is so catchy.",
+      "zh": "这首歌很上头。"
+    },
+    {
+      "en": "I like watching documentaries.",
+      "zh": "我喜欢看纪录片。"
+    },
+    {
+      "en": "I've taken up yoga recently.",
+      "zh": "我最近开始练瑜伽了。"
+    },
+    {
+      "en": "I collect vinyl records.",
+      "zh": "我收集黑胶唱片。"
+    },
+    {
+      "en": "I'm a beginner at chess.",
+      "zh": "我是下棋的初学者。"
+    },
+    {
+      "en": "Let's go cycling this weekend.",
+      "zh": "这周末我们去骑车吧。"
+    },
+    {
+      "en": "I'm really into gardening.",
+      "zh": "我非常喜欢园艺。"
+    }
+  ]
+}

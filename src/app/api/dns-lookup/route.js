@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server'
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit'
+
+const DAILY_LIMIT = 100
 
 export async function POST(request) {
   try {
+    // 限流检查
+    const { allowed } = checkRateLimit(request, DAILY_LIMIT)
+    if (!allowed) {
+      return rateLimitResponse(DAILY_LIMIT)
+    }
+
     const { domain, recordType, dnsServer } = await request.json()
 
     if (!domain || !recordType) {

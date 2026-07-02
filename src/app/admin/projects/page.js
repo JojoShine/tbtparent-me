@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete, apiTranslate, inputStyle, textareaStyle, buttonStyle, secondaryButtonStyle, translateButtonStyle, labelStyle } from '@/lib/admin-utils'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const emptyProject = {
   name_zh: '', name_en: '',
@@ -87,15 +88,22 @@ export default function AdminProjects() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('确定删除？')) return
+  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  const handleDelete = (id) => {
+    setDeleteTarget(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await apiDelete('/api/projects', id)
+      await apiDelete('/api/projects', deleteTarget)
       setMsg('已删除 ✓')
       load()
     } catch (e) {
       setMsg('删除失败: ' + e.message)
     }
+    setDeleteTarget(null)
   }
 
   // 过滤和分页
@@ -401,6 +409,14 @@ export default function AdminProjects() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="确认删除"
+        message="确定要删除这个项目吗？删除后无法恢复。"
+      />
 
       <style jsx global>{`
         @media (max-width: 768px) {

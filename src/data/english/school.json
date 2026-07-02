@@ -1,0 +1,107 @@
+{
+  "id": "school",
+  "title": "学校教育",
+  "desc": "上课、考试、校园生活",
+  "phrases": [
+    {
+      "en": "What subject are you studying?",
+      "zh": "你在学什么科目？"
+    },
+    {
+      "en": "I have an exam next week.",
+      "zh": "我下周有考试。"
+    },
+    {
+      "en": "Can I borrow your notes?",
+      "zh": "能借你的笔记看看吗？"
+    },
+    {
+      "en": "The class starts at nine.",
+      "zh": "课程九点开始。"
+    },
+    {
+      "en": "I need to hand in my essay.",
+      "zh": "我需要交论文。"
+    },
+    {
+      "en": "What's your major?",
+      "zh": "你的专业是什么？"
+    },
+    {
+      "en": "I'm preparing for the final exam.",
+      "zh": "我在准备期末考试。"
+    },
+    {
+      "en": "The teacher speaks too fast.",
+      "zh": "老师讲得太快了。"
+    },
+    {
+      "en": "I don't understand this question.",
+      "zh": "我不理解这道题。"
+    },
+    {
+      "en": "Can you explain it again?",
+      "zh": "你能再解释一遍吗？"
+    },
+    {
+      "en": "I got an A on the test!",
+      "zh": "我考试得了A！"
+    },
+    {
+      "en": "The library closes at ten.",
+      "zh": "图书馆十点关门。"
+    },
+    {
+      "en": "I need to finish my homework.",
+      "zh": "我需要完成作业。"
+    },
+    {
+      "en": "What's the assignment about?",
+      "zh": "作业是关于什么的？"
+    },
+    {
+      "en": "I'm taking an English course.",
+      "zh": "我在上英语课。"
+    },
+    {
+      "en": "The professor is very knowledgeable.",
+      "zh": "教授知识很渊博。"
+    },
+    {
+      "en": "I failed the exam.",
+      "zh": "我考试没通过。"
+    },
+    {
+      "en": "Let's study together.",
+      "zh": "我们一起学习吧。"
+    },
+    {
+      "en": "I need to improve my writing.",
+      "zh": "我需要提高写作水平。"
+    },
+    {
+      "en": "The semester ends in December.",
+      "zh": "学期十二月结束。"
+    },
+    {
+      "en": "I'm working on my thesis.",
+      "zh": "我在写论文。"
+    },
+    {
+      "en": "The deadline has been extended.",
+      "zh": "截止日期延长了。"
+    },
+    {
+      "en": "I need to attend the lecture.",
+      "zh": "我需要去听课。"
+    },
+    {
+      "en": "She's my classmate.",
+      "zh": "她是我的同学。"
+    },
+    {
+      "en": "I'm studying abroad this year.",
+      "zh": "我今年在国外留学。"
+    }
+  ]
+}

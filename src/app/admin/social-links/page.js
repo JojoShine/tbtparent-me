@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete, inputStyle, buttonStyle, secondaryButtonStyle, labelStyle } from '@/lib/admin-utils'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const emptyLink = {
   name: '', url: '', icon: 'mail', sortOrder: 0,
@@ -51,15 +52,22 @@ export default function AdminSocialLinks() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('确定删除？')) return
+  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  const handleDelete = (id) => {
+    setDeleteTarget(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await apiDelete('/api/social-links', id)
+      await apiDelete('/api/social-links', deleteTarget)
       setMsg('已删除 ✓')
       load()
     } catch (e) {
       setMsg('删除失败: ' + e.message)
     }
+    setDeleteTarget(null)
   }
 
   return (
@@ -183,6 +191,14 @@ export default function AdminSocialLinks() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="确认删除"
+        message="确定要删除这个链接吗？删除后无法恢复。"
+      />
     </div>
   )
 }

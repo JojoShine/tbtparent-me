@@ -1,0 +1,107 @@
+{
+  "id": "home",
+  "title": "居家生活",
+  "desc": "做家务、邻里、日常起居",
+  "phrases": [
+    {
+      "en": "I need to do the laundry.",
+      "zh": "我需要洗衣服。"
+    },
+    {
+      "en": "Could you turn down the volume?",
+      "zh": "你能把音量调小点吗？"
+    },
+    {
+      "en": "The kitchen is a mess.",
+      "zh": "厨房一团糟。"
+    },
+    {
+      "en": "Let me clean up.",
+      "zh": "让我来打扫。"
+    },
+    {
+      "en": "What time do you usually wake up?",
+      "zh": "你通常几点起床？"
+    },
+    {
+      "en": "I need to pay the electricity bill.",
+      "zh": "我需要交电费。"
+    },
+    {
+      "en": "The neighbors are too noisy.",
+      "zh": "邻居太吵了。"
+    },
+    {
+      "en": "Can you pass me the salt?",
+      "zh": "能把盐递给我吗？"
+    },
+    {
+      "en": "I'm going to take a shower.",
+      "zh": "我要去洗个澡。"
+    },
+    {
+      "en": "Don't forget to lock the door.",
+      "zh": "别忘了锁门。"
+    },
+    {
+      "en": "The trash needs to be taken out.",
+      "zh": "垃圾需要倒掉了。"
+    },
+    {
+      "en": "I usually have breakfast at seven.",
+      "zh": "我通常七点吃早饭。"
+    },
+    {
+      "en": "Could you help me move this table?",
+      "zh": "你能帮我搬一下这张桌子吗？"
+    },
+    {
+      "en": "I'm going to bed early tonight.",
+      "zh": "我今晚要早睡。"
+    },
+    {
+      "en": "The washing machine is broken.",
+      "zh": "洗衣机坏了。"
+    },
+    {
+      "en": "Let's order some takeout.",
+      "zh": "我们点外卖吧。"
+    },
+    {
+      "en": "I need to tidy up the living room.",
+      "zh": "我需要整理客厅。"
+    },
+    {
+      "en": "The hot water isn't working.",
+      "zh": "热水不工作了。"
+    },
+    {
+      "en": "I'll cook dinner tonight.",
+      "zh": "今晚我来做晚饭。"
+    },
+    {
+      "en": "Please close the window.",
+      "zh": "请关上窗户。"
+    },
+    {
+      "en": "The light bulb needs replacing.",
+      "zh": "灯泡需要换了。"
+    },
+    {
+      "en": "I'm doing some spring cleaning.",
+      "zh": "我在做大扫除。"
+    },
+    {
+      "en": "Could you water the plants?",
+      "zh": "你能浇一下花吗？"
+    },
+    {
+      "en": "The rent is due next week.",
+      "zh": "房租下周到期。"
+    },
+    {
+      "en": "Let me vacuum the carpet.",
+      "zh": "让我吸一下地毯。"
+    }
+  ]
+}

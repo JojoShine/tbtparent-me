@@ -7,7 +7,7 @@ import { castHexagram, manualCast, installHexagram, getDayStem, getDayZhi } from
 import { divineByTime, divineByNumbers, divineByText, divineByRandom, deriveHexagram, getGuaQiWangShuai } from '@/lib/meihua'
 
 const S = {
-  wrap: { padding: '24px' },
+  wrap: { padding: '12px 24px 24px' },
   title: { color: 'var(--fg)', marginBottom: '20px', fontSize: '1.2rem', fontFamily: 'monospace', fontWeight: 'bold' },
   label: { color: 'var(--fg)', fontSize: '0.8rem', marginBottom: '6px', display: 'block', fontFamily: 'monospace' },
   input: {
@@ -62,7 +62,7 @@ const S = {
   ancient: { color: 'var(--fg)', fontSize: '0.9rem', lineHeight: '1.8', letterSpacing: '0.05em' },
   yao: { display: 'flex', alignItems: 'center', gap: '12px', padding: '4px 0', fontFamily: 'monospace', fontSize: '0.8rem' },
   row: { display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' },
-  col: { flex: '1', minWidth: '200px' },
+  col: { flex: '1', minWidth: '0' },
   tag: {
     display: 'inline-block', padding: '2px 8px', borderRadius: '3px', fontSize: '0.7rem',
     fontFamily: 'monospace', border: '1px solid var(--border)', color: 'var(--muted)',
@@ -73,18 +73,18 @@ const S = {
   },
   streamText: { color: 'var(--fg)', fontSize: '0.9rem', lineHeight: '1.8' },
   remaining: { color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'monospace' },
-  coinRow: { display: 'flex', gap: '8px', alignItems: 'center' },
+  coinRow: { display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 },
   castItem: {
-    display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px',
+    display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px',
     border: '1px solid var(--border)', borderRadius: '6px', marginBottom: '8px',
-    fontFamily: 'monospace', fontSize: '0.8rem',
+    fontFamily: 'monospace', fontSize: '0.8rem', flexWrap: 'nowrap',
   },
-  castLabel: { width: '36px', color: 'var(--muted)', fontSize: '0.75rem', flexShrink: 0 },
-  castResult: { marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--muted)', whiteSpace: 'nowrap' },
+  castLabel: { width: '32px', color: 'var(--muted)', fontSize: '0.75rem', flexShrink: 0 },
+  castResult: { marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--muted)', whiteSpace: 'nowrap', flexShrink: 0 },
   castFinal: {
     display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
     border: '1px solid var(--fg)', borderRadius: '6px', marginTop: '12px',
-    fontFamily: 'monospace', fontSize: '0.85rem',
+    fontFamily: 'monospace', fontSize: '0.85rem', flexWrap: 'nowrap',
   },
   coinGrid: {
     display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px',
@@ -230,12 +230,16 @@ export default function Suwen() {
   const [category, setCategory] = useState('')
   const [question, setQuestion] = useState('')
   const [aiText, setAiText] = useState('')
+  const [displayedText, setDisplayedText] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiRemaining, setAiRemaining] = useState(null)
   const [casting, setCasting] = useState(null) // 摇卦动画状态
   const [coinRecord, setCoinRecord] = useState(null) // 摇卦铜钱记录
   const abortRef = useRef(null)
   const castingRef = useRef(null)
+  const charTimerRef = useRef(null)
+  const aiTextRef = useRef('')
+  const displayedLenRef = useRef(0)
 
   // 六爻手动输入
   const [manualLines, setManualLines] = useState(
@@ -333,13 +337,38 @@ export default function Suwen() {
     setAiText('')
   }
 
+  // 逐字输出调度器
+  const scheduleCharDisplay = () => {
+    if (charTimerRef.current) clearInterval(charTimerRef.current)
+    charTimerRef.current = setInterval(() => {
+      const full = aiTextRef.current
+      const curLen = displayedLenRef.current
+      if (curLen >= full.length) {
+        // 全部输出完毕，停止调度
+        clearInterval(charTimerRef.current)
+        charTimerRef.current = null
+        return
+      }
+      // 每次输出1-2个字符，速度更快时输出更多
+      const step = full.length - curLen > 50 ? 2 : 1
+      const newLen = Math.min(curLen + step, full.length)
+      displayedLenRef.current = newLen
+      setDisplayedText(full.slice(0, newLen))
+    }, 30)
+  }
+
   // AI 解读（流式）
   const handleAI = async () => {
     if (!result) return
     setAiLoading(true)
     setAiText('')
+    setDisplayedText('')
+    aiTextRef.current = ''
+    displayedLenRef.current = 0
     if (abortRef.current) abortRef.current.abort()
     abortRef.current = new AbortController()
+    // 启动逐字输出
+    scheduleCharDisplay()
 
     try {
       const payload = {
@@ -358,7 +387,9 @@ export default function Suwen() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        setAiText(`❌ ${err.error || '请求失败'}`)
+        const errText = `❌ ${err.error || '请求失败'}`
+        setAiText(errText)
+        aiTextRef.current = errText
         setAiLoading(false)
         return
       }
@@ -384,37 +415,46 @@ export default function Suwen() {
           if (raw === '[DONE]') continue
           try {
             full += JSON.parse(raw)
-            setAiText(full)
           } catch {
             full += raw
-            setAiText(full)
           }
         }
+        setAiText(full)
+        aiTextRef.current = full
       }
     } catch (e) {
-      if (e.name !== 'AbortError') setAiText(`❌ ${e.message}`)
+      if (e.name !== 'AbortError') {
+        const errText = `❌ ${e.message}`
+        setAiText(errText)
+        aiTextRef.current = errText
+      }
     }
     setAiLoading(false)
   }
 
   const stopAI = () => {
     if (abortRef.current) abortRef.current.abort()
+    if (charTimerRef.current) clearInterval(charTimerRef.current)
     setAiLoading(false)
   }
 
   const reset = () => {
     setResult(null)
     setAiText('')
+    setDisplayedText('')
+    aiTextRef.current = ''
+    displayedLenRef.current = 0
     setQuestion('')
     setCasting(null)
     setCoinRecord(null)
     if (castingRef.current) clearTimeout(castingRef.current)
+    if (charTimerRef.current) clearInterval(charTimerRef.current)
   }
 
   const categories = ['财运', '感情', '事业', '考试', '父母', '健康', '子女', '出行']
 
   return (
-    <div style={S.wrap}>
+    <div style={S.wrap} className="suwen-wrap">
       {/* 方式切换 */}
       <div style={S.tabs}>
         <button style={method === 'liuyao' ? S.tabActive : S.tab} onClick={() => { setMethod('liuyao'); setSubMethod('coin'); reset() }}>
@@ -471,7 +511,7 @@ export default function Suwen() {
               <div style={S.coinRow}>
                 {c.coins.map((isBack, j) => (
                   <div key={j} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                    <Coin isBack={isBack} size={36} uid={`${i}_${j}`} />
+                    <Coin isBack={isBack} size={28} uid={`${i}_${j}`} />
                     <span style={{ fontSize: '0.55rem', color: isBack ? 'var(--muted)' : 'var(--fg)', fontFamily: 'monospace' }}>
                       {isBack ? '背' : '正'}
                     </span>
@@ -540,16 +580,16 @@ export default function Suwen() {
       )}
 
       {subMethod === 'number' && (
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
-          <div style={S.col}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ ...S.col, minWidth: '80px' }}>
             <label style={S.label}>数一（上卦）</label>
             <input type="number" style={S.input} value={num1} onChange={e => setNum1(e.target.value)} placeholder="如：5" />
           </div>
-          <div style={S.col}>
+          <div style={{ ...S.col, minWidth: '80px' }}>
             <label style={S.label}>数二（下卦）</label>
             <input type="number" style={S.input} value={num2} onChange={e => setNum2(e.target.value)} placeholder="如：3" />
           </div>
-          <button style={S.btn} onClick={handleMeihuaNumber}>起卦</button>
+          <button style={{ ...S.btn, flexShrink: 0 }} onClick={handleMeihuaNumber}>起卦</button>
         </div>
       )}
 
@@ -741,7 +781,7 @@ export default function Suwen() {
               <div style={{ marginTop: '16px', padding: '12px', border: '1px solid var(--border)', borderRadius: '4px' }}>
                 <div style={S.streamText}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
-                    {aiText}
+                    {displayedText || aiText}
                   </ReactMarkdown>
                   {aiLoading && <span style={{ animation: 'blink 1s infinite' }}>▌</span>}
                 </div>
@@ -764,6 +804,27 @@ export default function Suwen() {
         <span><b style={{ color: 'var(--fg)' }}>梅花易数</b> 邵雍所传 · 体用生克</span>
         <span><b style={{ color: 'var(--fg)' }}>AI 解读</b> {aiRemaining !== null ? `今日剩余 ${aiRemaining} 次` : '每日 5 次'} · 经师/隐士</span>
       </div>
+
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .suwen-wrap {
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+          }
+          .suwen-wrap input,
+          .suwen-wrap select,
+          .suwen-wrap textarea {
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+          .suwen-wrap button {
+            white-space: nowrap !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

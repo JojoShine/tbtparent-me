@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { apiGet, apiPost, apiPut, apiDelete, inputStyle, textareaStyle, buttonStyle, secondaryButtonStyle, labelStyle } from '@/lib/admin-utils'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const emptyVideo = { title_zh: '', title_en: '', description_zh: '', description_en: '', cover_url: '', video_url: '', sortOrder: 0 }
 const emptyNovel = { title_zh: '', title_en: '', description_zh: '', description_en: '', cover_url: '', external_link: '', status: 'ongoing', sortOrder: 0 }
@@ -71,16 +72,23 @@ export default function AdminArchive() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('确定删除？')) return
+  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  const handleDelete = (id) => {
+    setDeleteTarget(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     try {
       const endpoint = activeTab === 'videos' ? '/api/archive/videos' : '/api/archive/novels'
-      await apiDelete(endpoint, id)
+      await apiDelete(endpoint, deleteTarget)
       setMsg('已删除 ✓')
       load()
     } catch (e) {
       setMsg('删除失败: ' + e.message)
     }
+    setDeleteTarget(null)
   }
 
 
@@ -295,6 +303,14 @@ export default function AdminArchive() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="确认删除"
+        message={`确定要删除这个${tabs.find(t => t.key === activeTab)?.label || '项目'}吗？删除后无法恢复。`}
+      />
     </div>
   )
 }

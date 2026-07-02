@@ -1,0 +1,107 @@
+{
+  "id": "work",
+  "title": "职场办公",
+  "desc": "开会、邮件、工作交流",
+  "phrases": [
+    {
+      "en": "Let's schedule a meeting.",
+      "zh": "我们安排个会议吧。"
+    },
+    {
+      "en": "The deadline is next Friday.",
+      "zh": "截止日期是下周五。"
+    },
+    {
+      "en": "I'll send you an email.",
+      "zh": "我会给你发邮件。"
+    },
+    {
+      "en": "Could you help me with this?",
+      "zh": "你能帮我处理这个吗？"
+    },
+    {
+      "en": "I'm working on it.",
+      "zh": "我正在处理。"
+    },
+    {
+      "en": "The project is on track.",
+      "zh": "项目进展顺利。"
+    },
+    {
+      "en": "We need to discuss this.",
+      "zh": "我们需要讨论一下。"
+    },
+    {
+      "en": "I'll keep you posted.",
+      "zh": "我会随时通知你。"
+    },
+    {
+      "en": "That's a good point.",
+      "zh": "说得好。"
+    },
+    {
+      "en": "Let me check and get back to you.",
+      "zh": "让我查一下再回复你。"
+    },
+    {
+      "en": "I have a question about...",
+      "zh": "我有个关于……的问题。"
+    },
+    {
+      "en": "The report is ready.",
+      "zh": "报告已经准备好了。"
+    },
+    {
+      "en": "Can we push the meeting back?",
+      "zh": "能把会议推迟吗？"
+    },
+    {
+      "en": "I'm running a bit late.",
+      "zh": "我要晚一点到。"
+    },
+    {
+      "en": "Let's wrap up the meeting.",
+      "zh": "我们结束会议吧。"
+    },
+    {
+      "en": "I need your feedback on this.",
+      "zh": "我需要你对此的反馈。"
+    },
+    {
+      "en": "The client is expecting a reply.",
+      "zh": "客户在等回复。"
+    },
+    {
+      "en": "Let's set up a call.",
+      "zh": "我们安排个电话会议吧。"
+    },
+    {
+      "en": "I'm swamped with work today.",
+      "zh": "我今天工作忙不过来。"
+    },
+    {
+      "en": "Great job on the presentation.",
+      "zh": "演示做得很好。"
+    },
+    {
+      "en": "I'll handle it right away.",
+      "zh": "我马上处理。"
+    },
+    {
+      "en": "We're behind schedule.",
+      "zh": "我们进度落后了。"
+    },
+    {
+      "en": "Let's touch base tomorrow.",
+      "zh": "我们明天碰一下。"
+    },
+    {
+      "en": "I need to delegate this task.",
+      "zh": "我需要把这个任务分配出去。"
+    },
+    {
+      "en": "The quarterly review is next week.",
+      "zh": "季度评审在下周。"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "greetings",
+  "title": "日常问候",
+  "desc": "见面打招呼、寒暄",
+  "phrases": [
+    {
+      "en": "How are you doing?",
+      "zh": "你最近怎么样？"
+    },
+    {
+      "en": "Long time no see.",
+      "zh": "好久不见。"
+    },
+    {
+      "en": "What's up?",
+      "zh": "有什么事吗？/ 最近怎样？"
+    },
+    {
+      "en": "Nice to meet you.",
+      "zh": "很高兴认识你。"
+    },
+    {
+      "en": "How's it going?",
+      "zh": "最近过得如何？"
+    },
+    {
+      "en": "Good to see you again.",
+      "zh": "很高兴再见到你。"
+    },
+    {
+      "en": "How have you been?",
+      "zh": "你一直过得怎么样？"
+    },
+    {
+      "en": "Take care.",
+      "zh": "保重。"
+    },
+    {
+      "en": "Good morning!",
+      "zh": "早上好！"
+    },
+    {
+      "en": "What have you been up to?",
+      "zh": "你最近在忙什么？"
+    },
+    {
+      "en": "It's been a while.",
+      "zh": "有一阵子没见了。"
+    },
+    {
+      "en": "Hope you're doing well.",
+      "zh": "希望你一切都好。"
+    },
+    {
+      "en": "How's your day going?",
+      "zh": "你今天过得怎么样？"
+    },
+    {
+      "en": "Good evening!",
+      "zh": "晚上好！"
+    },
+    {
+      "en": "It's great to see you here.",
+      "zh": "在这里见到你真高兴。"
+    },
+    {
+      "en": "How's everything?",
+      "zh": "一切都好吗？"
+    },
+    {
+      "en": "What's new with you?",
+      "zh": "你有什么新鲜事？"
+    },
+    {
+      "en": "Good afternoon!",
+      "zh": "下午好！"
+    },
+    {
+      "en": "It's a pleasure to meet you.",
+      "zh": "很荣幸见到你。"
+    },
+    {
+      "en": "How are things going?",
+      "zh": "事情进展得怎么样？"
+    },
+    {
+      "en": "I haven't seen you in ages.",
+      "zh": "我好些年没见你了。"
+    },
+    {
+      "en": "How's your family doing?",
+      "zh": "你家人好吗？"
+    },
+    {
+      "en": "It's always a pleasure to see you.",
+      "zh": "见到你总是很愉快。"
+    },
+    {
+      "en": "What have you been doing lately?",
+      "zh": "你最近在做什么？"
+    },
+    {
+      "en": "I'm glad we ran into each other.",
+      "zh": "很高兴我们碰上了。"
+    }
+  ]
+}
