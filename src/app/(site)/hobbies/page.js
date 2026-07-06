@@ -303,7 +303,7 @@ export default function HobbiesPage() {
                 </div>
 
                 {/* 封面网格 - 固定5列 */}
-                {episodes.length > 0 && (
+                {episodes.length > 0 ? (
                   <>
                   <div style={{
                     display: 'grid',
@@ -414,6 +414,8 @@ export default function HobbiesPage() {
                     </div>
                   )}
                   </>
+                ) : (
+                  <EmptyState message={lang === 'zh' ? '暂无剧集' : 'No episodes yet'} />
                 )}
               </div>
             )
