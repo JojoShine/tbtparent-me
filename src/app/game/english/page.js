@@ -763,7 +763,7 @@ export default function EnglishPractice() {
         </span>
         <button
           onClick={() => {
-            if (phraseIdx < activeTotal - 1) {
+            if (phraseIdx < activeTotal - 1 && answeredCorrectly.has(phraseIdx)) {
               const nextIdx = phraseIdx + 1
               setPhraseIdx(nextIdx)
               setInput('')
@@ -774,15 +774,15 @@ export default function EnglishPractice() {
               setShowAnswer(answeredCorrectly.has(nextIdx))
             }
           }}
-          disabled={phraseIdx >= activeTotal - 1}
+          disabled={phraseIdx >= activeTotal - 1 || !answeredCorrectly.has(phraseIdx)}
           style={{
             padding: '6px 12px',
             background: 'transparent',
-            color: phraseIdx >= activeTotal - 1 ? 'var(--border)' : 'var(--muted)',
+            color: (phraseIdx >= activeTotal - 1 || !answeredCorrectly.has(phraseIdx)) ? 'var(--border)' : 'var(--muted)',
             border: '1px solid var(--border)',
             fontFamily: 'monospace',
             fontSize: '0.8rem',
-            cursor: phraseIdx >= activeTotal - 1 ? 'not-allowed' : 'pointer',
+            cursor: (phraseIdx >= activeTotal - 1 || !answeredCorrectly.has(phraseIdx)) ? 'not-allowed' : 'pointer',
             borderRadius: '4px',
           }}
         >
