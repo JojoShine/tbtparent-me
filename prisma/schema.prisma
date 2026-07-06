@@ -234,6 +234,18 @@ model SiteVisit {
   createdAt DateTime @default(now())
 }
 
+model WorkProject {
+  id             Int      @id @default(autoincrement())
+  name_zh        String
+  name_en        String
+  summary_zh     String
+  summary_en     String
+  font_size      String   @default("medium") // small | medium | large
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
 model Visitor {
   id              Int      @id @default(autoincrement())
   visitor_id      String   @unique
