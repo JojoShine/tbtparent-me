@@ -121,6 +121,7 @@ model ArchiveVideo {
   description_en String?
   cover_url      String?
   video_url      String?
+  status         String    @default("ongoing")
   sortOrder      Int       @default(0)
   published_at   DateTime?
   createdAt      DateTime  @default(now())
@@ -169,6 +170,34 @@ model ArchiveInterview {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   cover_url    String?
+}
+
+model ArchiveManga {
+  id             Int            @id @default(autoincrement())
+  title_zh       String
+  title_en       String
+  description_zh String?
+  description_en String?
+  status         String         @default("ongoing")
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  episodes       MangaEpisode[]
+}
+
+model MangaEpisode {
+  id             Int          @id @default(autoincrement())
+  mangaId        Int
+  title_zh       String
+  title_en       String
+  cover_url      String?
+  video_url      String?
+  aspect_ratio   String?      @default("landscape")
+  episode_number Int
+  sortOrder      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  manga          ArchiveManga @relation(fields: [mangaId], references: [id], onDelete: Cascade)
 }
 
 model ArchiveHighlight {

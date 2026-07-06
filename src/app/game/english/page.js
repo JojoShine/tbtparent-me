@@ -55,6 +55,7 @@ export default function EnglishPractice() {
   const [score, setScore] = useState(0)
   const [results, setResults] = useState([])
   const [speaking, setSpeaking] = useState(false)
+  const [audioLoading, setAudioLoading] = useState(false)
   const [showAnswer, setShowAnswer] = useState(false)
   const [isDailyMode, setIsDailyMode] = useState(false)
   const [dailyPhrases, setDailyPhrases] = useState([])
@@ -80,24 +81,103 @@ export default function EnglishPractice() {
   }, [])
 
   const audioRef = useRef(null)
+  const audioCacheRef = useRef(new Map()) // 缓存已加载的 Audio 元素
+  const audioCtxRef = useRef(null) // 共享 AudioContext，用于恢复挂起的音频管线
 
-  // 播放本地音频（英式发音，预生成 m4a 文件）
+  // 恢复被浏览器挂起的 AudioContext（解决长时间不操作后无法播放的问题）
+  const resumeAudioContext = () => {
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)()
+      }
+      const ctx = audioCtxRef.current
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
+      // 用一个极短的静音 buffer 唤醒音频管线
+      const buf = ctx.createBuffer(1, 1, 22050)
+      const src = ctx.createBufferSource()
+      src.buffer = buf
+      src.connect(ctx.destination)
+      src.start(0)
+    } catch {}
+  }
+
+  // 播放本地音频（英式发音，预生成 mp3 文件）
+  // 支持：缓存复用 + 预加载缓冲 + AudioContext 恢复
   const speak = useCallback((audioPath) => {
     if (!audioPath) return
     try {
+      // 停止当前播放
       if (audioRef.current) {
         audioRef.current.pause()
+        audioRef.current.onended = null
+        audioRef.current.onerror = null
         audioRef.current = null
       }
-      setSpeaking(true)
+
+      // 恢复可能被挂起的 AudioContext
+      resumeAudioContext()
+
+      const cached = audioCacheRef.current.get(audioPath)
+      if (cached && cached.readyState >= 3) {
+        // 缓存命中且已缓冲完成 → 直接播放
+        cached.currentTime = 0
+        audioRef.current = cached
+        setSpeaking(true)
+        cached.onended = () => setSpeaking(false)
+        cached.onerror = () => setSpeaking(false)
+        cached.play().catch(() => setSpeaking(false))
+        return
+      }
+
+      // 未命中缓存或未缓冲完成 → 创建新 Audio 并等待缓冲
+      setAudioLoading(true)
       const audio = new Audio(audioPath)
+      audio.preload = 'auto'
       audioRef.current = audio
-      audio.onended = () => setSpeaking(false)
-      audio.onerror = () => setSpeaking(false)
-      audio.play().catch(() => setSpeaking(false))
+      let started = false // 标记是否已开始播放（避免闭包捕获 stale state）
+
+      const cleanup = () => {
+        setAudioLoading(false)
+        audio.oncanplaythrough = null
+        audio.onerror = null
+        audio.onended = null
+      }
+
+      audio.oncanplaythrough = () => {
+        // 缓冲完成，存入缓存并播放
+        started = true
+        audioCacheRef.current.set(audioPath, audio)
+        setAudioLoading(false)
+        setSpeaking(true)
+        audio.onended = () => setSpeaking(false)
+        audio.onerror = () => setSpeaking(false)
+        audio.play().catch(() => setSpeaking(false))
+      }
+
+      audio.onerror = () => {
+        cleanup()
+        setSpeaking(false)
+        // 失败时清除缓存，下次重试
+        audioCacheRef.current.delete(audioPath)
+      }
+
+      // 开始加载
+      audio.load()
+
+      // 超时兜底：5 秒后仍未缓冲则放弃
+      setTimeout(() => {
+        if (audioRef.current === audio && !started) {
+          cleanup()
+          setSpeaking(false)
+          audioCacheRef.current.delete(audioPath)
+        }
+      }, 5000)
     } catch (e) {
       console.error('Audio play error:', e)
       setSpeaking(false)
+      setAudioLoading(false)
     }
   }, [])
 
@@ -330,8 +410,15 @@ export default function EnglishPractice() {
       }
     }
     if (e.key === 'Backspace' && !compositionRef.current && input.length > 0) {
-      // 允许默认的单字符删除行为
-      // 如果 status 是 wrong/close，清除状态
+      const pos = inputRef.current?.selectionStart ?? input.length
+      if (pos > 0) {
+        // 删除光标前的一个字符（而非总是删除末尾）
+        const newInput = input.slice(0, pos - 1) + input.slice(pos)
+        setInput(newInput)
+        setCursorPos(pos - 1)
+        // 阻止浏览器默认删除行为，因为我们已手动处理
+        e.preventDefault()
+      }
       if (status === 'wrong' || status === 'close') setStatus(null)
     }
   }
@@ -722,6 +809,7 @@ export default function EnglishPractice() {
             activeAudio && speak(activeAudio)
             setTimeout(() => inputRef.current?.focus(), 150)
           }}
+          disabled={audioLoading}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -730,15 +818,15 @@ export default function EnglishPractice() {
             border: '1px solid var(--border)',
             borderRadius: '4px',
             background: speaking ? 'var(--fg)' : 'none',
-            color: speaking ? 'var(--bg)' : 'var(--fg)',
+            color: speaking ? 'var(--bg)' : audioLoading ? 'var(--muted)' : 'var(--fg)',
             fontFamily: 'monospace',
             fontSize: '0.85rem',
-            cursor: 'pointer',
+            cursor: audioLoading ? 'wait' : 'pointer',
             transition: 'all 0.2s',
           }}
         >
           <Volume2 className="w-4 h-4" />
-          {speaking ? '播放中...' : '播放发音'}
+          {audioLoading ? '缓冲中...' : speaking ? '播放中...' : '播放发音'}
         </button>
       </div>
 
@@ -764,6 +852,10 @@ export default function EnglishPractice() {
             setInput(prev => prev.replace(/[^\x00-\x7F]/g, ''))
           }}
           onKeyDown={handleKeyDown}
+          onSelect={(e) => {
+            const pos = e.target.selectionStart
+            if (pos !== null && pos !== undefined) setCursorPos(pos)
+          }}
           placeholder=""
           autoComplete="off"
           autoCorrect="off"
@@ -851,20 +943,33 @@ export default function EnglishPractice() {
                 // 是否正在输入新单词（输入以空格结尾）
                 const trailingSpace = input.endsWith(' ') || input.endsWith('  ')
 
+                // 计算光标在哪个单词的哪个位置
+                const isActive = !showAnswer && status !== 'correct'
+                let cursorWordIdx = -1
+                let cursorCharPos = -1
+                if (isActive) {
+                  let charCount = 0
+                  for (let i = 0; i < inputWords.length; i++) {
+                    if (cursorPos <= charCount + inputWords[i].length) {
+                      cursorWordIdx = i
+                      cursorCharPos = cursorPos - charCount
+                      break
+                    }
+                    charCount += inputWords[i].length + 1
+                  }
+                  if (cursorWordIdx === -1) {
+                    cursorWordIdx = trailingSpace ? inputWords.length : inputWords.length - 1
+                    cursorCharPos = trailingSpace ? 0 : (inputWords[cursorWordIdx] || '').length
+                  }
+                  if (cursorWordIdx < 0) { cursorWordIdx = 0; cursorCharPos = 0 }
+                }
+
                 return answerWords.map((answerWord, wi) => {
                   const typed = inputWords[wi] || ''
                   const isCorrect = stripForCompare(typed) === stripForCompare(answerWord)
                   const isPartial = typed.length > 0 && !isCorrect
-                  // 光标始终在当前输入末尾
-                  const isCursorWord = !showAnswer && status !== 'correct' && (
-                    trailingSpace
-                      ? wi === inputWords.length
-                      : (inputWords.length > 0
-                        ? wi === inputWords.length - 1
-                        : wi === 0)
-                  )
-                  const cursorAtEnd = isCursorWord && !trailingSpace
-                  const cursorAtStart = isCursorWord && (trailingSpace || inputWords.length === 0)
+                  const hasCursor = isActive && wi === cursorWordIdx
+                  const cPos = hasCursor ? cursorCharPos : -1
 
                   return (
                     <span key={wi} style={{
@@ -881,21 +986,20 @@ export default function EnglishPractice() {
                     }}>
                       {typed ? typed.split('').map((ch, ci) => (
                         <span key={ci} style={{ position: 'relative' }}>
+                          {cPos === ci && (
+                            <span style={{
+                              position: 'absolute',
+                              left: '-1px',
+                              top: '5%',
+                              bottom: '5%',
+                              width: '2px',
+                              backgroundColor: 'var(--fg)',
+                              animation: 'cursor-blink 1s step-end infinite',
+                            }} />
+                          )}
                           {ch}
                         </span>
-                      )) : '\u00A0'}
-                      {typed && cursorAtEnd && (
-                        <span style={{
-                          position: 'absolute',
-                          right: '0',
-                          top: '5%',
-                          bottom: '5%',
-                          width: '2px',
-                          backgroundColor: 'var(--fg)',
-                          animation: 'cursor-blink 1s step-end infinite',
-                        }} />
-                      )}
-                      {!typed && cursorAtStart && (
+                      )) : (hasCursor && cPos === 0 && (
                         <span style={{
                           position: 'absolute',
                           left: '50%',
@@ -906,7 +1010,19 @@ export default function EnglishPractice() {
                           animation: 'cursor-blink 1s step-end infinite',
                           transform: 'translateX(-50%)',
                         }} />
+                      ))}
+                      {typed && cPos === typed.length && (
+                        <span style={{
+                          position: 'absolute',
+                          right: '-1px',
+                          top: '5%',
+                          bottom: '5%',
+                          width: '2px',
+                          backgroundColor: 'var(--fg)',
+                          animation: 'cursor-blink 1s step-end infinite',
+                        }} />
                       )}
+                      {typed ? '' : '\u00A0'}
                     </span>
                   )
                 })

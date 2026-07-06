@@ -34,6 +34,16 @@ export async function GET(request) {
       'gif': 'image/gif',
       'webp': 'image/webp',
       'svg': 'image/svg+xml',
+      'mp4': 'video/mp4',
+      'mov': 'video/quicktime',
+      'webm': 'video/webm',
+      'avi': 'video/x-msvideo',
+      'mkv': 'video/x-matroska',
+      'wmv': 'video/x-ms-wmv',
+      'flv': 'video/x-flv',
+      'mp3': 'audio/mpeg',
+      'wav': 'audio/wav',
+      'ogg': 'audio/ogg',
     }
     const contentType = contentTypeMap[ext] || stat.metaData['content-type'] || 'application/octet-stream'
     
@@ -41,6 +51,7 @@ export async function GET(request) {
     return new Response(stream, {
       headers: {
         'Content-Type': contentType,
+        'Content-Disposition': `inline`,
         'Cache-Control': 'public, max-age=31536000', // 缓存 1 年
       },
     })

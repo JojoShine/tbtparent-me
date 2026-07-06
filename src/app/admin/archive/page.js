@@ -7,6 +7,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const emptyVideo = { title_zh: '', title_en: '', description_zh: '', description_en: '', cover_url: '', video_url: '', sortOrder: 0 }
 const emptyNovel = { title_zh: '', title_en: '', description_zh: '', description_en: '', cover_url: '', external_link: '', status: 'ongoing', sortOrder: 0 }
+const emptyManga = { title_zh: '', title_en: '', description_zh: '', description_en: '', status: 'ongoing', sortOrder: 0 }
 
 export default function AdminArchive() {
   const [activeTab, setActiveTab] = useState('novels')
@@ -21,6 +22,8 @@ export default function AdminArchive() {
       apiGet('/api/archive/videos').then(setItems).catch(console.error)
     } else if (activeTab === 'novels') {
       apiGet('/api/archive/novels').then(setItems).catch(console.error)
+    } else if (activeTab === 'mangas') {
+      apiGet('/api/archive/mangas').then(setItems).catch(console.error)
     }
   }
 
@@ -57,7 +60,7 @@ export default function AdminArchive() {
 
   const handleSave = async () => {
     try {
-      const endpoint = activeTab === 'videos' ? '/api/archive/videos' : '/api/archive/novels'
+      const endpoint = activeTab === 'videos' ? '/api/archive/videos' : activeTab === 'mangas' ? '/api/archive/mangas' : '/api/archive/novels'
       
       if (editing.id) {
         await apiPut(endpoint, editing)
@@ -81,7 +84,7 @@ export default function AdminArchive() {
   const confirmDelete = async () => {
     if (!deleteTarget) return
     try {
-      const endpoint = activeTab === 'videos' ? '/api/archive/videos' : '/api/archive/novels'
+      const endpoint = activeTab === 'videos' ? '/api/archive/videos' : activeTab === 'mangas' ? '/api/archive/mangas' : '/api/archive/novels'
       await apiDelete(endpoint, deleteTarget)
       setMsg('已删除 ✓')
       load()
@@ -95,6 +98,7 @@ export default function AdminArchive() {
 
   const tabs = [
     { key: 'novels', label: '小说' },
+    { key: 'mangas', label: '漫剧' },
     { key: 'videos', label: '视频' },
   ]
 
@@ -105,7 +109,7 @@ export default function AdminArchive() {
           收录管理
         </h1>
         <button style={buttonStyle} onClick={() => {
-          const empty = activeTab === 'videos' ? emptyVideo : emptyNovel
+          const empty = activeTab === 'videos' ? emptyVideo : activeTab === 'mangas' ? emptyManga : emptyNovel
           setEditing({ ...empty })
         }}>
           + 新增{tabs.find(t => t.key === activeTab)?.label}
@@ -117,7 +121,7 @@ export default function AdminArchive() {
         {tabs.map(tab => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => { if (activeTab !== tab.key) { setEditing(null); setMsg('') }; setActiveTab(tab.key) }}
             style={{
               padding: '8px 16px',
               border: '1px solid var(--border)',
@@ -146,6 +150,9 @@ export default function AdminArchive() {
               <div>
                 <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--fg)' }}>{item.title_zh}</span>
                 {item.cover_url && <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: 'var(--muted)' }}>有封面</span>}
+                {activeTab === 'mangas' && item.episodes && item.episodes.length > 0 && (
+                  <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: 'var(--muted)' }}>{item.episodes.length}集</span>
+                )}
                 {activeTab === 'novels' && item.chapters && item.chapters.length > 0 && (
                   <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: 'var(--muted)' }}>{item.chapters.length}章</span>
                 )}
@@ -157,6 +164,14 @@ export default function AdminArchive() {
                     style={secondaryButtonStyle}
                   >
                     管理章节
+                  </Link>
+                )}
+                {activeTab === 'mangas' && (
+                  <Link
+                    href={`/admin/archive/manga-episodes?mangaId=${item.id}`}
+                    style={secondaryButtonStyle}
+                  >
+                    管理集数
                   </Link>
                 )}
                 <button style={secondaryButtonStyle} onClick={() => setEditing(item)}>编辑</button>
@@ -229,7 +244,7 @@ export default function AdminArchive() {
             </div>
           )}
 
-          {activeTab === 'novels' && (
+          {(activeTab === 'novels' || activeTab === 'mangas') && (
             <div>
               <label style={labelStyle}>状态</label>
               <div style={{ position: 'relative' }}>
