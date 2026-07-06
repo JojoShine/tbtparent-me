@@ -5,7 +5,7 @@ export const translations = {
     nav: {
       home: '首页',
       blog: '博客',
-      projects: '项目',
+      projects: '自研',
       tools: '工具',
       hobbies: '收录',
       qa: '问题集',
@@ -28,7 +28,7 @@ export const translations = {
     nav: {
       home: 'Home',
       blog: 'Blog',
-      projects: 'Projects',
+      projects: 'Dev',
       tools: 'Tools',
       hobbies: 'Archive',
       qa: 'Q&A',

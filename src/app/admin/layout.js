@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 const navItems = [
   { label: '首页', path: '/admin/home' },
   { label: '博客', path: '/admin/blog' },
-  { label: '项目', path: '/admin/projects' },
+  { label: '自研', path: '/admin/projects' },
   { label: '工具', path: '/admin/tools' },
   { label: '收录', path: '/admin/archive' },
 ]

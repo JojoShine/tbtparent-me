@@ -57,7 +57,7 @@ export default function HobbiesPage() {
       })) : []
       setMangas(sortedMangas)
       // 默认选中第一个漫剧系列
-      if (sortedMangas.length > 0) setActiveMangaId(sortedMangas[0].id)
+      if (sortedMangas.length > 0) { setActiveMangaId(sortedMangas[0].id); setMangaPage(1) }
       setLoaded(true)
     }).catch(console.error)
   }, [])
@@ -278,6 +278,9 @@ export default function HobbiesPage() {
           {/* 遍历每个系列 */}
           {mangas.map(manga => {
             const episodes = (manga.episodes || []).sort((a, b) => a.episode_number - b.episode_number)
+            const totalEps = episodes.length
+            const totalPages = Math.ceil(totalEps / mangaPageSize)
+            const pagedEps = episodes.slice((mangaPage - 1) * mangaPageSize, mangaPage * mangaPageSize)
             return (
               <div key={manga.id} style={{ marginBottom: '24px' }}>
                 {/* 系列名称 + 状态 */}
@@ -299,14 +302,15 @@ export default function HobbiesPage() {
                   )}
                 </div>
 
-                {/* 封面网格 */}
+                {/* 封面网格 - 固定5列 */}
                 {episodes.length > 0 && (
+                  <>
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
-                    gap: '10px',
+                    gridTemplateColumns: 'repeat(5, 1fr)',
+                    gap: '12px',
                   }}>
-                    {episodes.map(ep => {
+                    {pagedEps.map(ep => {
                       const videoSrc = ep.video_url ? (ep.video_url.startsWith('http') ? ep.video_url : `/api/archive/files?path=${encodeURIComponent(ep.video_url)}`) : null
                       const isExternal = ep.video_url?.startsWith('http')
                       return (
@@ -365,7 +369,7 @@ export default function HobbiesPage() {
                             </div>
                           </div>
                           <div className="font-mono" style={{
-                            fontSize: '0.65rem', color: 'var(--fg)', marginTop: '4px',
+                            fontSize: '0.8rem', color: 'var(--fg)', marginTop: '4px',
                             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center',
                           }}>
                             {lang === 'zh' ? ep.title_zh : (ep.title_en || ep.title_zh)}
@@ -374,6 +378,42 @@ export default function HobbiesPage() {
                       )
                     })}
                   </div>
+
+                  {/* 分页 */}
+                  {totalPages > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', marginTop: '16px' }}>
+                      <button
+                        onClick={() => setMangaPage(p => Math.max(1, p - 1))}
+                        disabled={mangaPage === 1}
+                        className="font-mono"
+                        style={{
+                          padding: '4px 10px', fontSize: '0.75rem',
+                          border: '1px solid var(--border)', borderRadius: '2px',
+                          backgroundColor: 'transparent', color: mangaPage === 1 ? 'var(--border)' : 'var(--muted)',
+                          cursor: mangaPage === 1 ? 'default' : 'pointer',
+                        }}
+                      >
+                        {lang === 'zh' ? '上一页' : 'Prev'}
+                      </button>
+                      <span className="font-mono" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                        {mangaPage} / {totalPages}
+                      </span>
+                      <button
+                        onClick={() => setMangaPage(p => Math.min(totalPages, p + 1))}
+                        disabled={mangaPage === totalPages}
+                        className="font-mono"
+                        style={{
+                          padding: '4px 10px', fontSize: '0.75rem',
+                          border: '1px solid var(--border)', borderRadius: '2px',
+                          backgroundColor: 'transparent', color: mangaPage === totalPages ? 'var(--border)' : 'var(--muted)',
+                          cursor: mangaPage === totalPages ? 'default' : 'pointer',
+                        }}
+                      >
+                        {lang === 'zh' ? '下一页' : 'Next'}
+                      </button>
+                    </div>
+                  )}
+                  </>
                 )}
               </div>
             )
