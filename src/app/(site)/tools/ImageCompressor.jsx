@@ -9,6 +9,7 @@ export default function ImageCompressor() {
   const [compressedFile, setCompressedFile] = useState(null)
   const [quality, setQuality] = useState(0.8) // 默认中档
   const [compressing, setCompressing] = useState(false)
+  const [outputFormat, setOutputFormat] = useState('auto') // auto | image/jpeg | image/png | image/webp
   const canvasRef = useRef(null)
 
   const qualityOptions = [
@@ -16,6 +17,22 @@ export default function ImageCompressor() {
     { value: 0.8, label: lang === 'zh' ? '中质量 (80%)' : 'Medium (80%)' },
     { value: 0.95, label: lang === 'zh' ? '高质量 (95%)' : 'High (95%)' },
   ]
+
+  const formatOptions = [
+    { value: 'auto', label: lang === 'zh' ? '自动' : 'Auto' },
+    { value: 'image/png', label: 'PNG' },
+    { value: 'image/jpeg', label: 'JPEG' },
+    { value: 'image/webp', label: 'WebP' },
+  ]
+
+  // 根据 outputFormat 和原文件类型解析实际输出 MIME
+  const resolveOutputMime = () => {
+    if (outputFormat !== 'auto') return outputFormat
+    // 自动模式：保持原格式，但 canvas 不支持 gif/bmp 等，回退到 png
+    const t = originalFile?.type
+    if (t === 'image/png' || t === 'image/jpeg' || t === 'image/webp') return t
+    return 'image/png'
+  }
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0]
@@ -28,6 +45,7 @@ export default function ImageCompressor() {
 
     setOriginalFile(file)
     setCompressedFile(null)
+    setOutputFormat('auto')
   }
 
   const compressImage = async () => {
@@ -55,6 +73,7 @@ export default function ImageCompressor() {
         ctx.drawImage(img, 0, 0)
         
         // 压缩并转换为 Blob
+        const mime = resolveOutputMime()
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -63,11 +82,12 @@ export default function ImageCompressor() {
                 blob,
                 url,
                 size: blob.size,
+                mime,
               })
             }
             setCompressing(false)
           },
-          'image/jpeg',
+          mime,
           quality
         )
       }
@@ -90,7 +110,8 @@ export default function ImageCompressor() {
     
     const link = document.createElement('a')
     link.href = compressedFile.url
-    link.download = `compressed_${originalFile.name.replace(/\.[^/.]+$/, '')}.jpg`
+    const ext = compressedFile.mime === 'image/png' ? 'png' : compressedFile.mime === 'image/webp' ? 'webp' : 'jpg'
+    link.download = `compressed_${originalFile.name.replace(/\.[^/.]+$/, '')}.${ext}`
     link.click()
   }
 
@@ -98,6 +119,7 @@ export default function ImageCompressor() {
     setOriginalFile(null)
     setCompressedFile(null)
     setQuality(0.8)
+    setOutputFormat('auto')
   }
 
   return (
@@ -149,6 +171,34 @@ export default function ImageCompressor() {
             <p className="font-mono" style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>
               {lang === 'zh' ? '大小：' : 'Size: '}{formatFileSize(originalFile.size)}
             </p>
+          </div>
+
+          {/* 输出格式选择 */}
+          <div style={{ marginBottom: '16px' }}>
+            <label className="font-mono" style={{ color: 'var(--fg)', fontSize: '0.8rem', marginBottom: '6px', display: 'block' }}>
+              {lang === 'zh' ? '输出格式：' : 'Output Format:'}
+            </label>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {formatOptions.map(option => (
+                <button
+                  key={option.value}
+                  onClick={() => setOutputFormat(option.value)}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    border: '1px solid var(--border)',
+                    backgroundColor: outputFormat === option.value ? 'var(--fg)' : 'transparent',
+                    color: outputFormat === option.value ? 'var(--bg)' : 'var(--muted)',
+                    fontFamily: 'monospace',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 质量选择 */}
