@@ -165,7 +165,7 @@ export default function QRCodeGenerator() {
               backgroundColor: 'transparent',
               color: 'var(--muted)',
               cursor: 'pointer',
-              transition: 'all 0.15s ease',
+              transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -255,7 +255,7 @@ export default function QRCodeGenerator() {
             fontFamily: 'monospace',
             fontSize: '0.85rem',
             cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.borderColor = 'var(--fg)'

@@ -174,7 +174,7 @@ export default function NetworkCommands() {
             fontFamily: 'monospace',
             fontSize: '0.85rem',
             cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
           }}
         >
           {lang === 'zh' ? '华为' : 'Huawei'}
@@ -190,7 +190,7 @@ export default function NetworkCommands() {
             fontFamily: 'monospace',
             fontSize: '0.85rem',
             cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
           }}
         >
           {lang === 'zh' ? '华三' : 'H3C'}
@@ -247,7 +247,7 @@ export default function NetworkCommands() {
                       border: '1px solid var(--border)',
                       borderRadius: '4px',
                       backgroundColor: 'transparent',
-                      transition: 'all 0.15s ease',
+                      transition: 'background-color 0.15s ease',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = 'var(--border)'

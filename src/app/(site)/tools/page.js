@@ -14,6 +14,7 @@ import NetworkCommands from './NetworkCommands'
 import NetworkLatency from './NetworkLatency'
 import DNSLookup from './DNSLookup'
 import PhotoTool from './PhotoTool'
+import BackgroundRemover from './BackgroundRemover'
 
 const fadeUp = {
   initial: { opacity: 0, y: 10 },
@@ -34,6 +35,7 @@ const toolStructure = [
       { key: 'image-compressor', label: '图片压缩' },
       { key: 'qrcode-generator', label: '二维码生成' },
       { key: 'photo-tool', label: '证件照制作' },
+      { key: 'background-remover', label: 'AI抠图' },
     ]
   },
   {
@@ -196,6 +198,10 @@ export default function ToolsPage() {
           
           <div style={{ display: activeTool === 'photo-tool' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
             <PhotoTool />
+          </div>
+          
+          <div style={{ display: activeTool === 'background-remover' ? 'block' : 'none', border: '1px solid var(--border)', borderRadius: '4px' }}>
+            <BackgroundRemover />
           </div>
         </motion.main>
       </div>

@@ -192,7 +192,7 @@ export default function ImageCompressor() {
                     fontFamily: 'monospace',
                     fontSize: '0.75rem',
                     cursor: 'pointer',
-                    transition: 'all 0.15s ease',
+                    transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
                   }}
                 >
                   {option.label}
@@ -220,7 +220,7 @@ export default function ImageCompressor() {
                     fontFamily: 'monospace',
                     fontSize: '0.75rem',
                     cursor: 'pointer',
-                    transition: 'all 0.15s ease',
+                    transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
                   }}
                 >
                   {option.label}
@@ -250,6 +250,14 @@ export default function ImageCompressor() {
             </button>
             <button
               onClick={reset}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = 'var(--fg)'
+                e.currentTarget.style.color = 'var(--fg)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--muted)'
+              }}
               style={{
                 padding: '10px 16px',
                 backgroundColor: 'transparent',
@@ -258,15 +266,7 @@ export default function ImageCompressor() {
                 fontFamily: 'monospace',
                 fontSize: '0.85rem',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = 'var(--fg)'
-                e.currentTarget.style.color = 'var(--fg)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'var(--border)'
-                e.currentTarget.style.color = 'var(--muted)'
+                transition: 'color 0.15s ease, border-color 0.15s ease',
               }}
             >
               {lang === 'zh' ? '重置' : 'Reset'}

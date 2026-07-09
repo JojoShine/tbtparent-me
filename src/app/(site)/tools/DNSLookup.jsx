@@ -227,7 +227,7 @@ export default function DNSLookup() {
                   padding: '12px',
                   border: '1px solid var(--border)',
                   borderRadius: '4px',
-                  transition: 'all 0.15s ease',
+                  transition: 'background-color 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = 'var(--border)'

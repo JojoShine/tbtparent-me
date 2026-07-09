@@ -23,12 +23,12 @@ const S = {
   btn: {
     padding: '10px 20px', border: '1px solid var(--fg)', borderRadius: '4px',
     fontFamily: 'monospace', fontSize: '0.85rem', backgroundColor: 'var(--fg)', color: 'var(--bg)',
-    cursor: 'pointer', transition: 'all 0.15s ease', fontWeight: 'bold',
+    cursor: 'pointer', transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease', fontWeight: 'bold',
   },
   btnOutline: {
     padding: '10px 20px', border: '1px solid var(--border)', borderRadius: '4px',
     fontFamily: 'monospace', fontSize: '0.85rem', backgroundColor: 'transparent', color: 'var(--fg)',
-    cursor: 'pointer', transition: 'all 0.15s ease',
+    cursor: 'pointer', transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
   },
   card: {
     border: '1px solid var(--border)', borderRadius: '8px', padding: '16px',
@@ -37,7 +37,7 @@ const S = {
   tabs: { display: 'flex', gap: '0', marginBottom: '24px', borderBottom: '1px solid var(--border)' },
   tab: {
     padding: '10px 20px', fontFamily: 'monospace', fontSize: '0.85rem', cursor: 'pointer',
-    color: 'var(--muted)', transition: 'all 0.15s ease',
+    color: 'var(--muted)', transition: 'color 0.15s ease, border-color 0.15s ease',
     backgroundColor: 'transparent',
     borderTop: 'none', borderRight: 'none', borderLeft: 'none',
     borderBottom: '2px solid transparent',
@@ -51,7 +51,7 @@ const S = {
   subTab: {
     padding: '6px 14px', fontFamily: 'monospace', fontSize: '0.75rem', cursor: 'pointer',
     borderRadius: '4px', border: '1px solid var(--border)', color: 'var(--muted)',
-    backgroundColor: 'transparent', transition: 'all 0.15s ease',
+    backgroundColor: 'transparent', transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
   },
   subTabActive: {
     padding: '6px 14px', fontFamily: 'monospace', fontSize: '0.75rem', cursor: 'pointer',

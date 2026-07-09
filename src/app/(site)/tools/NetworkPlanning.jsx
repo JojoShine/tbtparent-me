@@ -273,7 +273,7 @@ export default function NetworkPlanning() {
             fontFamily: 'monospace',
             fontSize: '0.8rem',
             cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.borderColor = 'var(--fg)'
@@ -362,7 +362,7 @@ export default function NetworkPlanning() {
             fontFamily: 'monospace',
             fontSize: '0.85rem',
             cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.borderColor = 'var(--fg)'
