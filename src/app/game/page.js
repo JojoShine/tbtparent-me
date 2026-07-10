@@ -55,6 +55,7 @@ const GAMES = [
     unit_zh: '关',
     maxDaily: 3, // 3 sizes * 1
   },
+
   {
     id: 'english',
     href: '/game/english',
