@@ -52,6 +52,32 @@ export default function Navbar() {
             </Link>
           ))}
           <LanguageSwitch />
+
+          {/* 游戏入口按钮 */}
+          <Link
+            href="/game"
+            title="益智趣味小游戏"
+            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
+            style={{ color: 'var(--fg)' }}
+          >
+            <Gamepad2 className="w-4 h-4" />
+          </Link>
+
+          {/* 素问入口 */}
+          <Link
+            href="/suwen"
+            title="素问 · 卜卦"
+            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
+            style={{ color: 'var(--fg)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4"/>
+              <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2" fill="currentColor"/>
+              <circle cx="50" cy="26" r="5" fill="none" stroke="currentColor" strokeWidth="3"/>
+              <circle cx="50" cy="74" r="5" fill="currentColor"/>
+            </svg>
+          </Link>
+
           <a
             href="https://github.com/JojoShine"
             target="_blank"
@@ -80,32 +106,7 @@ export default function Navbar() {
               <circle cx="5" cy="19" r="1" />
             </svg>
           </a>
-          
-          {/* 游戏入口按钮 */}
-          <Link
-            href="/game"
-            title="益智趣味小游戏"
-            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
-            style={{ color: 'var(--fg)' }}
-          >
-            <Gamepad2 className="w-4 h-4" />
-          </Link>
 
-          {/* 素问入口 */}
-          <Link
-            href="/suwen"
-            title="素问 · 卜卦"
-            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
-            style={{ color: 'var(--fg)' }}
-          >
-            <svg width="14" height="14" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4"/>
-              <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2" fill="currentColor"/>
-              <circle cx="50" cy="26" r="5" fill="none" stroke="currentColor" strokeWidth="3"/>
-              <circle cx="50" cy="74" r="5" fill="currentColor"/>
-            </svg>
-          </Link>
-          
           {/* 搜索按钮 */}
           <button
             onClick={() => setSearchOpen(true)}
@@ -151,19 +152,6 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="flex items-center gap-4 py-4">
-              <LanguageSwitch />
-              <ThemeToggle />
-              <button
-                onClick={() => {
-                  setSearchOpen(true)
-                  setMenuOpen(false)
-                }}
-                title="搜索"
-                className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
-                style={{ color: 'var(--fg)' }}
-              >
-                <Search className="w-5 h-5" />
-              </button>
               <Link
                 href="/game"
                 onClick={handleNavClick}
@@ -187,6 +175,19 @@ export default function Navbar() {
                   <circle cx="50" cy="74" r="5" fill="currentColor"/>
                 </svg>
               </Link>
+              <LanguageSwitch />
+              <ThemeToggle />
+              <button
+                onClick={() => {
+                  setSearchOpen(true)
+                  setMenuOpen(false)
+                }}
+                title="搜索"
+                className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
+                style={{ color: 'var(--fg)' }}
+              >
+                <Search className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>
@@ -202,6 +203,8 @@ export default function Navbar() {
 const builtinTools = [
   { key: 'image-compressor', label_zh: '图片压缩', label_en: 'Image Compressor', category_zh: '办公' },
   { key: 'qrcode-generator', label_zh: '二维码生成', label_en: 'QR Code Generator', category_zh: '办公' },
+  { key: 'photo-tool', label_zh: '证件照制作', label_en: 'ID Photo Maker', category_zh: '办公' },
+  { key: 'background-remover', label_zh: 'AI抠图', label_en: 'AI Background Remover', category_zh: '办公' },
   { key: 'ip-query', label_zh: 'IP查询', label_en: 'IP Query', category_zh: '网络' },
   { key: 'ip-calculator', label_zh: 'IP计算器', label_en: 'IP Calculator', category_zh: '网络' },
   { key: 'network-planning', label_zh: '组网规划', label_en: 'Network Planning', category_zh: '网络' },
@@ -213,7 +216,8 @@ const searchPages = [
   { key: 'idiom-game', label_zh: '成语闯关', label_en: 'Idiom Game', description_zh: '猜成语小游戏', path: '/game/idiom' },
   { key: 'takuzu-game', label_zh: 'XXOO', label_en: 'Takuzu', description_zh: 'XXOO逻辑棋游戏', path: '/game/takuzu' },
   { key: 'guess-number-game', label_zh: '猜数字', label_en: 'Guess Number', description_zh: '猜数字xAyB游戏', path: '/game/guess-number' },
-  { key: 'english-game', label_zh: '常用英语', label_en: 'English Practice', description_zh: '听发音看中文打出英文常用英语', path: '/game/english' }
+  { key: 'english-game', label_zh: '常用英语', label_en: 'English Practice', description_zh: '听发音看中文打出英文常用英语', path: '/game/english' },
+  { key: 'writing-game', label_zh: '文笔训练', label_en: 'Writing Trainer', description_zh: 'AI评分文笔短片段练习', path: '/game/writing' },
 ]
 
 function SearchModal({ onClose }) {

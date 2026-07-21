@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
-import { ArrowLeft, BookOpen, Grid3x3, Calculator, Languages } from 'lucide-react'
+import { ArrowLeft, BookOpen, Grid3x3, Calculator, Languages, PenTool } from 'lucide-react'
 
 const GAMES = [
   {
@@ -71,6 +71,22 @@ const GAMES = [
     action_zh: '已练习',
     unit_zh: '句',
     maxDaily: Infinity,
+  },
+  {
+    id: 'writing',
+    href: '/game/writing',
+    icon: PenTool,
+    title_zh: '文笔训练',
+    title_en: 'Writing Trainer',
+    desc_zh: 'AI 多维度评分的文笔短片段练习',
+    desc_en: 'AI-scored writing drills across 5 dimensions',
+    limit_zh: '每日10次',
+    limit_en: '10/day',
+    statsKey: 'writing-stats',
+    dailyKey: 'writing-stats-daily',
+    action_zh: '已练习',
+    unit_zh: '次',
+    maxDaily: 10,
   },
 ]
 
