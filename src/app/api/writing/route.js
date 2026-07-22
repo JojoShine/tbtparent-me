@@ -89,6 +89,14 @@ export async function POST(request) {
 
   const { prompt, writing, lang } = body
 
+  if (typeof prompt === 'string' && prompt.length > 500) {
+    return Response.json({ error: '写作提示不能超过500字符' }, { status: 400 })
+  }
+
+  if (typeof writing === 'string' && writing.length > 5000) {
+    return Response.json({ error: '写作内容不能超过5000字符' }, { status: 400 })
+  }
+
   if (!prompt || !writing) {
     return Response.json({ error: 'Missing prompt or writing content' }, { status: 400 })
   }

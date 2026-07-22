@@ -20,6 +20,16 @@ export async function POST(request) {
       )
     }
 
+    const DOMAIN_RE = /^[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*$/
+    if (typeof domain !== 'string' || domain.length > 253 || !DOMAIN_RE.test(domain)) {
+      return NextResponse.json({ error: 'Invalid domain format' }, { status: 400 })
+    }
+
+    const ALLOWED_TYPES = new Set(['A', 'AAAA', 'CNAME', 'MX', 'NS', 'SOA', 'TXT', 'SRV', 'PTR', 'ANY'])
+    if (!ALLOWED_TYPES.has(recordType)) {
+      return NextResponse.json({ error: 'Unsupported record type' }, { status: 400 })
+    }
+
     // 尝试多个DNS API，优先使用国内可用的服务
     const apis = [
       {
@@ -104,11 +114,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('DNS lookup error:', error)
     return NextResponse.json(
-      { 
-        error: 'DNS query failed',
-        message: error.message,
-        results: [],
-      },
+      { error: 'DNS query failed', results: [] },
       { status: 500 }
     )
   }

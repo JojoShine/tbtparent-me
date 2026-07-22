@@ -9,6 +9,7 @@ export async function GET() {
     })
     return Response.json(projects)
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error('GET /api/projects/recent error:', error)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

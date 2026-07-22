@@ -7,7 +7,7 @@ import { Smartphone, Monitor, Tv, QrCode } from 'lucide-react'
 import QRCode from 'qrcode'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import rehypeRaw from 'rehype-raw'
+import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -657,7 +657,7 @@ export default function ProjectDetailPage() {
           >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeRaw, rehypeSlug]}
+              rehypePlugins={[rehypeSanitize, rehypeSlug]}
               components={mdComponents}
             >
               {content}

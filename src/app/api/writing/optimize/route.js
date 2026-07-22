@@ -78,6 +78,10 @@ export async function POST(request) {
 
   const { text, prompt, lang } = body
 
+  if (typeof text === 'string' && text.length > 5000) {
+    return Response.json({ error: '内容不能超过5000字符' }, { status: 400 })
+  }
+
   if (!text || text.trim().length < 5) {
     return Response.json({ error: '内容太短，请至少说一句话' }, { status: 400 })
   }

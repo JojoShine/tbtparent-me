@@ -168,6 +168,10 @@ export async function POST(request) {
 
   const { method, data, style, category, question } = body
 
+  if (typeof question === 'string' && question.length > 500) {
+    return Response.json({ error: '问题不能超过500字符' }, { status: 400 })
+  }
+
   // 选择 system prompt
   let systemKey = 'yinshi'
   if (style === 'jingshi') {

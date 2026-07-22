@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit'
+
+const POST_LIMIT = 100
 
 // GET - 获取今日访客数和总数
 export async function GET() {
@@ -23,14 +26,23 @@ export async function GET() {
 // POST - 记录访问，基于浏览器指纹分配今日次序（事务保证并发安全）
 export async function POST(request) {
   try {
+    const { allowed } = checkRateLimit(request, POST_LIMIT)
+    if (!allowed) {
+      return rateLimitResponse(POST_LIMIT)
+    }
+
     const today = new Date().toISOString().split('T')[0]
-    
+
     let visitorId = ''
     try {
       const body = await request.json()
       visitorId = body.visitorId || ''
     } catch (e) {}
-    
+
+    if (typeof visitorId === 'string' && visitorId.length > 100) {
+      return NextResponse.json({ error: 'visitorId too long' }, { status: 400 })
+    }
+
     if (!visitorId) {
       return NextResponse.json({ error: 'visitorId required' }, { status: 400 })
     }

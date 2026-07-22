@@ -40,7 +40,8 @@ export async function GET(request) {
     })
     return Response.json(novels)
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error(error)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -62,7 +63,8 @@ export const POST = withAuth(async (request) => {
     })
     return Response.json(novel)
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error(error)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 })
 
@@ -85,7 +87,8 @@ export const PUT = withAuth(async (request) => {
     })
     return Response.json(novel)
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error(error)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 })
 
@@ -94,9 +97,11 @@ export const DELETE = withAuth(async (request) => {
   try {
     const { searchParams } = new URL(request.url)
     const id = parseInt(searchParams.get('id'))
+    if (isNaN(id)) return Response.json({ error: 'Invalid id' }, { status: 400 })
     await prisma.archiveNovel.delete({ where: { id } })
     return Response.json({ success: true })
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error(error)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 })

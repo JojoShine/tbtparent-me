@@ -17,6 +17,10 @@ export async function POST(req) {
       return NextResponse.json({ error: 'text is required' }, { status: 400 })
     }
 
+    if (text.length > 500) {
+      return NextResponse.json({ error: '文本不能超过500字符' }, { status: 400 })
+    }
+
     // MyMemory 语言代码映射
     const langMap = {
       zh: 'zh-CN',
@@ -37,6 +41,6 @@ export async function POST(req) {
     }
   } catch (e) {
     console.error('Translate API error:', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: '翻译失败' }, { status: 500 })
   }
 }

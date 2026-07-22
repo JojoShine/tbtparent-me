@@ -38,6 +38,15 @@ export async function POST(request) {
       )
     }
 
+    // 验证每个 octet 在 0-255 范围内
+    const octets = ip.split('.').map(Number)
+    if (octets.some(o => o < 0 || o > 255)) {
+      return NextResponse.json(
+        { error: 'IP地址格式不正确' },
+        { status: 400 }
+      )
+    }
+
     // 检测私有/内网IP，外部API无法查询
     const isPrivateIP = (addr) => {
       const parts = addr.split('.').map(Number)
@@ -216,10 +225,7 @@ export async function POST(request) {
       console.error('Backup API also failed:', backupError)
       
       return NextResponse.json(
-        { 
-          error: 'IP query failed',
-          message: error.message || 'Unknown error'
-        },
+        { error: 'IP查询失败，请稍后重试' },
         { status: 500 }
       )
     }

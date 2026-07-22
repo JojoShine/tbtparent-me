@@ -1,3 +1,4 @@
+import path from 'path'
 import { minioClient, MINIO_BUCKET, ensureBucket } from '@/lib/minio'
 import { withAuth } from '@/lib/auth'
 
@@ -12,11 +13,10 @@ export const POST = withAuth(async (request) => {
 
     await ensureBucket()
 
-    // 生成文件名
     const timestamp = Date.now()
-    const originalName = file.name || 'image.png'
-    const ext = originalName.split('.').pop() || 'png'
-    const filename = `archive/${timestamp}-${originalName}`
+    const safeName = path.basename(file.name || 'image.png')
+    const ext = safeName.split('.').pop() || 'png'
+    const filename = `archive/${timestamp}-${safeName}`
 
     // 转换为 Buffer
     const buffer = Buffer.from(await file.arrayBuffer())
@@ -34,6 +34,6 @@ export const POST = withAuth(async (request) => {
     })
   } catch (error) {
     console.error('Upload error:', error)
-    return Response.json({ error: error.message }, { status: 500 })
+    return Response.json({ error: 'Upload failed' }, { status: 500 })
   }
 })

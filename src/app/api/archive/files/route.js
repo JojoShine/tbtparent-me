@@ -15,8 +15,6 @@ export async function GET(request) {
     const bucket = parts[0]
     const objectName = parts.slice(1).join('/')
 
-    console.log('Fetching file:', { bucket, objectName, expectedBucket: MINIO_BUCKET })
-
     if (bucket !== MINIO_BUCKET) {
       return Response.json({ error: 'Invalid bucket' }, { status: 403 })
     }

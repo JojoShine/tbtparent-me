@@ -44,29 +44,29 @@ export async function GET() {
     const blogItems = blogs.map(blog => {
       const pubDate = blog.published_at || blog.createdAt
       return `    <item>
-      <title><![CDATA[[Blog] ${blog.title_en}]]></title>
+      <title><![CDATA[[Blog] ${blog.title_en.replace(/\]\]>/g, ']]&gt;')}]]></title>
       <link>${siteUrl}/blog/${blog.slug}</link>
       <guid>${siteUrl}/blog/${blog.slug}</guid>
-      <description><![CDATA[${blog.excerpt_en || ''}]]></description>
+      <description><![CDATA[${(blog.excerpt_en || '').replace(/\]\]>/g, ']]&gt;')}]]></description>
       <pubDate>${new Date(pubDate).toUTCString()}</pubDate>
     </item>`
     })
 
     // 项目 items
     const projectItems = projects.map(p => `    <item>
-      <title><![CDATA[[Project] ${p.name_en}]]></title>
+      <title><![CDATA[[Project] ${p.name_en.replace(/\]\]>/g, ']]&gt;')}]]></title>
       <link>${p.link || `${siteUrl}/projects`}</link>
       <guid>${siteUrl}/project-${p.name_en.replace(/\s+/g, '-')}</guid>
-      <description><![CDATA[${p.description_en || ''}]]></description>
+      <description><![CDATA[${(p.description_en || '').replace(/\]\]>/g, ']]&gt;')}]]></description>
       <pubDate>${new Date(p.createdAt).toUTCString()}</pubDate>
     </item>`)
 
     // 工具 items
     const toolItems = tools.map(t => `    <item>
-      <title><![CDATA[[Tool] ${t.name_en}]]></title>
+      <title><![CDATA[[Tool] ${t.name_en.replace(/\]\]>/g, ']]&gt;')}]]></title>
       <link>${t.link || `${siteUrl}/tools`}</link>
       <guid>${siteUrl}/tool-${t.name_en.replace(/\s+/g, '-')}</guid>
-      <description><![CDATA[${t.description_en || ''}]]></description>
+      <description><![CDATA[${(t.description_en || '').replace(/\]\]>/g, ']]&gt;')}]]></description>
       <pubDate>${new Date(t.createdAt).toUTCString()}</pubDate>
     </item>`)
 
@@ -93,7 +93,8 @@ ${items}
       },
     })
   } catch (error) {
-    return new Response(`<?xml version="1.0"?><error>${error.message}</error>`, {
+    console.error(error)
+    return new Response(`<?xml version="1.0"?><error>Internal server error</error>`, {
       status: 500,
       headers: { 'Content-Type': 'application/xml' },
     })

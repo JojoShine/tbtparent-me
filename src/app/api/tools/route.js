@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
 
-// 公开：获取工具列表
 export async function GET() {
   try {
     const tools = await prisma.tool.findMany({
@@ -9,41 +8,51 @@ export async function GET() {
     })
     return Response.json(tools)
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error('tools GET error:', error)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// 管理：新增工具
 export const POST = withAuth(async (request) => {
   try {
     const body = await request.json()
-    const tool = await prisma.tool.create({ data: body })
+    const { name_zh, name_en, description_zh, description_en, link, available, sortOrder } = body
+    const tool = await prisma.tool.create({
+      data: { name_zh, name_en, description_zh, description_en, link, available, sortOrder },
+    })
     return Response.json(tool)
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error('tools POST error:', error)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 })
 
-// 管理：更新工具
 export const PUT = withAuth(async (request) => {
   try {
     const body = await request.json()
-    const { id, ...data } = body
-    const tool = await prisma.tool.update({ where: { id }, data })
+    const { id, name_zh, name_en, description_zh, description_en, link, available, sortOrder } = body
+    const tool = await prisma.tool.update({
+      where: { id },
+      data: { name_zh, name_en, description_zh, description_en, link, available, sortOrder },
+    })
     return Response.json(tool)
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error('tools PUT error:', error)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 })
 
-// 管理：删除工具
 export const DELETE = withAuth(async (request) => {
   try {
     const { searchParams } = new URL(request.url)
     const id = parseInt(searchParams.get('id'))
+    if (isNaN(id)) {
+      return Response.json({ error: 'Invalid id' }, { status: 400 })
+    }
     await prisma.tool.delete({ where: { id } })
     return Response.json({ success: true })
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error('tools DELETE error:', error)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 })

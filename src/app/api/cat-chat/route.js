@@ -62,6 +62,20 @@ export async function POST(request) {
     return Response.json({ error: 'Missing catId or messages' }, { status: 400 })
   }
 
+  if (messages.length > 20) {
+    return Response.json({ error: '消息数量不能超过20条' }, { status: 400 })
+  }
+
+  const allowedRoles = new Set(['user', 'assistant'])
+  for (const m of messages) {
+    if (!allowedRoles.has(m.role)) {
+      return Response.json({ error: '消息角色仅允许 user 或 assistant' }, { status: 400 })
+    }
+    if (typeof m.content !== 'string' || m.content.length > 2000) {
+      return Response.json({ error: '每条消息内容不能超过2000字符' }, { status: 400 })
+    }
+  }
+
   const persona = catPersonas.find(c => c.id === catId)
   if (!persona) {
     return Response.json({ error: 'Unknown cat' }, { status: 400 })

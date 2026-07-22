@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import mermaid from 'mermaid'
+import DOMPurify from 'dompurify'
 
 let currentTheme = null
 
@@ -35,7 +36,7 @@ export default function MermaidBlock({ chart, theme }) {
     }
     const id = `mermaid-render-${Date.now()}-${counter++}`
     mermaid.render(id, chart)
-      .then(({ svg }) => setSvg(svg))
+      .then(({ svg }) => setSvg(DOMPurify.sanitize(svg)))
       .catch(err => {
         console.error('Mermaid render error:', err)
         setSvg('')
