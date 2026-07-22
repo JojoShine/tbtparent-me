@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Smartphone, Monitor, Tv, QrCode } from 'lucide-react'
@@ -11,7 +11,9 @@ import rehypeRaw from 'rehype-raw'
 import rehypeSlug from 'rehype-slug'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import MermaidBlock from '@/components/ui/MermaidBlock'
 import { useLang } from '@/hooks/useLang'
+import { useTheme } from '@/hooks/useTheme'
 import { localizedField, localizeProject } from '@/lib/i18n-helpers'
 
 const fadeUp = {
@@ -54,9 +56,36 @@ const typeIconMap = {
   dashboard: Tv,
 }
 
+function extractHeadings(markdown) {
+  if (!markdown) return []
+  const lines = markdown.split('\n')
+  const headings = []
+  let inCodeBlock = false
+  const slugCounts = {}
+  lines.forEach(line => {
+    if (line.trim().startsWith('```')) { inCodeBlock = !inCodeBlock; return }
+    if (inCodeBlock) return
+    const match = line.match(/^(#{1,4})\s+(.+)$/)
+    if (match) {
+      const level = match[1].length
+      const text = match[2].replace(/[*_`~\[\]]/g, '').trim()
+      let slug = text.toLowerCase().trim().replace(/ /g, '-').replace(/[^\w\u4e00-\u9fff-]/g, '')
+      if (slugCounts[slug] !== undefined) {
+        slugCounts[slug]++
+        slug = `${slug}-${slugCounts[slug]}`
+      } else {
+        slugCounts[slug] = 0
+      }
+      headings.push({ level, text, id: slug })
+    }
+  })
+  return headings
+}
+
 export default function ProjectDetailPage() {
   const { id } = useParams()
   const { lang } = useLang()
+  const { theme } = useTheme()
   const router = useRouter()
   const searchParams = useSearchParams()
   const fromHome = searchParams.get('from') === 'home'
@@ -65,7 +94,12 @@ export default function ProjectDetailPage() {
   const [showQr, setShowQr] = useState(false)
   const [isSmallScreen, setIsSmallScreen] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState(null)
+  const [activeId, setActiveId] = useState('')
+  const [tocVisible, setTocVisible] = useState(false)
+  const [tocPos, setTocPos] = useState({ left: 0, top: 0 })
+  const [showTop, setShowTop] = useState(false)
   const qrGeneratedRef = useRef(false)
+  const tocAreaRef = useRef(null)
 
   useEffect(() => {
     const check = () => setIsSmallScreen(window.innerWidth < 768)
@@ -111,6 +145,135 @@ export default function ProjectDetailPage() {
     }
   }, [project])
 
+  const content = localizedField(project, 'content', lang)
+  const headings = useMemo(() => extractHeadings(content), [content])
+
+  useEffect(() => {
+    if (!activeId) return
+    const tocItem = document.querySelector(`.project-toc-inner a[data-id="${activeId}"]`)
+    if (tocItem) {
+      tocItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }, [activeId])
+
+  useEffect(() => {
+    const updatePos = () => {
+      if (tocAreaRef.current) {
+        const rect = tocAreaRef.current.getBoundingClientRect()
+        setTocPos({ left: Math.max(12, rect.left), top: 144 })
+      }
+    }
+    updatePos()
+    window.addEventListener('resize', updatePos)
+    return () => window.removeEventListener('resize', updatePos)
+  }, [headings])
+
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 400)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    if (headings.length === 0) return
+    const observer = new IntersectionObserver(
+      entries => {
+        const visible = entries.filter(e => e.isIntersecting)
+        if (visible.length > 0) {
+          setActiveId(visible[0].target.id)
+        }
+      },
+      { rootMargin: '-80px 0px -70% 0px', threshold: 0 }
+    )
+    headings.forEach(h => {
+      const el = document.getElementById(h.id)
+      if (el) observer.observe(el)
+    })
+    return () => observer.disconnect()
+  }, [headings])
+
+  const mdComponents = useMemo(() => ({
+    code: ({ className, children, ...props }) => {
+      const match = /language-(\w+)/.exec(className || '')
+      const isInline = !match
+      if (isInline) {
+        return (
+          <code
+            className={className}
+            style={{
+              fontFamily: 'monospace',
+              fontSize: '0.85rem',
+              background: 'var(--border)',
+              padding: '0.15rem 0.4rem',
+              borderRadius: '2px',
+            }}
+            {...props}
+          >
+            {children}
+          </code>
+        )
+      }
+      if (match[1] === 'mermaid') {
+        return (
+          <MermaidBlock chart={String(children).replace(/\n$/, '')} theme={theme} />
+        )
+      }
+      return (
+        <div className="code-block-wrapper">
+          <div className="code-scroll">
+            <SyntaxHighlighter
+              style={oneDark}
+              language={match[1]}
+              PreTag="div"
+              customStyle={{ borderRadius: '6px', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, overflowX: 'auto' }}
+              {...props}
+            >
+              {String(children).replace(/\n$/, '')}
+            </SyntaxHighlighter>
+          </div>
+          <button
+            className="code-copy-btn"
+            onClick={() => {
+              navigator.clipboard.writeText(String(children).replace(/\n$/, ''))
+              const btn = document.activeElement
+              btn.textContent = '✓'
+              setTimeout(() => { btn.textContent = 'Copy' }, 1500)
+            }}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              padding: '4px 10px',
+              fontSize: '0.7rem',
+              fontFamily: 'monospace',
+              background: 'rgba(255,255,255,0.1)',
+              color: '#abb2bf',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Copy
+          </button>
+        </div>
+      )
+    },
+    img: ({ src, alt, ...props }) => (
+      <img src={src} alt={alt || ''} loading="lazy" style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px', margin: '1rem 0', display: 'block' }} {...props} />
+    ),
+    video: ({ src, children, ...props }) => (
+      <video
+        src={src}
+        controls
+        preload="metadata"
+        style={{ maxWidth: '100%', borderRadius: '4px', margin: '1rem 0', display: 'block' }}
+        {...props}
+      >
+        {children}
+      </video>
+    ),
+  }), [theme])
+
   const formatDate = (dateStr) => {
     if (!dateStr) return ''
     const d = new Date(dateStr)
@@ -137,19 +300,66 @@ export default function ProjectDetailPage() {
 
   const localized = localizeProject(project, lang)
   const tags = localized.tags || []
-  const content = localizedField(project, 'content', lang)
   const hasDemo = !!project.demo_url
   const hasVideo = !!project.video_url
   const isMobile = project.project_type === 'mobile'
 
   return (
-    <motion.div
-      className="max-w-4xl pb-8 md:pb-20"
-      style={{ margin: '0 auto' }}
-      variants={fadeUp}
-      initial="initial"
-      animate="animate"
+    <div
+      className="project-layout"
+      onMouseEnter={() => setTocVisible(true)}
+      onMouseLeave={() => setTocVisible(false)}
     >
+      {/* 目录树 - 左侧 */}
+      {headings.length > 0 && (
+        <div className={`project-toc-area ${tocVisible ? 'project-toc-visible' : ''}`} ref={tocAreaRef}>
+          <button
+            className="toc-toggle"
+            onClick={() => setTocVisible(v => !v)}
+            title={lang === 'zh' ? '目录' : 'Contents'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="6" x2="15" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="18" y2="18" />
+            </svg>
+          </button>
+          <nav className="project-toc" style={{ left: `${tocPos.left}px`, top: `${tocPos.top}px` }}>
+            <div className="project-toc-inner">
+              <p className="font-mono" style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border)', letterSpacing: '0.05em', fontWeight: 600 }}>
+                {lang === 'zh' ? '目录' : 'CONTENTS'}
+              </p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {headings.map((h, i) => (
+                  <li key={i}>
+                    <a
+                      href={`#${h.id}`}
+                      data-id={h.id}
+                      onClick={e => {
+                        e.preventDefault()
+                        setActiveId(h.id)
+                        document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' })
+                      }}
+                      className={`toc-link font-mono ${activeId === h.id ? 'toc-link-active' : ''}`}
+                      style={{ paddingLeft: `${(h.level - 1) * 12 + 12}px` }}
+                    >
+                      {h.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </nav>
+        </div>
+      )}
+
+      {/* 正文 */}
+      <motion.div
+        className="project-main pb-8 md:pb-20"
+        variants={fadeUp}
+        initial="initial"
+        animate="animate"
+      >
       {/* 返回按钮 */}
       <button
         onClick={() => router.push(fromHome ? '/' : '/projects')}
@@ -448,82 +658,7 @@ export default function ProjectDetailPage() {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw, rehypeSlug]}
-              components={{
-                code: ({ className, children, ...props }) => {
-                  const match = /language-(\w+)/.exec(className || '')
-                  const isInline = !match
-                  if (isInline) {
-                    return (
-                      <code
-                        className={className}
-                        style={{
-                          fontFamily: 'monospace',
-                          fontSize: '0.85rem',
-                          background: 'var(--border)',
-                          padding: '0.15rem 0.4rem',
-                          borderRadius: '2px',
-                        }}
-                        {...props}
-                      >
-                        {children}
-                      </code>
-                    )
-                  }
-                  return (
-                    <div className="code-block-wrapper">
-                      <div className="code-scroll">
-                        <SyntaxHighlighter
-                          style={oneDark}
-                          language={match[1]}
-                          PreTag="div"
-                          customStyle={{ borderRadius: '6px', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, overflowX: 'auto' }}
-                          {...props}
-                        >
-                          {String(children).replace(/\n$/, '')}
-                        </SyntaxHighlighter>
-                      </div>
-                      <button
-                        className="code-copy-btn"
-                        onClick={() => {
-                          navigator.clipboard.writeText(String(children).replace(/\n$/, ''))
-                          const btn = document.activeElement
-                          btn.textContent = '✓'
-                          setTimeout(() => { btn.textContent = 'Copy' }, 1500)
-                        }}
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                          padding: '4px 10px',
-                          fontSize: '0.7rem',
-                          fontFamily: 'monospace',
-                          background: 'rgba(255,255,255,0.1)',
-                          color: '#abb2bf',
-                          border: '1px solid rgba(255,255,255,0.15)',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Copy
-                      </button>
-                    </div>
-                  )
-                },
-                img: ({ src, alt, ...props }) => (
-                  <img src={src} alt={alt || ''} loading="lazy" style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px', margin: '1rem 0', display: 'block' }} {...props} />
-                ),
-                video: ({ src, children, ...props }) => (
-                  <video
-                    src={src}
-                    controls
-                    preload="metadata"
-                    style={{ maxWidth: '100%', borderRadius: '4px', margin: '1rem 0', display: 'block' }}
-                    {...props}
-                  >
-                    {children}
-                  </video>
-                ),
-              }}
+              components={mdComponents}
             >
               {content}
             </ReactMarkdown>
@@ -531,5 +666,175 @@ export default function ProjectDetailPage() {
         </>
       )}
     </motion.div>
+
+      {/* 返回顶部按钮 */}
+      {showTop && (
+        <button
+          className="back-to-top"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          title={lang === 'zh' ? '返回顶部' : 'Back to top'}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
+        </button>
+      )}
+
+      <style jsx global>{`
+        .project-layout {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 24px;
+          display: flex;
+          gap: 32px;
+        }
+        .project-toc-area {
+          width: 200px;
+          flex-shrink: 0;
+          order: -1;
+          position: relative;
+        }
+        .toc-toggle {
+          position: sticky;
+          top: 100px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          padding: 0;
+          background: transparent;
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          color: var(--muted);
+          cursor: pointer;
+          z-index: 2;
+        }
+        .project-toc {
+          position: fixed;
+          width: 200px;
+          padding-right: 16px;
+          opacity: 0;
+          transform: translateX(-8px);
+          transition: opacity 0.3s ease, transform 0.3s ease;
+          pointer-events: none;
+          z-index: 10;
+        }
+        .project-toc-visible .project-toc {
+          opacity: 1;
+          transform: translateX(0);
+          pointer-events: auto;
+        }
+        .project-toc-inner {
+          position: sticky;
+          top: 144px;
+          max-height: calc(100vh - 144px - 100px);
+          overflow-y: auto;
+          padding-right: 4px;
+        }
+        .project-toc-inner::-webkit-scrollbar { width: 0; }
+        .toc-link {
+          display: block;
+          position: relative;
+          font-size: 0.8rem;
+          line-height: 1.6;
+          padding: 4px 12px 4px 12px;
+          color: var(--muted);
+          border-left: 2px solid transparent;
+          text-decoration: none;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: color 0.2s, border-color 0.2s;
+        }
+        .toc-link::after {
+          content: '';
+          position: absolute;
+          bottom: 2px;
+          left: 12px;
+          width: 0;
+          height: 0;
+          border-bottom: 1px dashed var(--fg);
+          opacity: 0.4;
+          transition: width 0.25s ease;
+        }
+        .toc-link:hover::after {
+          width: calc(100% - 24px);
+          opacity: 0.7;
+        }
+        .toc-link:hover {
+          color: var(--fg);
+        }
+        .toc-link-active {
+          color: var(--fg) !important;
+          border-left-color: var(--fg);
+        }
+        .project-main {
+          flex: 1;
+          min-width: 0;
+          max-width: 896px;
+          margin: 0 auto;
+        }
+        @media (max-width: 1023px) {
+          .project-toc-area { display: none; }
+          .project-layout {
+            overflow-x: hidden;
+            max-width: 100vw;
+            padding: 0 16px;
+            gap: 0;
+          }
+          .project-main {
+            width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+          }
+        }
+        .project-content .mermaid-block {
+          display: flex;
+          justify-content: center;
+          padding: 1rem;
+          background: var(--border);
+          border-radius: 6px;
+          margin: 1rem 0;
+        }
+        .project-content .mermaid-block svg {
+          max-width: 100%;
+          height: auto;
+        }
+        .project-content .mermaid-block .node rect,
+        .project-content .mermaid-block .node circle,
+        .project-content .mermaid-block .node polygon {
+          transition: none !important;
+          stroke-width: 1px !important;
+        }
+        .project-content .mermaid-block .edgePath .path {
+          stroke-width: 1px !important;
+        }
+        .back-to-top {
+          position: fixed;
+          bottom: 32px;
+          right: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          padding: 0;
+          background: var(--bg);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          color: var(--muted);
+          cursor: pointer;
+          z-index: 9999;
+          animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
   )
 }

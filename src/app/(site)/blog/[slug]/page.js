@@ -8,7 +8,9 @@ import rehypeRaw from 'rehype-raw'
 import rehypeSlug from 'rehype-slug'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import MermaidBlock from '@/components/ui/MermaidBlock'
 import { useLang } from '@/hooks/useLang'
+import { useTheme } from '@/hooks/useTheme'
 import { localizedField } from '@/lib/i18n-helpers'
 
 function extractHeadings(markdown) {
@@ -43,6 +45,7 @@ export default function BlogDetailPage() {
   const { slug } = useParams()
   const router = useRouter()
   const { lang } = useLang()
+  const { theme } = useTheme()
   const [blog, setBlog] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeId, setActiveId] = useState('')
@@ -106,6 +109,141 @@ export default function BlogDetailPage() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  const mdComponents = useMemo(() => ({
+    pre: ({ children }) => {
+      const codeChild = children?.props || {}
+      const hasLang = /language-/.test(codeChild.className || '')
+      if (hasLang) {
+        return <>{children}</>
+      }
+      return (
+        <div style={{ position: 'relative', margin: '1rem 0' }}>
+          <pre style={{
+            background: '#282c34',
+            color: '#abb2bf',
+            borderRadius: '6px',
+            padding: '1rem',
+            fontSize: '0.85rem',
+            lineHeight: 1.6,
+            fontFamily: 'monospace',
+            overflowX: 'auto',
+            margin: 0,
+          }}>
+            {children}
+          </pre>
+          <button
+            className="code-copy-btn"
+            onClick={() => {
+              const text = typeof children?.props?.children === 'string'
+                ? children.props.children.replace(/\n$/, '')
+                : ''
+              navigator.clipboard.writeText(text)
+              const btn = document.activeElement
+              btn.textContent = '✓'
+              setTimeout(() => { btn.textContent = 'Copy' }, 1500)
+            }}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              padding: '4px 10px',
+              fontSize: '0.7rem',
+              fontFamily: 'monospace',
+              background: 'rgba(255,255,255,0.1)',
+              color: '#abb2bf',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Copy
+          </button>
+        </div>
+      )
+    },
+    code: ({ className, children, ...props }) => {
+      const match = /language-(\w+)/.exec(className || '')
+      const isInline = !match
+      if (isInline) {
+        return (
+          <code
+            className={className}
+            style={{
+              fontFamily: 'monospace',
+              fontSize: '0.85rem',
+              padding: '0.15rem 0.2rem',
+              borderRadius: '2px',
+            }}
+            {...props}
+          >
+            {children}
+          </code>
+        )
+      }
+      if (match[1] === 'mermaid') {
+        return (
+          <MermaidBlock chart={String(children).replace(/\n$/, '')} theme={theme} />
+        )
+      }
+      return (
+        <div style={{ position: 'relative', margin: '1rem 0' }}>
+          <SyntaxHighlighter
+            style={oneDark}
+            language={match[1]}
+            PreTag="div"
+            customStyle={{
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              lineHeight: 1.6,
+            }}
+            {...props}
+          >
+            {String(children).replace(/\n$/, '')}
+          </SyntaxHighlighter>
+          <button
+            className="code-copy-btn"
+            onClick={() => {
+              navigator.clipboard.writeText(String(children).replace(/\n$/, ''))
+              const btn = document.activeElement
+              btn.textContent = '✓'
+              setTimeout(() => { btn.textContent = 'Copy' }, 1500)
+            }}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              padding: '4px 10px',
+              fontSize: '0.7rem',
+              fontFamily: 'monospace',
+              background: 'rgba(255,255,255,0.1)',
+              color: '#abb2bf',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Copy
+          </button>
+        </div>
+      )
+    },
+    img: ({ src, alt, ...props }) => (
+      <img
+        src={src}
+        alt={alt || ''}
+        loading="lazy"
+        style={{
+          maxWidth: '100%',
+          height: 'auto',
+          borderRadius: '4px',
+          margin: '1rem 0',
+          display: 'block',
+        }}
+        {...props}
+      />
+    ),
+  }), [theme])
 
   if (loading) {
     return (
@@ -243,138 +381,7 @@ export default function BlogDetailPage() {
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeRaw, rehypeSlug]}
-          components={{
-            pre: ({ children }) => {
-              // 检查子元素是否是已处理的代码块（有 language-* class）
-              const codeChild = children?.props || {}
-              const hasLang = /language-/.test(codeChild.className || '')
-              if (hasLang) {
-                // 有语言的代码块由 code 组件处理，这里直接透传
-                return <>{children}</>
-              }
-              // 无语言的代码块，包裹在背景容器中
-              return (
-                <div style={{ position: 'relative', margin: '1rem 0' }}>
-                  <pre style={{
-                    background: '#282c34',
-                    color: '#abb2bf',
-                    borderRadius: '6px',
-                    padding: '1rem',
-                    fontSize: '0.85rem',
-                    lineHeight: 1.6,
-                    fontFamily: 'monospace',
-                    overflowX: 'auto',
-                    margin: 0,
-                  }}>
-                    {children}
-                  </pre>
-                  <button
-                    className="code-copy-btn"
-                    onClick={() => {
-                      const text = typeof children?.props?.children === 'string'
-                        ? children.props.children.replace(/\n$/, '')
-                        : ''
-                      navigator.clipboard.writeText(text)
-                      const btn = document.activeElement
-                      btn.textContent = '✓'
-                      setTimeout(() => { btn.textContent = 'Copy' }, 1500)
-                    }}
-                    style={{
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
-                      padding: '4px 10px',
-                      fontSize: '0.7rem',
-                      fontFamily: 'monospace',
-                      background: 'rgba(255,255,255,0.1)',
-                      color: '#abb2bf',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Copy
-                  </button>
-                </div>
-              )
-            },
-            code: ({ className, children, ...props }) => {
-              const match = /language-(\w+)/.exec(className || '')
-              const isInline = !match
-              if (isInline) {
-                return (
-                  <code
-                    className={className}
-                    style={{
-                      fontFamily: 'monospace',
-                      fontSize: '0.85rem',
-                      padding: '0.15rem 0.2rem',
-                      borderRadius: '2px',
-                    }}
-                    {...props}
-                  >
-                    {children}
-                  </code>
-                )
-              }
-              return (
-                <div style={{ position: 'relative', margin: '1rem 0' }}>
-                  <SyntaxHighlighter
-                    style={oneDark}
-                    language={match[1]}
-                    PreTag="div"
-                    customStyle={{
-                      borderRadius: '6px',
-                      fontSize: '0.85rem',
-                      lineHeight: 1.6,
-                    }}
-                    {...props}
-                  >
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
-                  <button
-                    className="code-copy-btn"
-                    onClick={() => {
-                      navigator.clipboard.writeText(String(children).replace(/\n$/, ''))
-                      const btn = document.activeElement
-                      btn.textContent = '✓'
-                      setTimeout(() => { btn.textContent = 'Copy' }, 1500)
-                    }}
-                    style={{
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
-                      padding: '4px 10px',
-                      fontSize: '0.7rem',
-                      fontFamily: 'monospace',
-                      background: 'rgba(255,255,255,0.1)',
-                      color: '#abb2bf',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Copy
-                  </button>
-                </div>
-              )
-            },
-            img: ({ src, alt, ...props }) => (
-              <img
-                src={src}
-                alt={alt || ''}
-                loading="lazy"
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                  borderRadius: '4px',
-                  margin: '1rem 0',
-                  display: 'block',
-                }}
-                {...props}
-              />
-            ),
-          }}
+          components={mdComponents}
         >
           {content}
         </ReactMarkdown>
@@ -443,7 +450,7 @@ export default function BlogDetailPage() {
         .blog-toc-inner {
           position: sticky;
           top: 144px;
-          max-height: calc(100vh - 184px);
+          max-height: calc(100vh - 144px - 100px);
           overflow-y: auto;
           padding-right: 4px;
         }
@@ -565,6 +572,27 @@ export default function BlogDetailPage() {
           border: none;
           border-top: 1px solid var(--border);
           margin: 2rem 0;
+        }
+        .blog-content .mermaid-block {
+          display: flex;
+          justify-content: center;
+          padding: 1rem;
+          background: var(--border);
+          border-radius: 6px;
+          margin: 1rem 0;
+        }
+        .blog-content .mermaid-block svg {
+          max-width: 100%;
+          height: auto;
+        }
+        .blog-content .mermaid-block .node rect,
+        .blog-content .mermaid-block .node circle,
+        .blog-content .mermaid-block .node polygon {
+          transition: none !important;
+          stroke-width: 1px !important;
+        }
+        .blog-content .mermaid-block .edgePath .path {
+          stroke-width: 1px !important;
         }
         .back-to-top {
           position: fixed;
