@@ -1,6 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import ParticleBackground from "@/components/layout/ParticleBackground";
 import Footer from "@/components/layout/Footer";
+import CatDuty from "@/components/ui/CatDuty";
 
 export default function GameLayout({ children }) {
   return (
@@ -13,6 +14,7 @@ export default function GameLayout({ children }) {
       <div className="relative z-10 mt-auto">
         <Footer />
       </div>
+      <CatDuty />
     </>
   );
 }

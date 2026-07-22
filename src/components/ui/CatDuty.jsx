@@ -1,12 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Cake, MessageCircle, Gamepad2 } from 'lucide-react'
 
 const cats = [
   {
     name: '雪宝',
     image: '/assets/cats/雪宝-removebg-preview.png',
     role: '代码猫',
+    gender: '♂',
+    birthday: '02/18',
+    personality: '活泼 · 乖巧',
     quotes: [
       { zh: '今天也要写出没有 bug 的代码！', en: 'No bugs today, fight!' },
       { zh: 'console.log 是最好的调试工具，不接受反驳。', en: 'console.log is the best debugger, no debate.' },
@@ -24,6 +29,9 @@ const cats = [
     name: '甜枣',
     image: '/assets/cats/甜枣-removebg-preview.png',
     role: '咖啡陪伴猫',
+    gender: '♀',
+    birthday: '08/18',
+    personality: '胆小 · 温柔恬静',
     quotes: [
       { zh: '来杯咖啡，慢慢写。', en: 'Grab a coffee, take your time.' },
       { zh: '休息一下，咖啡要凉了。', en: 'Take a break, your coffee\'s getting cold.' },
@@ -41,6 +49,9 @@ const cats = [
     name: '三塔',
     image: '/assets/cats/三塔-removebg-preview.png',
     role: '黑客猫',
+    gender: '♂',
+    birthday: '04/07',
+    personality: '好动 · 粘人贴心',
     quotes: [
       { zh: '今天的漏洞，明天补也行。', en: 'Today\'s vulnerability, tomorrow\'s problem.' },
       { zh: '你的密码是 123456 对吧？', en: 'Your password is 123456, right?' },
@@ -88,13 +99,50 @@ export default function CatDuty() {
           <span className="cat-bubble-dot cat-bubble-dot-y" />
           <span className="cat-bubble-dot cat-bubble-dot-g" />
           <span className="cat-bubble-bar-title">cat-duty.sh</span>
+          <Link href="/cat-chat" className="cat-bubble-bar-chat" title="猫猫聊天室">
+            <MessageCircle size={12} />
+            <span>聊天</span>
+          </Link>
         </div>
         <div className="cat-bubble-body">
           <p className="cat-bubble-label">今日值班小猫</p>
           <span className="cat-bubble-name">{cat.name}</span>
           <span className="cat-bubble-role">{cat.role}</span>
+          <div className="cat-bubble-profile">
+            <span className="cat-bubble-profile-item">{cat.gender}</span>
+            <span className="cat-bubble-profile-sep">|</span>
+            <span className="cat-bubble-profile-item"><span className="cat-bubble-profile-icon-text"><Cake size={11} /><span>{cat.birthday}</span></span></span>
+            <span className="cat-bubble-profile-sep">|</span>
+            <span className="cat-bubble-profile-item">{cat.personality}</span>
+          </div>
           <p className="cat-bubble-quote">{cat.quote.zh}</p>
           <p className="cat-bubble-quote-en">{cat.quote.en}</p>
+          <div className="cat-bubble-skills">
+            <p className="cat-bubble-skills-title">小猫技能</p>
+            <Link href="/game" className="cat-bubble-skill-card">
+              <div className="cat-bubble-skill-icon">
+                <Gamepad2 size={16} />
+              </div>
+              <div className="cat-bubble-skill-info">
+                <span className="cat-bubble-skill-name">小游戏</span>
+                <span className="cat-bubble-skill-desc">益智闯关，打发时间</span>
+              </div>
+            </Link>
+            <Link href="/suwen" className="cat-bubble-skill-card">
+              <div className="cat-bubble-skill-icon">
+                <svg width="16" height="16" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="6"/>
+                  <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2" fill="currentColor"/>
+                  <circle cx="50" cy="26" r="5" fill="none" stroke="currentColor" strokeWidth="4"/>
+                  <circle cx="50" cy="74" r="5" fill="currentColor"/>
+                </svg>
+              </div>
+              <div className="cat-bubble-skill-info">
+                <span className="cat-bubble-skill-name">素问</span>
+                <span className="cat-bubble-skill-desc">每日一卦，答疑解惑</span>
+              </div>
+            </Link>
+          </div>
         </div>
       </div>
       <div className="cat-thought-dots">
@@ -124,6 +172,9 @@ export default function CatDuty() {
           height: 200px;
           object-fit: contain;
           pointer-events: auto;
+          filter: drop-shadow(0 4px 16px rgba(0,0,0,0.15));
+        }
+        .dark .cat-image {
           filter: drop-shadow(0 4px 16px rgba(0,0,0,0.25));
         }
         .cat-thought-dots {
@@ -139,8 +190,12 @@ export default function CatDuty() {
         .cat-thought-dot {
           position: absolute;
           border-radius: 50%;
-          background: #1e1e2e;
-          border: 1px solid #383850;
+          background: #f0f0f0;
+          border: 1px solid #d0d0d0;
+        }
+        .dark .cat-thought-dot {
+          background: #1a1a1a;
+          border-color: #333;
         }
         .cat-thought-dot-lg {
           width: 14px;
@@ -163,83 +218,245 @@ export default function CatDuty() {
         }
         .cat-bubble {
           position: relative;
-          background: #1e1e2e;
-          border: 1px solid #383850;
+          background: #f5f5f5;
+          border: 1px solid #d0d0d0;
           border-radius: 12px;
           padding: 0;
           margin-bottom: 0;
           width: 280px;
-          box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+          box-shadow: 0 4px 24px rgba(0,0,0,0.1);
           pointer-events: auto;
           overflow: hidden;
           font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
+        }
+        .dark .cat-bubble {
+          background: #1a1a1a;
+          border-color: #333;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.3);
         }
         .cat-bubble-bar {
           display: flex;
           align-items: center;
           gap: 5px;
           padding: 6px 10px;
-          background: #181825;
-          border-bottom: 1px solid #383850;
+          background: #e8e8e8;
+          border-bottom: 1px solid #d0d0d0;
+        }
+        .dark .cat-bubble-bar {
+          background: #111;
+          border-bottom-color: #333;
         }
         .cat-bubble-dot {
           width: 7px;
           height: 7px;
           border-radius: 50%;
         }
-        .cat-bubble-dot-r { background: #f38ba8; }
-        .cat-bubble-dot-y { background: #f9e2af; }
-        .cat-bubble-dot-g { background: #a6e3a1; }
+        .cat-bubble-dot-r { background: #ff5f57; }
+        .cat-bubble-dot-y { background: #febc2e; }
+        .cat-bubble-dot-g { background: #28c840; }
         .cat-bubble-bar-title {
           font-size: 0.6rem;
-          color: #6c7086;
+          color: #999;
           margin-left: 4px;
           letter-spacing: 0.5px;
+        }
+        .dark .cat-bubble-bar-title {
+          color: #666;
+        }
+        .cat-bubble-bar-chat {
+          margin-left: auto;
+          font-size: 0.6rem;
+          color: #888;
+          text-decoration: none;
+          cursor: pointer;
+          transition: transform 0.2s, color 0.2s;
+          pointer-events: auto;
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+        }
+        .dark .cat-bubble-bar-chat {
+          color: #777;
+        }
+        .cat-bubble-bar-chat:hover {
+          transform: scale(1.05);
+          color: #16a34a;
+        }
+        .dark .cat-bubble-bar-chat:hover {
+          color: #4ade80;
         }
         .cat-bubble-body {
           padding: 10px 12px 12px;
         }
         .cat-bubble-label {
           font-size: 0.6rem;
-          color: #6c7086;
+          color: #999;
           margin: 0 0 4px;
           letter-spacing: 0.5px;
         }
+        .dark .cat-bubble-label {
+          color: #666;
+        }
         .cat-bubble-label::before {
           content: '> ';
-          color: #a6e3a1;
+          color: #16a34a;
+        }
+        .dark .cat-bubble-label::before {
+          color: #4ade80;
         }
         .cat-bubble-name {
           font-weight: 700;
           font-size: 0.85rem;
-          color: #89b4fa;
+          color: #333;
           margin-right: 6px;
+        }
+        .dark .cat-bubble-name {
+          color: #e0e0e0;
         }
         .cat-bubble-role {
           font-size: 0.65rem;
-          color: #cba6f7;
-          background: rgba(203,166,247,0.1);
+          color: #666;
+          background: rgba(0,0,0,0.06);
           padding: 1px 6px;
           border-radius: 3px;
         }
+        .dark .cat-bubble-role {
+          color: #999;
+          background: rgba(255,255,255,0.06);
+        }
         .cat-bubble-quote {
           font-size: 0.72rem;
-          color: #a6e3a1;
+          color: #16a34a;
           line-height: 1.6;
           margin: 8px 0 0;
           word-break: break-all;
         }
+        .dark .cat-bubble-quote {
+          color: #4ade80;
+        }
         .cat-bubble-quote::before {
           content: '$ ';
-          color: #6c7086;
+          color: #999;
+        }
+        .dark .cat-bubble-quote::before {
+          color: #555;
         }
         .cat-bubble-quote-en {
           font-size: 0.62rem;
-          color: #585b70;
+          color: #aaa;
           line-height: 1.5;
           margin: 2px 0 0;
           font-style: italic;
           padding-left: 1.2em;
+        }
+        .dark .cat-bubble-quote-en {
+          color: #555;
+        }
+        .cat-bubble-profile {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          margin-top: 6px;
+          font-size: 0.62rem;
+          color: #888;
+        }
+        .dark .cat-bubble-profile {
+          color: #777;
+        }
+        .cat-bubble-profile-sep {
+          color: #ccc;
+          font-size: 0.55rem;
+        }
+        .dark .cat-bubble-profile-sep {
+          color: #444;
+        }
+        .cat-bubble-profile-icon-text {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+        }
+        .cat-bubble-skills {
+          margin-top: 8px;
+          padding-top: 8px;
+          border-top: 1px dashed #d0d0d0;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .dark .cat-bubble-skills {
+          border-top-color: #333;
+        }
+        .cat-bubble-skills-title {
+          font-size: 0.58rem;
+          color: #999;
+          margin: 0;
+          letter-spacing: 0.5px;
+        }
+        .dark .cat-bubble-skills-title {
+          color: #555;
+        }
+        .cat-bubble-skills-title::before {
+          content: '$ ';
+          color: #16a34a;
+        }
+        .dark .cat-bubble-skills-title::before {
+          color: #4ade80;
+        }
+        .cat-bubble-skill-card {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 8px;
+          border-radius: 6px;
+          background: rgba(0,0,0,0.03);
+          text-decoration: none;
+          transition: all 0.2s;
+        }
+        .dark .cat-bubble-skill-card {
+          background: rgba(255,255,255,0.04);
+        }
+        .cat-bubble-skill-card:hover {
+          background: rgba(22,163,74,0.08);
+        }
+        .dark .cat-bubble-skill-card:hover {
+          background: rgba(74,222,128,0.08);
+        }
+        .cat-bubble-skill-icon {
+          width: 28px;
+          height: 28px;
+          border-radius: 6px;
+          background: rgba(0,0,0,0.06);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          color: #16a34a;
+        }
+        .dark .cat-bubble-skill-icon {
+          background: rgba(255,255,255,0.06);
+          color: #4ade80;
+        }
+        .cat-bubble-skill-info {
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+          min-width: 0;
+        }
+        .cat-bubble-skill-name {
+          font-size: 0.68rem;
+          font-weight: 600;
+          color: #333;
+        }
+        .dark .cat-bubble-skill-name {
+          color: #d4d4d4;
+        }
+        .cat-bubble-skill-desc {
+          font-size: 0.55rem;
+          color: #999;
+          line-height: 1.3;
+        }
+        .dark .cat-bubble-skill-desc {
+          color: #666;
         }
         @media (max-width: 767px) {
           .cat-duty { display: none; }

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Gamepad2, Search } from 'lucide-react'
+import { Menu, X, Search, Gamepad2 } from 'lucide-react'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import Logo from '@/components/ui/Logo'
 import LanguageSwitch from '@/components/ui/LanguageSwitch'
@@ -52,31 +52,6 @@ export default function Navbar() {
             </Link>
           ))}
           <LanguageSwitch />
-
-          {/* 游戏入口按钮 */}
-          <Link
-            href="/game"
-            title="益智趣味小游戏"
-            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
-            style={{ color: 'var(--fg)' }}
-          >
-            <Gamepad2 className="w-4 h-4" />
-          </Link>
-
-          {/* 素问入口 */}
-          <Link
-            href="/suwen"
-            title="素问 · 卜卦"
-            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
-            style={{ color: 'var(--fg)' }}
-          >
-            <svg width="14" height="14" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4"/>
-              <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2" fill="currentColor"/>
-              <circle cx="50" cy="26" r="5" fill="none" stroke="currentColor" strokeWidth="3"/>
-              <circle cx="50" cy="74" r="5" fill="currentColor"/>
-            </svg>
-          </Link>
 
           <a
             href="https://github.com/JojoShine"
@@ -152,6 +127,8 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="flex items-center gap-4 py-4">
+              <LanguageSwitch />
+              <ThemeToggle />
               <Link
                 href="/game"
                 onClick={handleNavClick}
@@ -175,8 +152,6 @@ export default function Navbar() {
                   <circle cx="50" cy="74" r="5" fill="currentColor"/>
                 </svg>
               </Link>
-              <LanguageSwitch />
-              <ThemeToggle />
               <button
                 onClick={() => {
                   setSearchOpen(true)
