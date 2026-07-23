@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
+import { defaultSchema } from 'hast-util-sanitize'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import MermaidBlock from '@/components/ui/MermaidBlock'
@@ -80,6 +81,17 @@ function extractHeadings(markdown) {
     }
   })
   return headings
+}
+
+const sanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    code: [
+      ...(defaultSchema.attributes.code || []),
+      ['className', 'language-mermaid', 'language-mermaid'],
+    ],
+  },
 }
 
 export default function ProjectDetailPage() {
@@ -657,7 +669,7 @@ export default function ProjectDetailPage() {
           >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeSanitize, rehypeSlug]}
+              rehypePlugins={[[rehypeSanitize, sanitizeSchema], rehypeSlug]}
               components={mdComponents}
             >
               {content}

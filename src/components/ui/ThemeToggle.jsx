@@ -21,10 +21,11 @@ export default function ThemeToggle() {
   if (!mounted) {
     return (
       <button
-        className="p-2 hover:bg-border/20 rounded-full transition-colors cursor-pointer"
+        className="flex items-center justify-center rounded-full transition-colors cursor-pointer"
         aria-label="切换主题"
+        style={{ width: '32px', height: '32px' }}
       >
-        <div className="w-5 h-5" />
+        <div className="w-[18px] h-[18px]" />
       </button>
     )
   }
@@ -32,13 +33,14 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={handleClick}
-      className="p-2 hover:bg-border/20 rounded-full transition-colors cursor-pointer"
+      className="flex items-center justify-center rounded-full transition-colors cursor-pointer"
       aria-label="切换主题"
+      style={{ width: '32px', height: '32px' }}
     >
       {theme === 'light' ? (
-        <Moon className="w-5 h-5" />
+        <Moon className="w-[18px] h-[18px]" />
       ) : (
-        <Sun className="w-5 h-5" />
+        <Sun className="w-[18px] h-[18px]" />
       )}
     </button>
   )

@@ -34,21 +34,25 @@ export default function Navbar() {
         <Logo />
         
         {/* 桌面端导航 */}
-        <div className="hidden md:flex gap-6 items-center">
+        <div className="hidden md:flex gap-8 items-center">
           {navItems.map(item => (
             <Link
               key={item.path}
               href={item.path}
-              className="relative transition-colors hover:opacity-70 font-mono"
+              className="relative transition-colors hover:opacity-70 font-mono flex items-center"
               style={{
                 color: pathname === item.path ? 'var(--fg)' : 'var(--muted)',
-                fontSize: '0.95rem',
+                fontSize: '0.9rem',
+                height: '32px',
+                lineHeight: '1',
               }}
             >
-              {t(item.key)}
-              {pathname === item.path && (
-                <span className="absolute -bottom-1 left-0 w-full h-0.5" style={{ backgroundColor: 'var(--fg)' }} />
-              )}
+              <span className="relative" style={{ lineHeight: '1.4' }}>
+                {t(item.key)}
+                {pathname === item.path && (
+                  <span className="absolute left-0 right-0 h-0.5" style={{ backgroundColor: 'var(--fg)', bottom: '-4px' }} />
+                )}
+              </span>
             </Link>
           ))}
           <LanguageSwitch />
@@ -58,10 +62,10 @@ export default function Navbar() {
             target="_blank"
             rel="noopener noreferrer"
             title="GitHub"
-            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
-            style={{ color: 'var(--fg)' }}
+            className="flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
+            style={{ color: 'var(--fg)', width: '32px', height: '32px' }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
               <path d="M9 18c-4.51 2-5-2-7-2"/>
             </svg>
@@ -72,10 +76,10 @@ export default function Navbar() {
             target="_blank"
             rel="noopener noreferrer"
             title="RSS Feed"
-            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
-            style={{ color: 'var(--fg)' }}
+            className="flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
+            style={{ color: 'var(--fg)', width: '32px', height: '32px' }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 11a9 9 0 0 1 9 9" />
               <path d="M4 4a16 16 0 0 1 16 16" />
               <circle cx="5" cy="19" r="1" />
@@ -86,10 +90,10 @@ export default function Navbar() {
           <button
             onClick={() => setSearchOpen(true)}
             title="搜索"
-            className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
-            style={{ color: 'var(--fg)' }}
+            className="flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
+            style={{ color: 'var(--fg)', width: '32px', height: '32px' }}
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-[18px] h-[18px]" />
           </button>
         </div>
 

@@ -1,13 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Cake, MessageCircle, Gamepad2 } from 'lucide-react'
+import { Cake, Gamepad2 } from 'lucide-react'
+import { Solar } from 'lunar-javascript'
 
 const cats = [
   {
     name: '雪宝',
     image: '/assets/cats/雪宝-removebg-preview.png',
+    sprites: ['/videos/cats/xuebao/02.png', '/videos/cats/xuebao/03.png', '/videos/cats/xuebao/04.png', '/videos/cats/xuebao/05.png'],
     role: '代码猫',
     gender: '♂',
     birthday: '02/18',
@@ -28,6 +30,7 @@ const cats = [
   {
     name: '甜枣',
     image: '/assets/cats/甜枣-removebg-preview.png',
+    sprites: ['/videos/cats/tianzao/02.png', '/videos/cats/tianzao/03.png', '/videos/cats/tianzao/04.png', '/videos/cats/tianzao/05.png'],
     role: '咖啡陪伴猫',
     gender: '♀',
     birthday: '08/18',
@@ -48,6 +51,7 @@ const cats = [
   {
     name: '三塔',
     image: '/assets/cats/三塔-removebg-preview.png',
+    sprites: ['/videos/cats/santa/02.png', '/videos/cats/santa/03.png', '/videos/cats/santa/04.png'],
     role: '黑客猫',
     gender: '♂',
     birthday: '04/07',
@@ -67,6 +71,39 @@ const cats = [
   },
 ]
 
+const dailyQuotes = [
+  '你比昨天又强了一点。',
+  '慢慢来，比较快。',
+  '今天也是值得认真过的一天。',
+  '不必完美，完成就好。',
+  '每一步都算数。',
+  '累了就休息，但别放弃。',
+  '你已经在路上了，这本身就很好。',
+  '允许自己慢慢变好。',
+  '今天的努力，未来的你会感谢。',
+  '做不到的事，只是还没做到。',
+  '别和别人比，和昨天的自己比。',
+  '小步前进，也好过原地踏步。',
+  '你已经做得很好了。',
+  '休息也是前进的一部分。',
+  '不用着急，花会开的。',
+  '每一次尝试都有意义。',
+  '今天的你，已经很棒了。',
+  '坚持不是不累，是累了还继续。',
+  '慢慢走，沿途也有风景。',
+  '你值得所有美好的事物。',
+  '别怕慢，只怕停。',
+  '每一个今天，都是余生最年轻的一天。',
+  '做自己喜欢的事，永远不晚。',
+  '生活不会辜负认真的人。',
+  '你比自己想象的更强大。',
+  '今天的辛苦，是明天的底气。',
+  '允许偶尔的不好状态。',
+  '你已经走了很远了，回头看看。',
+  '不必光芒万丈，始终温暖有光就好。',
+  '把每一天当作新的开始。',
+]
+
 function getDayOfYear() {
   const now = new Date()
   const start = new Date(now.getFullYear(), 0, 0)
@@ -76,10 +113,105 @@ function getDayOfYear() {
 }
 
 function getDutyCat() {
+  const now = new Date()
   const day = getDayOfYear()
   const catIndex = day % cats.length
-  const quoteIndex = Math.floor(day / cats.length) % cats[catIndex].quotes.length
-  return { ...cats[catIndex], quote: cats[catIndex].quotes[quoteIndex] }
+  const cat = cats[catIndex]
+  const quoteIndex = Math.floor(day / cats.length) % cat.quotes.length
+  const twoHourBlock = Math.floor(now.getHours() / 2)
+  const sprite = cat.sprites[twoHourBlock % cat.sprites.length]
+  const dailyQuote = dailyQuotes[day % dailyQuotes.length]
+
+  // 获取农历和节气
+  const solar = Solar.fromDate(now)
+  const lunar = solar.getLunar()
+  const lunarStr = lunar.getMonthInChinese() + '月' + lunar.getDayInChinese()
+  const jieQi = lunar.getJieQi() || ''
+  const ganZhi = lunar.getYearInGanZhi() + '年'
+
+  // 公历日期格式化
+  const month = now.getMonth() + 1
+  const date = now.getDate()
+  const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+  const weekDay = weekDays[now.getDay()]
+  const solarStr = `${month}月${date}日 周${weekDay}`
+
+  return { ...cat, quote: cat.quotes[quoteIndex], sprite, dailyQuote, solarStr, lunarStr, jieQi, ganZhi }
+}
+
+function SpriteAnimation({ src, size = 200, fps = 12 }) {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    const img = new Image()
+    let animId = null
+    let validFrames = []
+
+    // 立即清除为透明，避免加载时显示黑色
+    ctx.clearRect(0, 0, size, size)
+
+    img.onload = () => {
+      const cols = Math.floor(img.width / size)
+      const rows = Math.floor(img.height / size)
+
+      const probe = document.createElement('canvas')
+      probe.width = size
+      probe.height = size
+      const pCtx = probe.getContext('2d')
+
+      for (let i = 0; i < cols * rows; i++) {
+        const col = i % cols
+        const row = Math.floor(i / cols)
+        pCtx.clearRect(0, 0, size, size)
+        pCtx.drawImage(img, col * size, row * size, size, size, 0, 0, size, size)
+        const data = pCtx.getImageData(0, 0, size, size).data
+
+        // 检查四个角是否透明（背景）
+        const corners = [0, (size-1)*4, (size-1)*size*4, (size-1)*size*4 + (size-1)*4]
+        let bgTransparent = true
+        for (const idx of corners) {
+          if (data[idx + 3] > 10) { bgTransparent = false; break }
+        }
+
+        // 检查是否有内容（非透明像素）
+        let hasContent = false
+        for (let j = 3; j < data.length; j += 16) {
+          if (data[j] > 10) { hasContent = true; break }
+        }
+
+        if (bgTransparent && hasContent) validFrames.push({ col, row })
+      }
+
+      if (validFrames.length === 0) return
+
+      const interval = 1000 / fps
+      let lastTime = 0
+      let frameIndex = 0
+
+      const animate = (time) => {
+        if (time - lastTime >= interval) {
+          const frame = validFrames[frameIndex % validFrames.length]
+          ctx.clearRect(0, 0, size, size)
+          ctx.drawImage(img, frame.col * size, frame.row * size, size, size, 0, 0, size, size)
+          frameIndex++
+          lastTime = time
+        }
+        animId = requestAnimationFrame(animate)
+      }
+      animId = requestAnimationFrame(animate)
+    }
+    img.src = src
+
+    return () => {
+      if (animId) cancelAnimationFrame(animId)
+      img.onload = null
+    }
+  }, [src, size, fps])
+
+  return <canvas ref={canvasRef} width={size} height={size} className="cat-image" />
 }
 
 export default function CatDuty() {
@@ -99,12 +231,12 @@ export default function CatDuty() {
           <span className="cat-bubble-dot cat-bubble-dot-y" />
           <span className="cat-bubble-dot cat-bubble-dot-g" />
           <span className="cat-bubble-bar-title">cat-duty.sh</span>
-          <Link href="/cat-chat" className="cat-bubble-bar-chat" title="猫猫聊天室">
-            <MessageCircle size={12} />
-            <span>聊天</span>
-          </Link>
         </div>
         <div className="cat-bubble-body">
+          <div className="cat-bubble-date">
+            <span className="cat-bubble-date-solar">{cat.solarStr}</span>
+            <span className="cat-bubble-date-lunar">{cat.ganZhi}{cat.lunarStr}{cat.jieQi ? ' · ' + cat.jieQi : ''}</span>
+          </div>
           <p className="cat-bubble-label">今日值班小猫</p>
           <span className="cat-bubble-name">{cat.name}</span>
           <span className="cat-bubble-role">{cat.role}</span>
@@ -115,8 +247,8 @@ export default function CatDuty() {
             <span className="cat-bubble-profile-sep">|</span>
             <span className="cat-bubble-profile-item">{cat.personality}</span>
           </div>
-          <p className="cat-bubble-quote">{cat.quote.zh}</p>
-          <p className="cat-bubble-quote-en">{cat.quote.en}</p>
+          <p className="cat-bubble-daily-quote-label">今日寄语</p>
+          <p className="cat-bubble-daily-quote">{cat.dailyQuote}</p>
           <div className="cat-bubble-skills">
             <p className="cat-bubble-skills-title">小猫技能</p>
             <Link href="/game" className="cat-bubble-skill-card">
@@ -143,6 +275,8 @@ export default function CatDuty() {
               </div>
             </Link>
           </div>
+          <p className="cat-bubble-quote">{cat.quote.zh}</p>
+          <p className="cat-bubble-quote-en">{cat.quote.en}</p>
         </div>
       </div>
       <div className="cat-thought-dots">
@@ -150,12 +284,7 @@ export default function CatDuty() {
         <span className="cat-thought-dot cat-thought-dot-md" />
         <span className="cat-thought-dot cat-thought-dot-lg" />
       </div>
-      <img
-        src={cat.image}
-        alt={cat.name}
-        className="cat-image"
-        draggable={false}
-      />
+      <SpriteAnimation src={cat.sprite} />
       <style jsx global>{`
         .cat-duty {
           position: fixed;
@@ -172,10 +301,7 @@ export default function CatDuty() {
           height: 200px;
           object-fit: contain;
           pointer-events: auto;
-          filter: drop-shadow(0 4px 16px rgba(0,0,0,0.15));
-        }
-        .dark .cat-image {
-          filter: drop-shadow(0 4px 16px rgba(0,0,0,0.25));
+          background: transparent;
         }
         .cat-thought-dots {
           display: flex;
@@ -263,30 +389,27 @@ export default function CatDuty() {
         .dark .cat-bubble-bar-title {
           color: #666;
         }
-        .cat-bubble-bar-chat {
-          margin-left: auto;
-          font-size: 0.6rem;
-          color: #888;
-          text-decoration: none;
-          cursor: pointer;
-          transition: transform 0.2s, color 0.2s;
-          pointer-events: auto;
-          display: inline-flex;
-          align-items: center;
-          gap: 3px;
-        }
-        .dark .cat-bubble-bar-chat {
-          color: #777;
-        }
-        .cat-bubble-bar-chat:hover {
-          transform: scale(1.05);
-          color: #16a34a;
-        }
-        .dark .cat-bubble-bar-chat:hover {
-          color: #4ade80;
-        }
         .cat-bubble-body {
           padding: 10px 12px 12px;
+        }
+        .cat-bubble-date {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          margin-bottom: 8px;
+          padding-bottom: 8px;
+          border-bottom: 1px dashed var(--border);
+        }
+        .cat-bubble-date-solar {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--fg);
+          font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
+        }
+        .cat-bubble-date-lunar {
+          font-size: 0.62rem;
+          color: var(--muted);
+          font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
         }
         .cat-bubble-label {
           font-size: 0.6rem;
@@ -351,6 +474,36 @@ export default function CatDuty() {
         }
         .dark .cat-bubble-quote-en {
           color: #555;
+        }
+        .cat-bubble-daily-quote-label {
+          font-size: 0.58rem;
+          color: #999;
+          margin: 10px 0 4px;
+          letter-spacing: 0.5px;
+        }
+        .dark .cat-bubble-daily-quote-label {
+          color: #666;
+        }
+        .cat-bubble-daily-quote-label::before {
+          content: '♥ ';
+          color: #e8a838;
+        }
+        .dark .cat-bubble-daily-quote-label::before {
+          color: #f0b840;
+        }
+        .cat-bubble-daily-quote {
+          font-size: 0.72rem;
+          color: #555;
+          line-height: 1.6;
+          margin: 0 0 8px;
+          padding: 8px 10px;
+          background: rgba(232,168,56,0.08);
+          border-radius: 6px;
+          font-style: italic;
+        }
+        .dark .cat-bubble-daily-quote {
+          color: #ccc;
+          background: rgba(240,184,64,0.1);
         }
         .cat-bubble-profile {
           display: flex;

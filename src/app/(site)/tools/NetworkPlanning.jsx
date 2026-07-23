@@ -67,23 +67,26 @@ export default function NetworkPlanning() {
     for (const subnet of sortedSubnets) {
       const cidr = calculateCidr(subnet.hosts)
       if (cidr < baseCidrNum) {
-        continue // 跳过超出范围的子网
+        continue
       }
 
       const mask = (~0 << (32 - cidr)) >>> 0
       const network = (currentIp & mask) >>> 0
       const broadcast = (network | (~mask >>> 0)) >>> 0
-      const totalHosts = Math.pow(2, 32 - cidr) - 2
+      const gateway = network + 1
+      const lastHost = broadcast - 1
+      const usableHosts = Math.pow(2, 32 - cidr) - 2
 
       plannedSubnets.push({
         name: subnet.name,
         network: intToIp(network),
         cidr: `/${cidr}`,
         subnetMask: intToIp(mask),
-        firstHost: intToIp(network + 1),
-        lastHost: intToIp(broadcast - 1),
+        gateway: intToIp(gateway),
         broadcast: intToIp(broadcast),
-        usableHosts: totalHosts,
+        firstHost: intToIp(gateway),
+        lastHost: intToIp(lastHost),
+        usableHosts,
         requiredHosts: subnet.hosts,
       })
 
@@ -178,7 +181,7 @@ export default function NetworkPlanning() {
               fontSize: '0.75rem', 
               color: '#38a169',
             }}>
-              {lang === 'zh' ? '可用主机：' : 'Available Hosts: '} 
+              {lang === 'zh' ? '可用主机：' : 'Available Hosts: '}
               <strong>{availableHosts.toLocaleString()}</strong>
             </div>
           </div>
@@ -337,7 +340,13 @@ export default function NetworkPlanning() {
                 <div className="font-mono" style={{ color: 'var(--muted)' }}>{lang === 'zh' ? '子网掩码：' : 'Subnet Mask:'}</div>
                 <div className="font-mono" style={{ color: 'var(--fg)' }}>{subnet.subnetMask}</div>
 
-                <div className="font-mono" style={{ color: 'var(--muted)' }}>{lang === 'zh' ? '主机范围：' : 'Host Range:'}</div>
+                <div className="font-mono" style={{ color: 'var(--muted)' }}>{lang === 'zh' ? '网关地址：' : 'Gateway:'}</div>
+                <div className="font-mono" style={{ color: '#3182ce', fontWeight: 600 }}>{subnet.gateway}</div>
+
+                <div className="font-mono" style={{ color: 'var(--muted)' }}>{lang === 'zh' ? '广播地址：' : 'Broadcast:'}</div>
+                <div className="font-mono" style={{ color: '#e53e3e', fontWeight: 600 }}>{subnet.broadcast}</div>
+
+                <div className="font-mono" style={{ color: 'var(--muted)' }}>{lang === 'zh' ? '可用主机范围：' : 'Usable Range:'}</div>
                 <div className="font-mono" style={{ color: 'var(--fg)' }}>{subnet.firstHost} - {subnet.lastHost}</div>
 
                 <div className="font-mono" style={{ color: 'var(--muted)' }}>{lang === 'zh' ? '可用主机数：' : 'Usable Hosts:'}</div>

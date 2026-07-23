@@ -135,15 +135,9 @@ select::placeholder {
    响应式布局
    ============================================ */
 
-/* Navbar 响应式 padding */
+/* Navbar padding */
 .navbar-padding {
-  padding: 1rem 1.25rem;
-}
-
-@media (min-width: 768px) {
-  .navbar-padding {
-    padding: 1.5rem 5rem;
-  }
+  padding: 1.5rem 5rem;
 }
 
 /* 确保触摸目标足够大 */

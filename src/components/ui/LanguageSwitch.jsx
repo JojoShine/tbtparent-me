@@ -8,7 +8,7 @@ export default function LanguageSwitch() {
 
   if (!mounted) {
     return (
-      <div className="flex gap-1 font-mono text-sm">
+      <div className="flex items-center gap-1 font-mono text-sm" style={{ height: '32px' }}>
         <span className="px-1.5 py-0.5 opacity-0">中</span>
         <span className="px-1.5 py-0.5 opacity-0">EN</span>
       </div>
@@ -16,7 +16,7 @@ export default function LanguageSwitch() {
   }
 
   return (
-    <div className="flex gap-1 font-mono text-sm">
+    <div className="flex items-center gap-1 font-mono text-sm" style={{ height: '32px' }}>
       {languages.map((l, index) => (
         <span key={l.code} className="flex items-center">
           <button
