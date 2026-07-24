@@ -137,7 +137,13 @@ select::placeholder {
 
 /* Navbar padding */
 .navbar-padding {
-  padding: 1.5rem 5rem;
+  padding: 1rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .navbar-padding {
+    padding: 1.5rem 5rem;
+  }
 }
 
 /* 确保触摸目标足够大 */
