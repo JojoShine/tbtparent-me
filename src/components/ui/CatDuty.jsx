@@ -288,8 +288,8 @@ export default function CatDuty() {
       <style jsx global>{`
         .cat-duty {
           position: fixed;
-          bottom: 24px;
-          right: 60px;
+          bottom: clamp(12px, 2vh, 24px);
+          right: clamp(16px, 4vw, 60px);
           z-index: 999;
           display: flex;
           flex-direction: column;
@@ -297,8 +297,8 @@ export default function CatDuty() {
           pointer-events: none;
         }
         .cat-image {
-          width: 200px;
-          height: 200px;
+          width: clamp(150px, 15vw, 200px);
+          height: clamp(150px, 15vw, 200px);
           object-fit: contain;
           pointer-events: auto;
           background: transparent;
@@ -310,8 +310,8 @@ export default function CatDuty() {
           gap: 0;
           margin: -2px 0;
           position: relative;
-          height: 28px;
-          width: 40px;
+          height: 22px;
+          width: 34px;
         }
         .cat-thought-dot {
           position: absolute;
@@ -324,16 +324,16 @@ export default function CatDuty() {
           border-color: #333;
         }
         .cat-thought-dot-lg {
-          width: 14px;
-          height: 14px;
+          width: 13px;
+          height: 13px;
           bottom: 0;
           left: 50%;
           transform: translateX(-50%);
         }
         .cat-thought-dot-md {
-          width: 9px;
-          height: 9px;
-          bottom: 10px;
+          width: 8px;
+          height: 8px;
+          bottom: 8px;
           left: 55%;
         }
         .cat-thought-dot-sm {
@@ -350,9 +350,10 @@ export default function CatDuty() {
           padding: 0;
           margin-bottom: 0;
           width: 280px;
+          max-height: 55vh;
+          overflow-y: auto;
           box-shadow: 0 4px 24px rgba(0,0,0,0.1);
           pointer-events: auto;
-          overflow: hidden;
           font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
         }
         .dark .cat-bubble {
@@ -360,11 +361,21 @@ export default function CatDuty() {
           border-color: #333;
           box-shadow: 0 4px 24px rgba(0,0,0,0.3);
         }
+        .cat-bubble::-webkit-scrollbar {
+          width: 3px;
+        }
+        .cat-bubble::-webkit-scrollbar-thumb {
+          background: #ccc;
+          border-radius: 3px;
+        }
+        .dark .cat-bubble::-webkit-scrollbar-thumb {
+          background: #444;
+        }
         .cat-bubble-bar {
           display: flex;
           align-items: center;
           gap: 5px;
-          padding: 6px 10px;
+          padding: 5px 10px;
           background: #e8e8e8;
           border-bottom: 1px solid #d0d0d0;
         }
@@ -390,14 +401,14 @@ export default function CatDuty() {
           color: #666;
         }
         .cat-bubble-body {
-          padding: 10px 12px 12px;
+          padding: 8px 12px 10px;
         }
         .cat-bubble-date {
           display: flex;
           flex-direction: column;
           gap: 2px;
-          margin-bottom: 8px;
-          padding-bottom: 8px;
+          margin-bottom: 6px;
+          padding-bottom: 6px;
           border-bottom: 1px dashed var(--border);
         }
         .cat-bubble-date-solar {
@@ -414,7 +425,7 @@ export default function CatDuty() {
         .cat-bubble-label {
           font-size: 0.6rem;
           color: #999;
-          margin: 0 0 4px;
+          margin: 0 0 3px;
           letter-spacing: 0.5px;
         }
         .dark .cat-bubble-label {
@@ -450,8 +461,8 @@ export default function CatDuty() {
         .cat-bubble-quote {
           font-size: 0.72rem;
           color: #16a34a;
-          line-height: 1.6;
-          margin: 8px 0 0;
+          line-height: 1.5;
+          margin: 6px 0 0;
           word-break: break-all;
         }
         .dark .cat-bubble-quote {
@@ -467,8 +478,8 @@ export default function CatDuty() {
         .cat-bubble-quote-en {
           font-size: 0.62rem;
           color: #aaa;
-          line-height: 1.5;
-          margin: 2px 0 0;
+          line-height: 1.4;
+          margin: 1px 0 0;
           font-style: italic;
           padding-left: 1.2em;
         }
@@ -478,7 +489,7 @@ export default function CatDuty() {
         .cat-bubble-daily-quote-label {
           font-size: 0.58rem;
           color: #999;
-          margin: 10px 0 4px;
+          margin: 6px 0 3px;
           letter-spacing: 0.5px;
         }
         .dark .cat-bubble-daily-quote-label {
@@ -494,9 +505,9 @@ export default function CatDuty() {
         .cat-bubble-daily-quote {
           font-size: 0.72rem;
           color: #555;
-          line-height: 1.6;
-          margin: 0 0 8px;
-          padding: 8px 10px;
+          line-height: 1.5;
+          margin: 0 0 6px;
+          padding: 6px 10px;
           background: rgba(232,168,56,0.08);
           border-radius: 6px;
           font-style: italic;
@@ -509,7 +520,7 @@ export default function CatDuty() {
           display: flex;
           align-items: center;
           gap: 5px;
-          margin-top: 6px;
+          margin-top: 4px;
           font-size: 0.62rem;
           color: #888;
         }
@@ -529,12 +540,12 @@ export default function CatDuty() {
           gap: 3px;
         }
         .cat-bubble-skills {
-          margin-top: 8px;
-          padding-top: 8px;
+          margin-top: 6px;
+          padding-top: 6px;
           border-top: 1px dashed #d0d0d0;
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 5px;
         }
         .dark .cat-bubble-skills {
           border-top-color: #333;
@@ -559,7 +570,7 @@ export default function CatDuty() {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 6px 8px;
+          padding: 5px 8px;
           border-radius: 6px;
           background: rgba(0,0,0,0.03);
           text-decoration: none;
