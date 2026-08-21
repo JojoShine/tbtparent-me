@@ -7,15 +7,33 @@ export default function AdminLogin() {
   const router = useRouter()
   const [secret, setSecret] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     if (!secret.trim()) {
       setError('请输入密钥')
       return
     }
-    localStorage.setItem('admin_token', secret)
-    router.push('/admin/home')
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: secret.trim() }),
+      })
+      if (!res.ok) {
+        setError('密钥错误，请重试')
+        setLoading(false)
+        return
+      }
+      localStorage.setItem('admin_token', secret.trim())
+      router.push('/admin/home')
+    } catch {
+      setError('网络错误，请重试')
+      setLoading(false)
+    }
   }
 
   return (
@@ -65,18 +83,19 @@ export default function AdminLogin() {
 
         <button
           type="submit"
+          disabled={loading}
           style={{
             width: '100%',
             padding: '10px',
-            backgroundColor: 'var(--fg)',
+            backgroundColor: loading ? 'var(--muted)' : 'var(--fg)',
             color: 'var(--bg)',
             border: 'none',
             fontFamily: 'monospace',
             fontWeight: 600,
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
-          登录
+          {loading ? '验证中...' : '登录'}
         </button>
       </form>
     </div>
