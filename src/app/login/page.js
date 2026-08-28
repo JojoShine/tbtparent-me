@@ -28,7 +28,8 @@ export default function AdminLogin() {
         setLoading(false)
         return
       }
-      localStorage.setItem('admin_token', secret.trim())
+      const data = await res.json()
+      localStorage.setItem('admin_token', data.token)
       router.push('/admin/home')
     } catch {
       setError('网络错误，请重试')

@@ -14,8 +14,8 @@ export async function GET() {
 export const PUT = withAuth(async (request) => {
   try {
     const body = await request.json()
-    const { name_zh, name_en, title_zh, title_en, bio_zh, bio_en } = body
-    const data = { name_zh, name_en, title_zh, title_en, bio_zh, bio_en }
+    const { name_zh, name_en, nameZh, title_zh, title_en, bio_zh, bio_en } = body
+    const data = { name_zh, name_en, nameZh, title_zh, title_en, bio_zh, bio_en }
     const home = await prisma.home.upsert({
       where: { id: 1 },
       update: data,

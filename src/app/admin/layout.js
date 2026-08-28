@@ -20,10 +20,19 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     const saved = localStorage.getItem('admin_token')
     if (!saved) {
-      router.push('/login')
-    } else {
-      setToken(saved)
+      router.replace('/login')
+      return
     }
+
+    fetch('/api/auth', {
+      headers: { Authorization: `Bearer ${saved}` },
+    }).then((response) => {
+      if (!response.ok) throw new Error('Unauthorized')
+      setToken(saved)
+    }).catch(() => {
+      localStorage.removeItem('admin_token')
+      router.replace('/login')
+    })
   }, [router])
 
   if (!token) return null

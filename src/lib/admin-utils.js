@@ -7,6 +7,19 @@ export function getHeaders() {
   }
 }
 
+function handleUnauthorized(res) {
+  if (res.status === 401 && typeof window !== 'undefined') {
+    localStorage.removeItem('admin_token')
+    window.location.replace('/login')
+  }
+}
+
+async function getError(res, fallback) {
+  handleUnauthorized(res)
+  const data = await res.json().catch(() => null)
+  return new Error(data?.error || fallback)
+}
+
 export async function apiGet(url) {
   const res = await fetch(url)
   if (!res.ok) throw new Error(`GET ${url} failed`)
@@ -20,8 +33,7 @@ export async function apiPut(url, data) {
     body: JSON.stringify(data),
   })
   if (!res.ok) {
-    const err = await res.json()
-    throw new Error(err.error || `PUT ${url} failed`)
+    throw await getError(res, `PUT ${url} failed`)
   }
   return res.json()
 }
@@ -33,8 +45,7 @@ export async function apiPost(url, data) {
     body: JSON.stringify(data),
   })
   if (!res.ok) {
-    const err = await res.json()
-    throw new Error(err.error || `POST ${url} failed`)
+    throw await getError(res, `POST ${url} failed`)
   }
   return res.json()
 }
@@ -45,8 +56,7 @@ export async function apiDelete(url, id) {
     headers: getHeaders(),
   })
   if (!res.ok) {
-    const err = await res.json()
-    throw new Error(err.error || `DELETE ${url} failed`)
+    throw await getError(res, `DELETE ${url} failed`)
   }
   return res.json()
 }
