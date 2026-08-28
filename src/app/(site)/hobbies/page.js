@@ -81,7 +81,7 @@ export default function HobbiesPage() {
     return (
       <div className="max-w-4xl pb-8 md:pb-20" style={{ margin: '0 auto' }}>
         <h1 className="text-3xl md:text-4xl font-mono font-bold" style={{ color: 'var(--fg)', marginBottom: '16px' }}>
-          {lang === 'zh' ? '收录' : 'Archive'}
+          {lang === 'zh' ? '书影' : 'Library'}
         </h1>
         <p className="font-mono text-lg" style={{ color: 'var(--muted)' }}>
           {lang === 'zh' ? '内容建设中...' : 'Coming soon...'}
@@ -101,7 +101,7 @@ export default function HobbiesPage() {
       {/* 标题 */}
       <motion.section variants={fadeUp} style={{ marginBottom: '24px' }}>
         <h1 className="text-3xl md:text-4xl font-mono font-bold" style={{ color: 'var(--fg)' }}>
-          {lang === 'zh' ? '收录' : 'Archive'}
+          {lang === 'zh' ? '书影' : 'Library'}
         </h1>
       </motion.section>
 

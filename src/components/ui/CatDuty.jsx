@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { Cake, Gamepad2 } from 'lucide-react'
+import { Cake } from 'lucide-react'
 import { Solar } from 'lunar-javascript'
 
 const cats = [
@@ -249,32 +248,6 @@ export default function CatDuty() {
           </div>
           <p className="cat-bubble-daily-quote-label">今日寄语</p>
           <p className="cat-bubble-daily-quote">{cat.dailyQuote}</p>
-          <div className="cat-bubble-skills">
-            <p className="cat-bubble-skills-title">小猫技能</p>
-            <Link href="/game" className="cat-bubble-skill-card">
-              <div className="cat-bubble-skill-icon">
-                <Gamepad2 size={16} />
-              </div>
-              <div className="cat-bubble-skill-info">
-                <span className="cat-bubble-skill-name">小游戏</span>
-                <span className="cat-bubble-skill-desc">益智闯关，打发时间</span>
-              </div>
-            </Link>
-            <Link href="/suwen" className="cat-bubble-skill-card">
-              <div className="cat-bubble-skill-icon">
-                <svg width="16" height="16" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="6"/>
-                  <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2" fill="currentColor"/>
-                  <circle cx="50" cy="26" r="5" fill="none" stroke="currentColor" strokeWidth="4"/>
-                  <circle cx="50" cy="74" r="5" fill="currentColor"/>
-                </svg>
-              </div>
-              <div className="cat-bubble-skill-info">
-                <span className="cat-bubble-skill-name">素问</span>
-                <span className="cat-bubble-skill-desc">每日一卦，答疑解惑</span>
-              </div>
-            </Link>
-          </div>
           <p className="cat-bubble-quote">{cat.quote.zh}</p>
           <p className="cat-bubble-quote-en">{cat.quote.en}</p>
         </div>
@@ -538,89 +511,6 @@ export default function CatDuty() {
           display: inline-flex;
           align-items: center;
           gap: 3px;
-        }
-        .cat-bubble-skills {
-          margin-top: 6px;
-          padding-top: 6px;
-          border-top: 1px dashed #d0d0d0;
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
-        .dark .cat-bubble-skills {
-          border-top-color: #333;
-        }
-        .cat-bubble-skills-title {
-          font-size: 0.58rem;
-          color: #999;
-          margin: 0;
-          letter-spacing: 0.5px;
-        }
-        .dark .cat-bubble-skills-title {
-          color: #555;
-        }
-        .cat-bubble-skills-title::before {
-          content: '$ ';
-          color: #16a34a;
-        }
-        .dark .cat-bubble-skills-title::before {
-          color: #4ade80;
-        }
-        .cat-bubble-skill-card {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 5px 8px;
-          border-radius: 6px;
-          background: rgba(0,0,0,0.03);
-          text-decoration: none;
-          transition: all 0.2s;
-        }
-        .dark .cat-bubble-skill-card {
-          background: rgba(255,255,255,0.04);
-        }
-        .cat-bubble-skill-card:hover {
-          background: rgba(22,163,74,0.08);
-        }
-        .dark .cat-bubble-skill-card:hover {
-          background: rgba(74,222,128,0.08);
-        }
-        .cat-bubble-skill-icon {
-          width: 28px;
-          height: 28px;
-          border-radius: 6px;
-          background: rgba(0,0,0,0.06);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          color: #16a34a;
-        }
-        .dark .cat-bubble-skill-icon {
-          background: rgba(255,255,255,0.06);
-          color: #4ade80;
-        }
-        .cat-bubble-skill-info {
-          display: flex;
-          flex-direction: column;
-          gap: 1px;
-          min-width: 0;
-        }
-        .cat-bubble-skill-name {
-          font-size: 0.68rem;
-          font-weight: 600;
-          color: #333;
-        }
-        .dark .cat-bubble-skill-name {
-          color: #d4d4d4;
-        }
-        .cat-bubble-skill-desc {
-          font-size: 0.55rem;
-          color: #999;
-          line-height: 1.3;
-        }
-        .dark .cat-bubble-skill-desc {
-          color: #666;
         }
         @media (max-width: 767px) {
           .cat-duty { display: none; }

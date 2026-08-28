@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Search, Gamepad2 } from 'lucide-react'
+import { Menu, X, Search } from 'lucide-react'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import Logo from '@/components/ui/Logo'
 import LanguageSwitch from '@/components/ui/LanguageSwitch'
@@ -20,6 +20,7 @@ export default function Navbar() {
     { key: 'nav.blog', path: '/blog' },
     { key: 'nav.projects', path: '/projects' },
     { key: 'nav.tools', path: '/tools' },
+    { key: 'nav.game', path: '/game' },
     { key: 'nav.hobbies', path: '/hobbies' },
   ]
 
@@ -133,29 +134,6 @@ export default function Navbar() {
             <div className="flex items-center gap-4 py-4">
               <LanguageSwitch />
               <ThemeToggle />
-              <Link
-                href="/game"
-                onClick={handleNavClick}
-                title="益智趣味小游戏"
-                className="p-2 hover:opacity-70 transition-opacity cursor-pointer inline-flex items-center justify-center"
-                style={{ color: 'var(--fg)' }}
-              >
-                <Gamepad2 className="w-5 h-5" />
-              </Link>
-              <Link
-                href="/suwen"
-                onClick={handleNavClick}
-                title="素问 · 卜卦"
-                className="p-2 hover:opacity-70 transition-opacity cursor-pointer inline-flex items-center justify-center"
-                style={{ color: 'var(--fg)' }}
-              >
-                <svg width="16" height="16" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4"/>
-                  <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2" fill="currentColor"/>
-                  <circle cx="50" cy="26" r="5" fill="none" stroke="currentColor" strokeWidth="3"/>
-                  <circle cx="50" cy="74" r="5" fill="currentColor"/>
-                </svg>
-              </Link>
               <button
                 onClick={() => {
                   setSearchOpen(true)
@@ -195,8 +173,6 @@ const searchPages = [
   { key: 'idiom-game', label_zh: '成语闯关', label_en: 'Idiom Game', description_zh: '猜成语小游戏', path: '/game/idiom' },
   { key: 'takuzu-game', label_zh: 'XXOO', label_en: 'Takuzu', description_zh: 'XXOO逻辑棋游戏', path: '/game/takuzu' },
   { key: 'guess-number-game', label_zh: '猜数字', label_en: 'Guess Number', description_zh: '猜数字xAyB游戏', path: '/game/guess-number' },
-  { key: 'english-game', label_zh: '常用英语', label_en: 'English Practice', description_zh: '听发音看中文打出英文常用英语', path: '/game/english' },
-  { key: 'writing-game', label_zh: '文笔训练', label_en: 'Writing Trainer', description_zh: 'AI评分文笔短片段练习', path: '/game/writing' },
 ]
 
 function SearchModal({ onClose }) {
@@ -296,7 +272,7 @@ function SearchModal({ onClose }) {
               composingRef.current = false
               setSearch(e.target.value)
             }}
-            placeholder="搜索博客、自研、工具、游戏..."
+            placeholder="搜索博客、作品、工具、游戏..."
             className="flex-1 min-w-0 bg-transparent outline-none font-mono text-base placeholder:text-[color:var(--muted)]"
             style={{ color: 'var(--fg)' }}
             autoFocus
@@ -349,7 +325,7 @@ function SearchModal({ onClose }) {
                 )}
                 {results.projects.length > 0 && (
                   <div>
-                    <h3 className="font-mono text-xs mb-2 text-[color:var(--muted)]">自研</h3>
+                    <h3 className="font-mono text-xs mb-2 text-[color:var(--muted)]">作品</h3>
                     <div className="space-y-2">
                       {results.projects.map(project => (
                         <Link key={project.id} href={`/projects/${project.id}`} onClick={onClose}

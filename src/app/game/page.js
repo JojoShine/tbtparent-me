@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useLang } from '@/hooks/useLang'
-import { ArrowLeft, BookOpen, Grid3x3, Calculator, Languages, PenTool } from 'lucide-react'
+import { BookOpen, Grid3x3, Calculator } from 'lucide-react'
 
 const GAMES = [
   {
@@ -56,38 +56,6 @@ const GAMES = [
     maxDaily: 3, // 3 sizes * 1
   },
 
-  {
-    id: 'english',
-    href: '/game/english',
-    icon: Languages,
-    title_zh: '常用英语',
-    title_en: 'English Practice',
-    desc_zh: '听发音看中文，打出英文常用英语，含每日10句',
-    desc_en: 'Listen, read Chinese, type English phrases, with daily 10 sentences',
-    limit_zh: '20 个单元',
-    limit_en: '20 units',
-    statsKey: 'english-progress',
-    dailyKey: 'english-progress',
-    action_zh: '已练习',
-    unit_zh: '句',
-    maxDaily: Infinity,
-  },
-  {
-    id: 'writing',
-    href: '/game/writing',
-    icon: PenTool,
-    title_zh: '文笔训练',
-    title_en: 'Writing Trainer',
-    desc_zh: 'AI 多维度评分的文笔短片段练习',
-    desc_en: 'AI-scored writing drills across 5 dimensions',
-    limit_zh: '每日10次',
-    limit_en: '10/day',
-    statsKey: 'writing-stats',
-    dailyKey: 'writing-stats-daily',
-    action_zh: '已练习',
-    unit_zh: '次',
-    maxDaily: 10,
-  },
 ]
 
 export default function GameHubPage() {
@@ -157,16 +125,6 @@ export default function GameHubPage() {
     >
       {/* 头部 */}
       <div style={{ marginBottom: '40px' }}>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 font-mono text-sm relative hover:opacity-70 transition-opacity social-link"
-          style={{ color: 'var(--muted)', marginBottom: '30px' }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {lang === 'zh' ? '返回首页' : 'Back to Home'}
-          <span className="absolute bottom-0 left-0 h-px w-0 transition-all duration-200 ease-out social-link-underline" style={{ backgroundColor: 'var(--muted)' }} />
-        </Link>
-
         <h1 className="text-3xl md:text-4xl font-mono font-bold" style={{ color: 'var(--fg)', marginBottom: '8px' }}>
           {lang === 'zh' ? '益智趣味小游戏' : 'Puzzle Games'}
         </h1>

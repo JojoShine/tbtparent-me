@@ -100,7 +100,7 @@ export default function ChapterPage() {
           <line x1="19" y1="12" x2="5" y2="12" />
           <polyline points="12 19 5 12 12 5" />
         </svg>
-        {lang === 'zh' ? '返回收录' : 'Back'}
+        {lang === 'zh' ? '返回书影' : 'Back to Library'}
       </button>
 
       {/* 小说标题 */}

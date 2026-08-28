@@ -164,7 +164,7 @@ export default function AdminMangaEpisodes() {
             color: 'var(--muted)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'none',
           }}
         >
-          ← 返回收录管理
+          ← 返回书影管理
         </Link>
       </div>
 

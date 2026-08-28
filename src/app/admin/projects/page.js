@@ -129,7 +129,7 @@ export default function AdminProjects() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h1 style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '1.5rem', color: 'var(--fg)' }}>
-          项目管理
+          作品管理
         </h1>
         <button style={buttonStyle} onClick={() => setEditing({ ...emptyProject })}>
           + 新增项目

@@ -15,7 +15,6 @@ const staticPages = [
   { url: '/game/guess-number', priority: 0.5, changeFrequency: 'monthly' },
   { url: '/game/idiom', priority: 0.5, changeFrequency: 'monthly' },
   { url: '/game/takuzu', priority: 0.5, changeFrequency: 'monthly' },
-  { url: '/game/writing', priority: 0.5, changeFrequency: 'monthly' },
 ]
 
 export default async function sitemap() {

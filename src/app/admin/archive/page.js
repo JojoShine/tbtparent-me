@@ -106,7 +106,7 @@ export default function AdminArchive() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h1 style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '1.5rem', color: 'var(--fg)' }}>
-          收录管理
+          书影管理
         </h1>
         <button style={buttonStyle} onClick={() => {
           const empty = activeTab === 'videos' ? emptyVideo : activeTab === 'mangas' ? emptyManga : emptyNovel
