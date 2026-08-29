@@ -1,5 +1,21 @@
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
+import { revalidateTag, unstable_cache } from 'next/cache.js'
+
+const getCachedEpisodes = unstable_cache(
+  async (mangaId, episodeId) => {
+    if (episodeId) {
+      const episode = await prisma.mangaEpisode.findUnique({ where: { id: episodeId } })
+      return episode ? [episode] : []
+    }
+    return prisma.mangaEpisode.findMany({
+      ...(mangaId ? { where: { mangaId } } : {}),
+      orderBy: [{ sortOrder: 'asc' }, { episode_number: 'asc' }],
+    })
+  },
+  ['archive-manga-episodes'],
+  { revalidate: 300, tags: ['archive-data'] },
+)
 
 // 获取漫剧集数列表（公开）
 export async function GET(request) {
@@ -8,26 +24,10 @@ export async function GET(request) {
   const episodeId = searchParams.get('episodeId')
 
   try {
-    if (episodeId) {
-      const episode = await prisma.mangaEpisode.findUnique({
-        where: { id: parseInt(episodeId) },
-      })
-      return Response.json(episode ? [episode] : [])
-    }
-
-    if (mangaId) {
-      const episodes = await prisma.mangaEpisode.findMany({
-        where: { mangaId: parseInt(mangaId) },
-        orderBy: [{ sortOrder: 'asc' }, { episode_number: 'asc' }],
-      })
-      return Response.json(episodes)
-    }
-
-    // 没有参数，返回所有集数
-    const allEpisodes = await prisma.mangaEpisode.findMany({
-      orderBy: [{ sortOrder: 'asc' }, { episode_number: 'asc' }],
-    })
-    return Response.json(allEpisodes)
+    return Response.json(await getCachedEpisodes(
+      mangaId ? parseInt(mangaId) : 0,
+      episodeId ? parseInt(episodeId) : 0,
+    ))
   } catch (error) {
     console.error(error)
     return Response.json({ error: 'Internal server error' }, { status: 500 })
@@ -50,6 +50,7 @@ export const POST = withAuth(async (request) => {
         sortOrder: data.sortOrder || 0,
       },
     })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json(episode)
   } catch (error) {
     console.error(error)
@@ -73,6 +74,7 @@ export const PUT = withAuth(async (request) => {
         sortOrder: data.sortOrder,
       },
     })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json(episode)
   } catch (error) {
     console.error(error)
@@ -87,6 +89,7 @@ export const DELETE = withAuth(async (request) => {
     const id = parseInt(searchParams.get('id'))
     if (isNaN(id)) return Response.json({ error: 'Invalid id' }, { status: 400 })
     await prisma.mangaEpisode.delete({ where: { id } })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json({ success: true })
   } catch (error) {
     console.error(error)

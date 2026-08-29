@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
 import { isValidUrl } from '@/lib/validate-url'
+import { revalidateTag } from 'next/cache.js'
+import { getCachedProjects } from '@/lib/project-data'
 
 const PROJECT_FIELDS = [
   'name_zh', 'name_en', 'description_zh', 'description_en',
@@ -11,9 +13,11 @@ const PROJECT_FIELDS = [
 
 function pickProjectFields(body) {
   const data = {}
-  for (const f of PROJECT_FIELDS) {
-    if (f in body) data[f] = body[f]
+  for (const field of PROJECT_FIELDS) {
+    if (!(field in body)) continue
+    data[field] = typeof body[field] === 'string' ? body[field].trim() : body[field]
   }
+  if (data.link === '#') data.link = ''
   return data
 }
 
@@ -29,31 +33,10 @@ export async function GET(request) {
       return Response.json(project)
     }
 
-    const projects = await prisma.project.findMany({
-      where: { deleted_at: null },
-      orderBy: { sortOrder: 'asc' },
-      select: {
-        id: true,
-        name_zh: true,
-        name_en: true,
-        description_zh: true,
-        description_en: true,
-        tags_zh: true,
-        tags_en: true,
-        deadline_zh: true,
-        deadline_en: true,
-        link: true,
-        github: true,
-        demo_url: true,
-        project_type: true,
-        recent_focus: true,
-        video_url: true,
-        sortOrder: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+    const projects = await getCachedProjects()
+    return Response.json(projects, {
+      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
     })
-    return Response.json(projects)
   } catch (error) {
     console.error('projects GET error:', error)
     return Response.json({ error: 'Internal server error' }, { status: 500 })
@@ -70,6 +53,8 @@ export const POST = withAuth(async (request) => {
       }
     }
     const project = await prisma.project.create({ data })
+    revalidateTag('home-page-data', { expire: 0 })
+    revalidateTag('projects-data', { expire: 0 })
     return Response.json(project)
   } catch (error) {
     console.error('projects POST error:', error)
@@ -88,6 +73,8 @@ export const PUT = withAuth(async (request) => {
       }
     }
     const project = await prisma.project.update({ where: { id }, data })
+    revalidateTag('home-page-data', { expire: 0 })
+    revalidateTag('projects-data', { expire: 0 })
     return Response.json(project)
   } catch (error) {
     console.error('projects PUT error:', error)
@@ -103,6 +90,8 @@ export const DELETE = withAuth(async (request) => {
       return Response.json({ error: 'Invalid id' }, { status: 400 })
     }
     await prisma.project.update({ where: { id }, data: { deleted_at: new Date() } })
+    revalidateTag('home-page-data', { expire: 0 })
+    revalidateTag('projects-data', { expire: 0 })
     return Response.json({ success: true })
   } catch (error) {
     console.error('projects DELETE error:', error)

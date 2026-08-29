@@ -66,7 +66,7 @@ function extractHeadings(markdown) {
   lines.forEach(line => {
     if (line.trim().startsWith('```')) { inCodeBlock = !inCodeBlock; return }
     if (inCodeBlock) return
-    const match = line.match(/^(#{1,4})\s+(.+)$/)
+    const match = line.match(/^(##)\s+(.+)$/)
     if (match) {
       const level = match[1].length
       const text = match[2].replace(/[*_`~\[\]]/g, '').trim()
@@ -103,15 +103,17 @@ export default function ProjectDetailPage() {
   const fromHome = searchParams.get('from') === 'home'
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [showQr, setShowQr] = useState(false)
   const [isSmallScreen, setIsSmallScreen] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState(null)
   const [activeId, setActiveId] = useState('')
-  const [tocVisible, setTocVisible] = useState(false)
-  const [tocPos, setTocPos] = useState({ left: 0, top: 0 })
   const [showTop, setShowTop] = useState(false)
+  const [mediaFailed, setMediaFailed] = useState(false)
   const qrGeneratedRef = useRef(false)
-  const tocAreaRef = useRef(null)
+
+  useEffect(() => {
+    document.body.classList.add('project-detail-page')
+    return () => document.body.classList.remove('project-detail-page')
+  }, [])
 
   useEffect(() => {
     const check = () => setIsSmallScreen(window.innerWidth < 768)
@@ -135,7 +137,7 @@ export default function ProjectDetailPage() {
   }, [id])
 
   useEffect(() => {
-    if (project?.demo_url && !qrGeneratedRef.current) {
+    if (project?.demo_url && project.deadline_zh !== '已下架' && project.deadline_en !== 'Discontinued' && !qrGeneratedRef.current) {
       // 根据主题设置二维码颜色
       const isDark = document.documentElement.classList.contains('dark')
       QRCode.toDataURL(project.demo_url, { 
@@ -159,26 +161,6 @@ export default function ProjectDetailPage() {
 
   const content = localizedField(project, 'content', lang)
   const headings = useMemo(() => extractHeadings(content), [content])
-
-  useEffect(() => {
-    if (!activeId) return
-    const tocItem = document.querySelector(`.project-toc-inner a[data-id="${activeId}"]`)
-    if (tocItem) {
-      tocItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }
-  }, [activeId])
-
-  useEffect(() => {
-    const updatePos = () => {
-      if (tocAreaRef.current) {
-        const rect = tocAreaRef.current.getBoundingClientRect()
-        setTocPos({ left: Math.max(12, rect.left), top: 144 })
-      }
-    }
-    updatePos()
-    window.addEventListener('resize', updatePos)
-    return () => window.removeEventListener('resize', updatePos)
-  }, [headings])
 
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 400)
@@ -312,60 +294,13 @@ export default function ProjectDetailPage() {
 
   const localized = localizeProject(project, lang)
   const tags = localized.tags || []
-  const hasDemo = !!project.demo_url
+  const isArchived = project.deadline_zh === '已下架' || project.deadline_en === 'Discontinued'
+  const hasDemo = !!project.demo_url && !isArchived
   const hasVideo = !!project.video_url
   const isMobile = project.project_type === 'mobile'
 
   return (
-    <div
-      className="project-layout"
-      onMouseEnter={() => setTocVisible(true)}
-      onMouseLeave={() => setTocVisible(false)}
-    >
-      {/* 目录树 - 左侧 */}
-      {headings.length > 0 && (
-        <div className={`project-toc-area ${tocVisible ? 'project-toc-visible' : ''}`} ref={tocAreaRef}>
-          <button
-            className="toc-toggle"
-            onClick={() => setTocVisible(v => !v)}
-            title={lang === 'zh' ? '目录' : 'Contents'}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="6" x2="15" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="18" y2="18" />
-            </svg>
-          </button>
-          <nav className="project-toc" style={{ left: `${tocPos.left}px`, top: `${tocPos.top}px` }}>
-            <div className="project-toc-inner">
-              <p className="font-mono" style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border)', letterSpacing: '0.05em', fontWeight: 600 }}>
-                {lang === 'zh' ? '目录' : 'CONTENTS'}
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {headings.map((h, i) => (
-                  <li key={i}>
-                    <a
-                      href={`#${h.id}`}
-                      data-id={h.id}
-                      onClick={e => {
-                        e.preventDefault()
-                        setActiveId(h.id)
-                        document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' })
-                      }}
-                      className={`toc-link font-mono ${activeId === h.id ? 'toc-link-active' : ''}`}
-                      style={{ paddingLeft: `${(h.level - 1) * 12 + 12}px` }}
-                    >
-                      {h.text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </nav>
-        </div>
-      )}
-
-      {/* 正文 */}
+    <div className="project-layout">
       <motion.div
         className="project-main pb-8 md:pb-20"
         variants={fadeUp}
@@ -396,227 +331,88 @@ export default function ProjectDetailPage() {
         {fromHome ? (lang === 'zh' ? '返回首页' : 'Back') : (lang === 'zh' ? '返回项目' : 'Back')}
       </button>
 
-      {/* 标题 */}
-      <h1
-        className="font-mono font-bold"
-        style={{
-          color: 'var(--fg)',
-          fontSize: '1.8rem',
-          marginBottom: '16px',
-          lineHeight: 1.3,
-        }}
-      >
-        {localized.name}
-      </h1>
+      <section className="project-hero">
+        <div className="project-hero-copy">
+          <div className="project-meta font-mono">
+            <span>{(() => { const Icon = typeIconMap[localized.project_type] || Monitor; return <Icon size={14} /> })()}</span>
+            {project.createdAt && <span>{formatDate(project.createdAt)}</span>}
+            {localized.deadline && <span className={isArchived ? 'project-archived-state' : ''}>{localized.deadline}</span>}
+          </div>
 
-      {/* Meta 信息 */}
-      <div
-        className="font-mono"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          flexWrap: 'wrap',
-          marginBottom: '24px',
-          fontSize: '0.8rem',
-          color: 'var(--muted)',
-        }}
-      >
-        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-          {(() => {
-            const Icon = typeIconMap[localized.project_type] || Monitor
-            return <Icon size={14} />
-          })()}
-        </span>
-        {project.createdAt && (
-          <span>{formatDate(project.createdAt)}</span>
-        )}
-        {localized.deadline && (
-          <span>{localized.deadline}</span>
-        )}
-      </div>
-
-      {/* 链接图标 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: hasVideo ? '24px' : '32px', position: 'relative' }}>
-        {project.github && (
-          <a
-            href={project.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="GitHub"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--muted)',
-              opacity: 0.5,
-              transition: 'opacity 0.2s ease',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}
-          >
-            <GithubIcon />
-          </a>
-        )}
-
-        {hasDemo && isMobile && !isSmallScreen && (
-          <span
-            onMouseEnter={() => setShowQr(true)}
-            onMouseLeave={() => setShowQr(false)}
-            title={lang === 'zh' ? '扫码预览' : 'Scan to preview'}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--muted)',
-              opacity: showQr ? 1 : 0.5,
-              cursor: 'pointer',
-              transition: 'opacity 0.2s ease',
-            }}
-          >
-            <QrCode size={16} />
-          </span>
-        )}
-
-        {hasDemo && (isMobile ? isSmallScreen : true) && (
-          <a
-            href={project.demo_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={lang === 'zh' ? '打开演示' : 'Open demo'}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--muted)',
-              opacity: 0.5,
-              transition: 'opacity 0.2s ease',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}
-          >
-            <ExternalLinkIcon />
-          </a>
-        )}
-
-        {/* 二维码悬浮弹窗 */}
-        {showQr && !isSmallScreen && (
-          <div
-            onMouseEnter={() => setShowQr(true)}
-            onMouseLeave={() => setShowQr(false)}
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: project.github ? '40px' : '0',
-              marginTop: '8px',
-              width: '220px',
-              padding: '20px 16px',
-              border: '1px solid var(--border)',
-              backgroundColor: 'var(--bg)',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-              zIndex: 50,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <div style={{ position: 'relative', width: '180px', height: '180px', marginBottom: '10px' }}>
-              <img
-                src={qrDataUrl || ''}
-                alt="QR Code"
-                style={{ display: 'block', width: '180px', height: '180px' }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '36px',
-                  height: '36px',
-                  backgroundColor: 'var(--bg)',
-                  borderRadius: '6px',
-                  padding: '2px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <img src="/assets/logo.jpg" alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} />
-              </div>
+          {isArchived && (
+            <div className="project-archived-notice">
+              {lang === 'zh' ? '该项目已下架，相关能力已升级至 FlowCraft。' : 'This project has been discontinued and upgraded to FlowCraft.'}
             </div>
-            <p style={{
-              fontFamily: 'monospace',
-              fontSize: '0.7rem',
-              color: '#666',
-              textAlign: 'center',
-              wordBreak: 'break-all',
-              lineHeight: 1.4,
-            }}>
-              {project.demo_url}
-            </p>
+          )}
+
+          <h1 className="font-mono">{localized.name}</h1>
+          <p className="project-lead">{localized.description}</p>
+
+          {tags.length > 0 && (
+            <div className="project-tags">
+              {tags.slice(0, 4).map(tag => <span key={tag}>{tag}</span>)}
+            </div>
+          )}
+
+          <div className="project-actions">
+            {hasDemo && (!isMobile || isSmallScreen) && (
+              <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="primary-action">
+                {lang === 'zh' ? '立即试用' : 'Try it live'} <ExternalLinkIcon />
+              </a>
+            )}
+            {hasVideo && (
+              <a href="#video-section">{lang === 'zh' ? '观看演示' : 'Watch demo'}</a>
+            )}
+            {project.github && (
+              <a href={project.github} target="_blank" rel="noopener noreferrer"><GithubIcon /> GitHub</a>
+            )}
+            {hasDemo && isMobile && !isSmallScreen && (
+              <div className="project-detail-qr-trigger">
+                <button type="button"><QrCode size={15} /> {lang === 'zh' ? '扫码演示' : 'QR demo'}</button>
+                {qrDataUrl && (
+                  <div className="project-qr">
+                    <img src={qrDataUrl} alt={lang === 'zh' ? '在线试用二维码' : 'Demo QR code'} />
+                    <span>{lang === 'zh' ? '手机扫码打开' : 'Scan to open'}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {hasVideo && (
+          <div className="project-hero-media" id="video-section">
+            {!mediaFailed ? (
+              <video src={project.video_url} controls muted playsInline preload="metadata" onError={() => setMediaFailed(true)} />
+            ) : (
+              <div className="project-media-placeholder">
+                {(() => { const Icon = typeIconMap[localized.project_type] || Monitor; return <Icon size={52} strokeWidth={1} /> })()}
+                <strong>{localized.name}</strong>
+                <span>{lang === 'zh' ? '演示视频暂时无法加载' : 'Demo video is unavailable'}</span>
+              </div>
+            )}
           </div>
         )}
-      </div>
+      </section>
 
-      {/* 视频区域 */}
-      {hasVideo && (
-        <div
-          id="video-section"
-          style={{
-            marginBottom: '32px',
-            border: '1px solid var(--border)',
-            borderRadius: '4px',
-            overflow: 'hidden',
-          }}
-        >
-          <video
-            src={project.video_url}
-            controls
-            preload="metadata"
-            style={{
-              width: '100%',
-              maxHeight: '500px',
-              display: 'block',
-              backgroundColor: '#000',
-            }}
-          />
-        </div>
-      )}
-
-      {/* 描述 */}
-      <div
-        style={{
-          color: 'var(--fg)',
-          lineHeight: 1.8,
-          fontSize: '0.95rem',
-          marginBottom: '32px',
-        }}
-      >
-        <p>{localized.description}</p>
-      </div>
-
-      {/* 标签 */}
-      {tags.length > 0 && (
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '32px' }}>
-          {tags.map(tag => (
-            <span
-              key={tag}
-              className="font-mono"
-              style={{
-                color: 'var(--muted)',
-                backgroundColor: 'var(--border)',
-                fontSize: '0.75rem',
-                padding: '4px 10px',
-                borderRadius: '2px',
+      {headings.length > 1 && (
+        <nav className="project-section-nav" aria-label={lang === 'zh' ? '项目章节' : 'Project sections'}>
+          {headings.map(h => (
+            <a
+              key={h.id}
+              href={`#${h.id}`}
+              data-id={h.id}
+              onClick={event => {
+                event.preventDefault()
+                setActiveId(h.id)
+                document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' })
               }}
+              className={`font-mono ${activeId === h.id ? 'project-section-link-active' : ''}`}
             >
-              {tag}
-            </span>
+              {h.text}
+            </a>
           ))}
-        </div>
+        </nav>
       )}
 
       {/* Markdown 内容 */}
@@ -624,11 +420,13 @@ export default function ProjectDetailPage() {
         <>
           <style>{`
             .project-content h1 { font-family: monospace; font-weight: 700; font-size: 1.5rem; margin: 2rem 0 0.8rem; }
-            .project-content h2 { font-family: monospace; font-weight: 700; font-size: 1.3rem; margin: 1.8rem 0 0.6rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
+            .project-content h2 { font-family: monospace; font-weight: 700; font-size: 1.45rem; margin: 3rem 0 0.8rem; letter-spacing: -0.03em; }
+            .project-content h2:first-child { margin-top: 0; }
             .project-content h3 { font-family: monospace; font-weight: 700; font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
             .project-content h4 { font-family: monospace; font-weight: 600; font-size: 1rem; margin: 1.2rem 0 0.4rem; }
             .project-content p { margin: 0.8rem 0; font-size: 0.95rem; }
             .project-content ul, .project-content ol { margin: 0.6rem 0; padding-left: 1.5rem; }
+            .project-content ol { list-style: decimal; }
             .project-content li { margin: 0.3rem 0; font-size: 0.95rem; }
             .project-content blockquote {
               margin: 1rem 0;
@@ -693,103 +491,218 @@ export default function ProjectDetailPage() {
       )}
 
       <style jsx global>{`
-        .project-layout {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 24px;
+        .project-hero {
           display: flex;
-          gap: 32px;
+          flex-direction: column;
+          gap: 42px;
+          margin-bottom: 0;
         }
-        .project-toc-area {
-          width: 200px;
-          flex-shrink: 0;
-          order: -1;
+        .project-hero-copy {
           position: relative;
+          max-width: 780px;
         }
-        .toc-toggle {
-          position: sticky;
-          top: 100px;
+        .project-meta {
           display: flex;
           align-items: center;
-          justify-content: center;
-          width: 32px;
-          height: 32px;
-          padding: 0;
-          background: transparent;
-          border: 1px solid var(--border);
-          border-radius: 4px;
+          flex-wrap: wrap;
+          gap: 10px 14px;
+          margin-bottom: 18px;
           color: var(--muted);
-          cursor: pointer;
-          z-index: 2;
+          font-size: 0.72rem;
         }
-        .project-toc {
-          position: fixed;
-          width: 200px;
-          padding-right: 16px;
-          opacity: 0;
-          transform: translateX(-8px);
-          transition: opacity 0.3s ease, transform 0.3s ease;
-          pointer-events: none;
-          z-index: 10;
-        }
-        .project-toc-visible .project-toc {
-          opacity: 1;
-          transform: translateX(0);
-          pointer-events: auto;
-        }
-        .project-toc-inner {
-          position: sticky;
-          top: 144px;
-          max-height: calc(100vh - 144px - 100px);
-          overflow-y: auto;
-          padding-right: 4px;
-        }
-        .project-toc-inner::-webkit-scrollbar { width: 0; }
-        .toc-link {
-          display: block;
-          position: relative;
-          font-size: 0.8rem;
-          line-height: 1.6;
-          padding: 4px 12px 4px 12px;
-          color: var(--muted);
-          border-left: 2px solid transparent;
-          text-decoration: none;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          cursor: pointer;
-          transition: color 0.2s, border-color 0.2s;
-        }
-        .toc-link::after {
-          content: '';
-          position: absolute;
-          bottom: 2px;
-          left: 12px;
-          width: 0;
-          height: 0;
-          border-bottom: 1px dashed var(--fg);
-          opacity: 0.4;
-          transition: width 0.25s ease;
-        }
-        .toc-link:hover::after {
-          width: calc(100% - 24px);
-          opacity: 0.7;
-        }
-        .toc-link:hover {
+        .project-meta span { display: inline-flex; align-items: center; }
+        .project-meta .project-archived-state {
+          padding: 5px 8px;
+          border: 1px solid var(--fg);
           color: var(--fg);
         }
-        .toc-link-active {
-          color: var(--fg) !important;
-          border-left-color: var(--fg);
+        .project-archived-notice {
+          width: fit-content;
+          margin-bottom: 20px;
+          padding: 10px 14px;
+          border: 1px solid var(--border);
+          color: var(--muted);
+          background: color-mix(in srgb, var(--fg) 4%, transparent);
+          font: 0.76rem/1.6 monospace;
         }
+        .project-hero h1 {
+          margin: 0 0 18px;
+          color: var(--fg);
+          font-size: clamp(2.4rem, 4.7vw, 3.75rem);
+          line-height: 1;
+          letter-spacing: -0.075em;
+          text-wrap: balance;
+        }
+        .project-lead {
+          max-width: 62ch;
+          margin: 0;
+          color: var(--fg);
+          font-size: 1rem;
+          line-height: 1.75;
+          text-wrap: pretty;
+        }
+        .project-tags { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 20px; }
+        .project-tags span {
+          color: var(--muted);
+          font: 0.7rem monospace;
+        }
+        .project-tags span + span::before {
+          content: '/';
+          margin-right: 10px;
+          color: color-mix(in srgb, var(--muted) 55%, transparent);
+        }
+        .project-actions {
+          position: relative;
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 10px 16px;
+          margin-top: 28px;
+        }
+        .project-actions a,
+        .project-actions button {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          min-height: 40px;
+          padding: 0;
+          border: 0;
+          color: var(--muted);
+          background: transparent;
+          font: 0.76rem monospace;
+          text-decoration: none;
+          cursor: pointer;
+          transition: color 180ms ease, transform 180ms ease;
+        }
+        .project-actions a:hover,
+        .project-actions button:hover { color: var(--fg); transform: translateY(-1px); }
+        .project-actions .primary-action {
+          padding: 0 16px;
+          color: var(--bg);
+          background: var(--fg);
+        }
+        .project-detail-qr-trigger {
+          position: relative;
+          display: inline-flex;
+        }
+        .project-qr {
+          position: absolute;
+          right: 0;
+          bottom: 100%;
+          z-index: 4;
+          display: none;
+          justify-items: center;
+          gap: 8px;
+          width: 174px;
+          padding: 12px;
+          border: 1px solid var(--border);
+          background: var(--bg);
+          box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+          color: var(--muted);
+          font: 0.68rem monospace;
+        }
+        .project-detail-qr-trigger:hover .project-qr { display: grid; }
+        .project-qr img { width: 148px; height: 148px; }
+        .project-hero-media {
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          overflow: hidden;
+          border: 1px solid var(--border);
+          background: color-mix(in srgb, var(--border) 42%, var(--bg));
+        }
+        .project-hero-media video,
+        .project-hero-media img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          border: 0;
+          object-fit: contain;
+          background: #090909;
+        }
+        .project-media-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: flex-end;
+          gap: 10px;
+          padding: clamp(24px, 5vw, 48px);
+          color: var(--muted);
+          background:
+            linear-gradient(135deg, color-mix(in srgb, var(--fg) 7%, transparent), transparent 52%),
+            repeating-linear-gradient(90deg, transparent 0, transparent 47px, color-mix(in srgb, var(--fg) 5%, transparent) 48px);
+          font-family: monospace;
+        }
+        .project-media-placeholder svg { margin-bottom: auto; }
+        .project-media-placeholder strong {
+          max-width: 90%;
+          overflow: hidden;
+          color: var(--fg);
+          font-size: clamp(1.8rem, 4vw, 3.6rem);
+          line-height: 1;
+          letter-spacing: -0.06em;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .project-media-placeholder span { font: 0.72rem/1.4 monospace; }
+        .project-detail-page .cat-duty {
+          display: none;
+        }
+        .project-content {
+          width: 100%;
+          max-width: none;
+          margin: 0 auto;
+          padding-top: 58px;
+        }
+        .project-layout {
+          max-width: 920px;
+          margin: 0 auto;
+          padding: 0;
+        }
+        .project-section-nav {
+          display: flex;
+          align-items: center;
+          gap: 24px;
+          margin-top: 26px;
+          padding: 18px 0;
+          overflow-x: auto;
+          border-bottom: 1px solid var(--border);
+          scrollbar-width: none;
+        }
+        .project-section-nav::-webkit-scrollbar { display: none; }
+        .project-section-nav a {
+          position: relative;
+          flex: 0 0 auto;
+          font-size: 0.8rem;
+          line-height: 1.4;
+          color: var(--muted);
+          text-decoration: none;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: color 0.2s ease;
+        }
+        .project-section-nav a::after {
+          content: '';
+          position: absolute;
+          right: 0;
+          bottom: -19px;
+          left: 0;
+          width: 0;
+          height: 1px;
+          background: var(--fg);
+          transition: width 0.25s ease;
+        }
+        .project-section-nav a:hover,
+        .project-section-link-active { color: var(--fg) !important; }
+        .project-section-link-active::after { width: 100% !important; }
         .project-main {
-          flex: 1;
+          width: 100%;
           min-width: 0;
-          max-width: 896px;
+          max-width: none;
           margin: 0 auto;
         }
         @media (max-width: 1023px) {
-          .project-toc-area { display: none; }
           .project-layout {
             overflow-x: hidden;
             max-width: 100vw;
@@ -802,6 +715,12 @@ export default function ProjectDetailPage() {
             word-wrap: break-word;
             overflow-wrap: break-word;
           }
+          .project-hero {
+            gap: 28px;
+          }
+          .project-hero h1 { font-size: clamp(2rem, 10vw, 3rem); }
+          .project-content { padding-top: 42px; }
+          .project-section-nav { gap: 18px; margin-top: 20px; }
         }
         .project-content .mermaid-block {
           display: flex;

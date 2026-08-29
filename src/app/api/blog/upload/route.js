@@ -1,6 +1,7 @@
 import { uploadFile, getFileUrl, MINIO_BUCKET, ensureBucket } from '@/lib/minio'
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
+import { revalidateTag } from 'next/cache.js'
 
 // 管理：上传图片到 MinIO
 export const POST = withAuth(async (request) => {
@@ -27,6 +28,7 @@ export const POST = withAuth(async (request) => {
           filename: file.name,
         },
       })
+      revalidateTag('blog-data', { expire: 0 })
     }
 
     return Response.json({ url, blogImage })

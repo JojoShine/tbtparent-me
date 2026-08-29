@@ -55,7 +55,6 @@ export default function EnglishPractice() {
   const [score, setScore] = useState(0)
   const [results, setResults] = useState([])
   const [speaking, setSpeaking] = useState(false)
-  const [audioLoading, setAudioLoading] = useState(false)
   const [showAnswer, setShowAnswer] = useState(false)
   const [isDailyMode, setIsDailyMode] = useState(false)
   const [dailyPhrases, setDailyPhrases] = useState([])
@@ -69,9 +68,7 @@ export default function EnglishPractice() {
     ? (dailyPhrases[phraseIdx]?.phrase || null)
     : (unit ? unit.phrases[phraseIdx] : null)
   const activePhrase = phrase
-  const activeAudio = isDailyMode
-    ? `/audio/english/${dailyPhrases[phraseIdx]?.unitId}_${dailyPhrases[phraseIdx]?.phraseIdx}.mp3`
-    : (unit ? `/audio/english/${unit.id}_${phraseIdx}.mp3` : null)
+  const activeSpeechText = activePhrase?.en || ''
   const activeTotal = isDailyMode ? dailyPhrases.length : (unit ? unit.phrases.length : 0)
   const activeProgress = activeTotal > 0 ? (phraseIdx / activeTotal) * 100 : 0
 
@@ -80,105 +77,16 @@ export default function EnglishPractice() {
     loadAllUnits().then(setPhrasesData)
   }, [])
 
-  const audioRef = useRef(null)
-  const audioCacheRef = useRef(new Map()) // 缓存已加载的 Audio 元素
-  const audioCtxRef = useRef(null) // 共享 AudioContext，用于恢复挂起的音频管线
-
-  // 恢复被浏览器挂起的 AudioContext（解决长时间不操作后无法播放的问题）
-  const resumeAudioContext = () => {
-    try {
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)()
-      }
-      const ctx = audioCtxRef.current
-      if (ctx.state === 'suspended') {
-        ctx.resume()
-      }
-      // 用一个极短的静音 buffer 唤醒音频管线
-      const buf = ctx.createBuffer(1, 1, 22050)
-      const src = ctx.createBufferSource()
-      src.buffer = buf
-      src.connect(ctx.destination)
-      src.start(0)
-    } catch {}
-  }
-
-  // 播放本地音频（英式发音，预生成 mp3 文件）
-  // 支持：缓存复用 + 预加载缓冲 + AudioContext 恢复
-  const speak = useCallback((audioPath) => {
-    if (!audioPath) return
-    try {
-      // 停止当前播放
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.onended = null
-        audioRef.current.onerror = null
-        audioRef.current = null
-      }
-
-      // 恢复可能被挂起的 AudioContext
-      resumeAudioContext()
-
-      const cached = audioCacheRef.current.get(audioPath)
-      if (cached && cached.readyState >= 3) {
-        // 缓存命中且已缓冲完成 → 直接播放
-        cached.currentTime = 0
-        audioRef.current = cached
-        setSpeaking(true)
-        cached.onended = () => setSpeaking(false)
-        cached.onerror = () => setSpeaking(false)
-        cached.play().catch(() => setSpeaking(false))
-        return
-      }
-
-      // 未命中缓存或未缓冲完成 → 创建新 Audio 并等待缓冲
-      setAudioLoading(true)
-      const audio = new Audio(audioPath)
-      audio.preload = 'auto'
-      audioRef.current = audio
-      let started = false // 标记是否已开始播放（避免闭包捕获 stale state）
-
-      const cleanup = () => {
-        setAudioLoading(false)
-        audio.oncanplaythrough = null
-        audio.onerror = null
-        audio.onended = null
-      }
-
-      audio.oncanplaythrough = () => {
-        // 缓冲完成，存入缓存并播放
-        started = true
-        audioCacheRef.current.set(audioPath, audio)
-        setAudioLoading(false)
-        setSpeaking(true)
-        audio.onended = () => setSpeaking(false)
-        audio.onerror = () => setSpeaking(false)
-        audio.play().catch(() => setSpeaking(false))
-      }
-
-      audio.onerror = () => {
-        cleanup()
-        setSpeaking(false)
-        // 失败时清除缓存，下次重试
-        audioCacheRef.current.delete(audioPath)
-      }
-
-      // 开始加载
-      audio.load()
-
-      // 超时兜底：5 秒后仍未缓冲则放弃
-      setTimeout(() => {
-        if (audioRef.current === audio && !started) {
-          cleanup()
-          setSpeaking(false)
-          audioCacheRef.current.delete(audioPath)
-        }
-      }, 5000)
-    } catch (e) {
-      console.error('Audio play error:', e)
-      setSpeaking(false)
-      setAudioLoading(false)
-    }
+  const speak = useCallback((text) => {
+    if (!text || !('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'en-GB'
+    utterance.rate = 0.9
+    utterance.onstart = () => setSpeaking(true)
+    utterance.onend = () => setSpeaking(false)
+    utterance.onerror = () => setSpeaking(false)
+    window.speechSynthesis.speak(utterance)
   }, [])
 
   // 获取单元进度
@@ -625,10 +533,9 @@ export default function EnglishPractice() {
                 <button
                   onClick={() => {
                     if (isDailyMode) {
-                      const dp = dailyPhrases[i]
-                      speak(`/audio/english/${dp.unitId}_${dp.phraseIdx}.mp3`)
+                      speak(dailyPhrases[i]?.phrase?.en)
                     } else {
-                      speak(`/audio/english/${phrasesData[currentUnit].id}_${i}.mp3`)
+                      speak(phrasesData[currentUnit]?.phrases[i]?.en)
                     }
                   }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '4px' }}
@@ -806,10 +713,9 @@ export default function EnglishPractice() {
         {/* 播放按钮 */}
         <button
           onClick={() => {
-            activeAudio && speak(activeAudio)
+            speak(activeSpeechText)
             setTimeout(() => inputRef.current?.focus(), 150)
           }}
-          disabled={audioLoading}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -818,15 +724,15 @@ export default function EnglishPractice() {
             border: '1px solid var(--border)',
             borderRadius: '4px',
             background: speaking ? 'var(--fg)' : 'none',
-            color: speaking ? 'var(--bg)' : audioLoading ? 'var(--muted)' : 'var(--fg)',
+            color: speaking ? 'var(--bg)' : 'var(--fg)',
             fontFamily: 'monospace',
             fontSize: '0.85rem',
-            cursor: audioLoading ? 'wait' : 'pointer',
+            cursor: 'pointer',
             transition: 'all 0.2s',
           }}
         >
           <Volume2 className="w-4 h-4" />
-          {audioLoading ? '缓冲中...' : speaking ? '播放中...' : '播放发音'}
+          {speaking ? '播放中...' : '播放发音'}
         </button>
       </div>
 

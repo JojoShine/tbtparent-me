@@ -1,15 +1,19 @@
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
+import { revalidateTag, unstable_cache } from 'next/cache.js'
+
+const getCachedVideos = unstable_cache(
+  () => prisma.archiveVideo.findMany({
+    orderBy: [{ sortOrder: 'asc' }, { published_at: 'desc' }],
+  }),
+  ['archive-videos'],
+  { revalidate: 300, tags: ['archive-data'] },
+)
 
 // 获取所有视频（公开）
 export async function GET() {
   try {
-    const videos = await prisma.archiveVideo.findMany({
-      orderBy: [
-        { sortOrder: 'asc' },
-        { published_at: 'desc' },
-      ],
-    })
+    const videos = await getCachedVideos()
     return Response.json(videos)
   } catch (error) {
     console.error(error)
@@ -33,6 +37,7 @@ export const POST = withAuth(async (request) => {
         published_at: data.published_at ? new Date(data.published_at) : null,
       },
     })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json(video)
   } catch (error) {
     console.error(error)
@@ -57,6 +62,7 @@ export const PUT = withAuth(async (request) => {
         published_at: data.published_at ? new Date(data.published_at) : null,
       },
     })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json(video)
   } catch (error) {
     console.error(error)
@@ -71,6 +77,7 @@ export const DELETE = withAuth(async (request) => {
     const id = parseInt(searchParams.get('id'))
     if (isNaN(id)) return Response.json({ error: 'Invalid id' }, { status: 400 })
     await prisma.archiveVideo.delete({ where: { id } })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json({ success: true })
   } catch (error) {
     console.error(error)

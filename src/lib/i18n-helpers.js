@@ -18,9 +18,11 @@ export function localizeProject(project, lang) {
     description: localizedField(project, 'description', lang),
     tags: project[`tags_${lang}`] || project.tags_zh || [],
     deadline: localizedField(project, 'deadline', lang),
+    archived: project.deadline_zh === '已下架' || project.deadline_en === 'Discontinued',
     link: project.link || '#',
     github: project.github || '',
     demo_url: project.demo_url || '',
+    video_url: project.video_url || '',
     project_type: project.project_type || 'pc',
   }
 }

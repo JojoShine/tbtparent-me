@@ -3,7 +3,14 @@ import crypto from 'node:crypto'
 import { mock, test } from 'node:test'
 
 const prismaModule = new URL('../src/lib/prisma.js', import.meta.url).href
+const nextCacheModule = new URL('../node_modules/next/cache.js', import.meta.url).href
 let receivedUpsert
+
+mock.module(nextCacheModule, {
+  namedExports: {
+    revalidateTag() {},
+  },
+})
 
 mock.module(prismaModule, {
   namedExports: {

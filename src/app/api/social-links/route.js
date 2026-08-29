@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
 import { isValidUrl } from '@/lib/validate-url'
+import { revalidateTag } from 'next/cache.js'
 
 export async function GET() {
   try {
@@ -22,6 +23,7 @@ export const POST = withAuth(async (request) => {
       return Response.json({ error: 'Invalid URL' }, { status: 400 })
     }
     const link = await prisma.socialLink.create({ data: { name, url, icon, sortOrder } })
+    revalidateTag('home-page-data', { expire: 0 })
     return Response.json(link)
   } catch (error) {
     console.error('social-links POST error:', error)
@@ -40,6 +42,7 @@ export const PUT = withAuth(async (request) => {
       where: { id },
       data: { name, url, icon, sortOrder },
     })
+    revalidateTag('home-page-data', { expire: 0 })
     return Response.json(link)
   } catch (error) {
     console.error('social-links PUT error:', error)
@@ -55,6 +58,7 @@ export const DELETE = withAuth(async (request) => {
       return Response.json({ error: 'Invalid id' }, { status: 400 })
     }
     await prisma.socialLink.delete({ where: { id } })
+    revalidateTag('home-page-data', { expire: 0 })
     return Response.json({ success: true })
   } catch (error) {
     console.error('social-links DELETE error:', error)

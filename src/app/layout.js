@@ -1,4 +1,3 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 // 在 React hydrate 前同步设置主题和语言，避免闪烁
@@ -19,16 +18,6 @@ const initScript = `
     } catch(e) {}
   })();
 `;
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const SITE_URL = 'https://tbtparent.me'
 
@@ -83,7 +72,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="zh"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      className="antialiased"
       suppressHydrationWarning
     >
       <head>

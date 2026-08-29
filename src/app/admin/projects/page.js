@@ -10,7 +10,7 @@ const emptyProject = {
   content_zh: '', content_en: '',
   tags_zh: [], tags_en: [],
   deadline_zh: '', deadline_en: '',
-  link: '#', github: '', demo_url: '', video_url: '',
+  link: '', github: '', demo_url: '', video_url: '',
   project_type: 'pc', recent_focus: false, sortOrder: 0,
 }
 
@@ -272,17 +272,17 @@ export default function AdminProjects() {
 
           <div>
             <label style={labelStyle}>
-              详细介绍（中文 Markdown）
+              案例介绍（中文 Markdown，建议 400–800 字）
               <button type="button" style={translateButtonStyle} data-tooltip="将中文翻译为英文" disabled={translating['content_zh->content_en']}
                 onClick={() => handleTranslate('content_zh', 'content_en')}>
                 {translating['content_zh->content_en'] ? '翻译中...' : '译→'}
               </button>
             </label>
-            <textarea style={{ ...textareaStyle, minHeight: '200px', fontFamily: 'monospace' }} value={editing.content_zh || ''} onChange={e => handleChange('content_zh', e.target.value)} placeholder="支持 Markdown 格式..." />
+            <textarea style={{ ...textareaStyle, minHeight: '200px', fontFamily: 'monospace' }} value={editing.content_zh || ''} onChange={e => handleChange('content_zh', e.target.value)} placeholder={'建议结构：\n## 做了什么\n## 解决的问题\n## 核心能力\n## 带来的价值'} />
           </div>
           <div>
             <label style={labelStyle}>
-              Detail (English Markdown)
+              Case study (English Markdown, 250–500 words)
               <button type="button" style={translateButtonStyle} data-tooltip="将英文翻译为中文" disabled={translating['content_en->content_zh']}
                 onClick={() => handleTranslate('content_en', 'content_zh')}>
                 {translating['content_en->content_zh'] ? '翻译中...' : '←译'}

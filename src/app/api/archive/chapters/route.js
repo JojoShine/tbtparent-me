@@ -1,5 +1,21 @@
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
+import { revalidateTag, unstable_cache } from 'next/cache.js'
+
+const getCachedChapters = unstable_cache(
+  async (novelId, chapterId) => {
+    if (chapterId) {
+      const chapter = await prisma.novelChapter.findUnique({ where: { id: chapterId } })
+      return chapter ? [chapter] : []
+    }
+    return prisma.novelChapter.findMany({
+      ...(novelId ? { where: { novelId } } : {}),
+      orderBy: { chapter_number: 'asc' },
+    })
+  },
+  ['archive-chapters'],
+  { revalidate: 300, tags: ['archive-data'] },
+)
 
 // 获取章节列表（公开）
 export async function GET(request) {
@@ -8,27 +24,10 @@ export async function GET(request) {
   const chapterId = searchParams.get('chapterId')
   
   try {
-    if (chapterId) {
-      // 根据章节ID获取
-      const chapter = await prisma.novelChapter.findUnique({
-        where: { id: parseInt(chapterId) },
-      })
-      return Response.json(chapter ? [chapter] : [])
-    }
-    
-    if (novelId) {
-      const chapters = await prisma.novelChapter.findMany({
-        where: { novelId: parseInt(novelId) },
-        orderBy: { chapter_number: 'asc' },
-      })
-      return Response.json(chapters)
-    }
-    
-    // 如果没有参数，返回所有章节
-    const allChapters = await prisma.novelChapter.findMany({
-      orderBy: { chapter_number: 'asc' },
-    })
-    return Response.json(allChapters)
+    return Response.json(await getCachedChapters(
+      novelId ? parseInt(novelId) : 0,
+      chapterId ? parseInt(chapterId) : 0,
+    ))
   } catch (error) {
     console.error(error)
     return Response.json({ error: 'Internal server error' }, { status: 500 })
@@ -51,6 +50,7 @@ export const POST = withAuth(async (request) => {
         published_at: data.published_at ? new Date(data.published_at) : null,
       },
     })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json(chapter)
   } catch (error) {
     console.error(error)
@@ -74,6 +74,7 @@ export const PUT = withAuth(async (request) => {
         published_at: data.published_at ? new Date(data.published_at) : null,
       },
     })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json(chapter)
   } catch (error) {
     console.error(error)
@@ -88,6 +89,7 @@ export const DELETE = withAuth(async (request) => {
     const id = parseInt(searchParams.get('id'))
     if (isNaN(id)) return Response.json({ error: 'Invalid id' }, { status: 400 })
     await prisma.novelChapter.delete({ where: { id } })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json({ success: true })
   } catch (error) {
     console.error(error)

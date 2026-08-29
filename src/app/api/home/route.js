@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
+import { revalidateTag } from 'next/cache.js'
 
 export async function GET() {
   try {
@@ -21,6 +22,7 @@ export const PUT = withAuth(async (request) => {
       update: data,
       create: { id: 1, ...data },
     })
+    revalidateTag('home-page-data', { expire: 0 })
     return Response.json(home)
   } catch (error) {
     console.error('home PUT error:', error)

@@ -1,5 +1,39 @@
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/auth'
+import { revalidateTag, unstable_cache } from 'next/cache.js'
+
+const getCachedManga = unstable_cache(
+  id => prisma.archiveManga.findUnique({
+    where: { id },
+    include: { episodes: { orderBy: [{ sortOrder: 'asc' }, { episode_number: 'asc' }] } },
+  }),
+  ['archive-manga'],
+  { revalidate: 300, tags: ['archive-data'] },
+)
+
+const getCachedMangas = unstable_cache(
+  () => prisma.archiveManga.findMany({
+    include: {
+      episodes: {
+        select: {
+          id: true,
+          mangaId: true,
+          episode_number: true,
+          title_zh: true,
+          title_en: true,
+          cover_url: true,
+          video_url: true,
+          aspect_ratio: true,
+          sortOrder: true,
+        },
+        orderBy: [{ sortOrder: 'asc' }, { episode_number: 'asc' }],
+      },
+    },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+  }),
+  ['archive-mangas'],
+  { revalidate: 300, tags: ['archive-data'] },
+)
 
 // 获取所有漫剧系列及集数元信息（公开）
 export async function GET(request) {
@@ -9,37 +43,12 @@ export async function GET(request) {
 
     if (id) {
       // 单个漫剧系列详情（含集数）
-      const manga = await prisma.archiveManga.findUnique({
-        where: { id: parseInt(id) },
-        include: {
-          episodes: {
-            orderBy: [{ sortOrder: 'asc' }, { episode_number: 'asc' }],
-          },
-        },
-      })
+      const manga = await getCachedManga(parseInt(id))
       return Response.json(manga)
     }
 
     // 列表：集数只返回元信息
-    const mangas = await prisma.archiveManga.findMany({
-      include: {
-        episodes: {
-          select: {
-            id: true,
-            mangaId: true,
-            episode_number: true,
-            title_zh: true,
-            title_en: true,
-            cover_url: true,
-            video_url: true,
-            aspect_ratio: true,
-            sortOrder: true,
-          },
-          orderBy: [{ sortOrder: 'asc' }, { episode_number: 'asc' }],
-        },
-      },
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
-    })
+    const mangas = await getCachedMangas()
     return Response.json(mangas)
   } catch (error) {
     console.error(error)
@@ -61,6 +70,7 @@ export const POST = withAuth(async (request) => {
         sortOrder: data.sortOrder || 0,
       },
     })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json(manga)
   } catch (error) {
     console.error(error)
@@ -83,6 +93,7 @@ export const PUT = withAuth(async (request) => {
         sortOrder: data.sortOrder,
       },
     })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json(manga)
   } catch (error) {
     console.error(error)
@@ -97,6 +108,7 @@ export const DELETE = withAuth(async (request) => {
     const id = parseInt(searchParams.get('id'))
     if (isNaN(id)) return Response.json({ error: 'Invalid id' }, { status: 400 })
     await prisma.archiveManga.delete({ where: { id } })
+    revalidateTag('archive-data', { expire: 0 })
     return Response.json({ success: true })
   } catch (error) {
     console.error(error)
