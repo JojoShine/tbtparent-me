@@ -104,6 +104,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isSmallScreen, setIsSmallScreen] = useState(false)
+  const [viewportReady, setViewportReady] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState(null)
   const [activeId, setActiveId] = useState('')
   const [showTop, setShowTop] = useState(false)
@@ -116,7 +117,10 @@ export default function ProjectDetailPage() {
   }, [])
 
   useEffect(() => {
-    const check = () => setIsSmallScreen(window.innerWidth < 768)
+    const check = () => {
+      setIsSmallScreen(window.innerWidth < 768)
+      setViewportReady(true)
+    }
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
@@ -360,7 +364,7 @@ export default function ProjectDetailPage() {
                 {lang === 'zh' ? '立即试用' : 'Try it live'} <ExternalLinkIcon />
               </a>
             )}
-            {hasVideo && (
+            {hasVideo && viewportReady && !isSmallScreen && (
               <a href="#video-section">{lang === 'zh' ? '观看演示' : 'Watch demo'}</a>
             )}
             {project.github && (
@@ -380,7 +384,7 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {hasVideo && (
+        {hasVideo && viewportReady && !isSmallScreen && (
           <div className="project-hero-media" id="video-section">
             {!mediaFailed ? (
               <video src={project.video_url} controls muted playsInline preload="metadata" onError={() => setMediaFailed(true)} />
