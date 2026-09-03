@@ -3,6 +3,7 @@ import { withAuth } from '@/lib/auth'
 import { isValidUrl } from '@/lib/validate-url'
 import { revalidateTag } from 'next/cache.js'
 import { getCachedProjects } from '@/lib/project-data'
+import { normalizeCapabilities } from '@/lib/project-capabilities'
 
 const PROJECT_FIELDS = [
   'name_zh', 'name_en', 'description_zh', 'description_en',
@@ -21,6 +22,17 @@ function pickProjectFields(body) {
   return data
 }
 
+const CAPABILITY_INCLUDE = {
+  capabilities: { orderBy: { sortOrder: 'asc' } },
+}
+
+function validateProjectUrls(data) {
+  for (const field of ['link', 'github', 'demo_url', 'video_url']) {
+    if (data[field] && !isValidUrl(data[field])) return `Invalid ${field}`
+  }
+  return null
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -29,6 +41,7 @@ export async function GET(request) {
     if (id) {
       const project = await prisma.project.findUnique({
         where: { id: parseInt(id) },
+        include: CAPABILITY_INCLUDE,
       })
       return Response.json(project)
     }
@@ -47,12 +60,23 @@ export const POST = withAuth(async (request) => {
   try {
     const body = await request.json()
     const data = pickProjectFields(body)
-    for (const f of ['link', 'github', 'demo_url', 'video_url']) {
-      if (data[f] && !isValidUrl(data[f])) {
-        return Response.json({ error: `Invalid ${f}` }, { status: 400 })
-      }
+    const urlError = validateProjectUrls(data)
+    if (urlError) return Response.json({ error: urlError }, { status: 400 })
+
+    const capabilityResult = normalizeCapabilities(body.capabilities ?? [])
+    if (capabilityResult.error) {
+      return Response.json({ error: capabilityResult.error }, { status: 400 })
     }
-    const project = await prisma.project.create({ data })
+
+    const project = await prisma.$transaction(tx => tx.project.create({
+      data: {
+        ...data,
+        ...(capabilityResult.data.length > 0
+          ? { capabilities: { create: capabilityResult.data } }
+          : {}),
+      },
+      include: CAPABILITY_INCLUDE,
+    }))
     revalidateTag('home-page-data', { expire: 0 })
     revalidateTag('projects-data', { expire: 0 })
     return Response.json(project)
@@ -66,13 +90,31 @@ export const PUT = withAuth(async (request) => {
   try {
     const body = await request.json()
     const { id } = body
-    const data = pickProjectFields(body)
-    for (const f of ['link', 'github', 'demo_url', 'video_url']) {
-      if (data[f] && !isValidUrl(data[f])) {
-        return Response.json({ error: `Invalid ${f}` }, { status: 400 })
-      }
+    if (!Number.isInteger(id)) {
+      return Response.json({ error: 'Invalid id' }, { status: 400 })
     }
-    const project = await prisma.project.update({ where: { id }, data })
+    const data = pickProjectFields(body)
+    const urlError = validateProjectUrls(data)
+    if (urlError) return Response.json({ error: urlError }, { status: 400 })
+
+    const hasCapabilities = Object.prototype.hasOwnProperty.call(body, 'capabilities')
+    const capabilityResult = normalizeCapabilities(hasCapabilities ? body.capabilities : undefined)
+    if (capabilityResult.error) {
+      return Response.json({ error: capabilityResult.error }, { status: 400 })
+    }
+
+    const project = await prisma.$transaction(async tx => {
+      await tx.project.update({ where: { id }, data })
+      if (hasCapabilities) {
+        await tx.projectCapability.deleteMany({ where: { projectId: id } })
+        if (capabilityResult.data.length > 0) {
+          await tx.projectCapability.createMany({
+            data: capabilityResult.data.map(capability => ({ ...capability, projectId: id })),
+          })
+        }
+      }
+      return tx.project.findUnique({ where: { id }, include: CAPABILITY_INCLUDE })
+    })
     revalidateTag('home-page-data', { expire: 0 })
     revalidateTag('projects-data', { expire: 0 })
     return Response.json(project)

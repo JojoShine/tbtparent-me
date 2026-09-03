@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete, apiTranslate, inputStyle, textareaStyle, buttonStyle, secondaryButtonStyle, translateButtonStyle, labelStyle } from '@/lib/admin-utils'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import ProjectCapabilitiesEditor from '@/components/admin/ProjectCapabilitiesEditor'
+import { updateCapability } from '@/lib/project-capability-editor'
 
 const emptyProject = {
   name_zh: '', name_en: '',
@@ -12,6 +14,7 @@ const emptyProject = {
   deadline_zh: '', deadline_en: '',
   link: '', github: '', demo_url: '', video_url: '',
   project_type: 'pc', recent_focus: false, sortOrder: 0,
+  capabilities: [],
 }
 
 const typeOptions = [
@@ -63,6 +66,25 @@ export default function AdminProjects() {
     setTranslating(prev => ({ ...prev, [key]: false }))
   }
 
+  const handleCapabilityTranslate = async (index, fromField, toField) => {
+    const raw = editing?.capabilities?.[index]?.[fromField]
+    if (!raw) return
+    const key = `capabilities.${index}.${fromField}->${toField}`
+    setTranslating(prev => ({ ...prev, [key]: true }))
+    try {
+      const from = fromField.endsWith('_zh') ? 'zh' : 'en'
+      const to = fromField.endsWith('_zh') ? 'en' : 'zh'
+      const translated = await apiTranslate(raw, from, to)
+      setEditing(prev => ({
+        ...prev,
+        capabilities: updateCapability(prev.capabilities || [], index, toField, translated),
+      }))
+    } catch (e) {
+      setMsg('翻译失败: ' + e.message)
+    }
+    setTranslating(prev => ({ ...prev, [key]: false }))
+  }
+
   const handleSave = async () => {
     try {
       if (editing.id) {
@@ -82,7 +104,7 @@ export default function AdminProjects() {
   const handleEdit = async (p) => {
     try {
       const full = await apiGet(`/api/projects?id=${p.id}`)
-      setEditing(full)
+      setEditing({ ...full, capabilities: full.capabilities || [] })
     } catch (e) {
       setMsg('加载详情失败: ' + e.message)
     }
@@ -269,6 +291,13 @@ export default function AdminProjects() {
             </label>
             <textarea style={{ ...textareaStyle, minHeight: '120px' }} value={editing.description_en} onChange={e => handleChange('description_en', e.target.value)} />
           </div>
+
+          <ProjectCapabilitiesEditor
+            value={editing.capabilities || []}
+            onChange={capabilities => handleChange('capabilities', capabilities)}
+            translating={translating}
+            onTranslate={handleCapabilityTranslate}
+          />
 
           <div>
             <label style={labelStyle}>

@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
+import { sortProjectsByYearAndOrder } from '@/lib/project-showcase'
 
 // 公开：获取近期聚焦项目列表
 export async function GET() {
   try {
     const projects = await prisma.project.findMany({
       where: { recent_focus: true, deleted_at: null },
-      orderBy: { sortOrder: 'asc' },
       select: {
         id: true,
         name_zh: true,
@@ -26,7 +26,7 @@ export async function GET() {
         createdAt: true,
       },
     })
-    return Response.json(projects, {
+    return Response.json(sortProjectsByYearAndOrder(projects), {
       headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
     })
   } catch (error) {

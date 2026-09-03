@@ -32,7 +32,7 @@ model SocialLink {
 }
 
 model Project {
-  id             Int      @id @default(autoincrement())
+  id             Int                 @id @default(autoincrement())
   name_zh        String
   name_en        String
   description_zh String
@@ -44,15 +44,32 @@ model Project {
   link           String
   github         String?
   demo_url       String?
-  project_type   String   @default("pc")
+  project_type   String              @default("pc")
+  sortOrder      Int                 @default(0)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  content_en     String?
+  content_zh     String?
+  recent_focus   Boolean             @default(false)
+  video_url      String?
+  deleted_at     DateTime?
+  capabilities   ProjectCapability[]
+}
+
+model ProjectCapability {
+  id             Int      @id @default(autoincrement())
+  projectId      Int
+  title_zh       String
+  title_en       String
+  description_zh String
+  description_en String
+  icon           String   @default("circle")
   sortOrder      Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  content_en     String?
-  content_zh     String?
-  recent_focus   Boolean  @default(false)
-  video_url      String?
-  deleted_at     DateTime?
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, sortOrder])
 }
 
 model Blog {
@@ -235,21 +252,21 @@ model SiteVisit {
 }
 
 model WorkProject {
-  id             Int      @id @default(autoincrement())
-  name_zh        String
-  name_en        String
-  summary_zh     String
-  summary_en     String
-  font_size      String   @default("medium") // small | medium | large
-  sortOrder      Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  name_zh    String
+  name_en    String
+  summary_zh String
+  summary_en String
+  font_size  String   @default("medium") // small | medium | large
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Visitor {
-  id              Int      @id @default(autoincrement())
-  visitor_id      String   @unique
-  visit_dates     String[]
+  id               Int      @id @default(autoincrement())
+  visitor_id       String   @unique
+  visit_dates      String[]
   first_visit_date String?
   last_visit_date  String?
   total_visits     Int      @default(1)

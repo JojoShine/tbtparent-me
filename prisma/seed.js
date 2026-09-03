@@ -3,6 +3,8 @@
 
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
+import { projectCapabilities } from './project-capabilities-data.js'
+import { buildCapabilityInitialization } from '../src/lib/project-capability-initializer.js'
 
 const prisma = new PrismaClient()
 
@@ -216,6 +218,25 @@ Users finish focused tasks faster, while the project provides a reusable way to 
       },
     ],
   })
+  const seededProjects = await prisma.project.findMany({
+    select: {
+      id: true,
+      name_zh: true,
+      name_en: true,
+      capabilities: { select: { id: true } },
+    },
+  })
+  const capabilityOperations = buildCapabilityInitialization(seededProjects, projectCapabilities)
+  if (capabilityOperations.length > 0) {
+    await prisma.$transaction(
+      capabilityOperations.map(operation => prisma.projectCapability.createMany({
+        data: operation.capabilities.map(capability => ({
+          ...capability,
+          projectId: operation.projectId,
+        })),
+      })),
+    )
+  }
   console.log('✓ 项目数据')
 
   // ========== 关于 ==========

@@ -13,23 +13,16 @@ import { defaultSchema } from 'hast-util-sanitize'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import MermaidBlock from '@/components/ui/MermaidBlock'
+import GithubIcon from '@/components/ui/GithubIcon'
 import { useLang } from '@/hooks/useLang'
 import { useTheme } from '@/hooks/useTheme'
 import { localizedField, localizeProject } from '@/lib/i18n-helpers'
+import { getProjectTrialMode } from '@/lib/project-showcase'
 
 const fadeUp = {
   initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.4, ease: 'easeOut' }
-}
-
-function GithubIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
-      <path d="M9 18c-4.51 2-5-2-7-2"/>
-    </svg>
-  )
 }
 
 function ArrowLeftIcon() {
@@ -108,7 +101,6 @@ export default function ProjectDetailPage() {
   const [qrDataUrl, setQrDataUrl] = useState(null)
   const [activeId, setActiveId] = useState('')
   const [showTop, setShowTop] = useState(false)
-  const [mediaFailed, setMediaFailed] = useState(false)
   const qrGeneratedRef = useRef(false)
 
   useEffect(() => {
@@ -302,6 +294,9 @@ export default function ProjectDetailPage() {
   const hasDemo = !!project.demo_url && !isArchived
   const hasVideo = !!project.video_url
   const isMobile = project.project_type === 'mobile'
+  const trialMode = viewportReady
+    ? getProjectTrialMode(project.project_type, isSmallScreen)
+    : 'hidden'
 
   return (
     <div className="project-layout">
@@ -359,7 +354,7 @@ export default function ProjectDetailPage() {
           )}
 
           <div className="project-actions">
-            {hasDemo && (!isMobile || isSmallScreen) && (
+            {hasDemo && trialMode === 'link' && (
               <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="primary-action">
                 {lang === 'zh' ? '立即试用' : 'Try it live'} <ExternalLinkIcon />
               </a>
@@ -368,11 +363,11 @@ export default function ProjectDetailPage() {
               <a href="#video-section">{lang === 'zh' ? '观看演示' : 'Watch demo'}</a>
             )}
             {project.github && (
-              <a href={project.github} target="_blank" rel="noopener noreferrer"><GithubIcon /> GitHub</a>
+              <a href={project.github} target="_blank" rel="noopener noreferrer"><GithubIcon size={16} /> GitHub</a>
             )}
-            {hasDemo && isMobile && !isSmallScreen && (
+            {hasDemo && isMobile && trialMode === 'qr' && (
               <div className="project-detail-qr-trigger">
-                <button type="button"><QrCode size={15} /> {lang === 'zh' ? '扫码演示' : 'QR demo'}</button>
+                <button type="button"><QrCode size={15} /> {lang === 'zh' ? '扫码体验' : 'Scan to try'}</button>
                 {qrDataUrl && (
                   <div className="project-qr">
                     <img src={qrDataUrl} alt={lang === 'zh' ? '在线试用二维码' : 'Demo QR code'} />
@@ -386,15 +381,14 @@ export default function ProjectDetailPage() {
 
         {hasVideo && viewportReady && !isSmallScreen && (
           <div className="project-hero-media" id="video-section">
-            {!mediaFailed ? (
-              <video src={project.video_url} controls muted playsInline preload="metadata" onError={() => setMediaFailed(true)} />
-            ) : (
-              <div className="project-media-placeholder">
-                {(() => { const Icon = typeIconMap[localized.project_type] || Monitor; return <Icon size={52} strokeWidth={1} /> })()}
-                <strong>{localized.name}</strong>
-                <span>{lang === 'zh' ? '演示视频暂时无法加载' : 'Demo video is unavailable'}</span>
-              </div>
-            )}
+            <video
+              key={project.video_url}
+              src={project.video_url}
+              controls
+              muted
+              playsInline
+              preload="metadata"
+            />
           </div>
         )}
       </section>

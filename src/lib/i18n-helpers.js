@@ -24,5 +24,14 @@ export function localizeProject(project, lang) {
     demo_url: project.demo_url || '',
     video_url: project.video_url || '',
     project_type: project.project_type || 'pc',
+    recent_focus: Boolean(project.recent_focus),
+    createdAt: project.createdAt,
+    capabilities: (project.capabilities || []).map(capability => ({
+      id: capability.id,
+      title: localizedField(capability, 'title', lang),
+      description: localizedField(capability, 'description', lang),
+      icon: capability.icon || 'circle',
+      sortOrder: capability.sortOrder ?? 0,
+    })),
   }
 }
