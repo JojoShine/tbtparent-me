@@ -55,6 +55,17 @@ export function shouldShowProjectCatalogTools(projects, threshold = 15) {
   return projects.length > threshold
 }
 
+export function getProjectSelectionForKey(projectIds, currentId, key) {
+  if (projectIds.length === 0) return null
+  if (key === 'Home') return projectIds[0]
+  if (key === 'End') return projectIds[projectIds.length - 1]
+
+  const currentIndex = Math.max(projectIds.indexOf(currentId), 0)
+  if (key === 'ArrowDown') return projectIds[(currentIndex + 1) % projectIds.length]
+  if (key === 'ArrowUp') return projectIds[(currentIndex - 1 + projectIds.length) % projectIds.length]
+  return currentId
+}
+
 export function selectDefaultProject(projects) {
   return projects.find(project => project.recent_focus) || projects[0] || null
 }

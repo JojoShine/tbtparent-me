@@ -14,6 +14,8 @@ import {
   Workflow,
   QrCode,
   Search,
+  Check,
+  ChevronDown,
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useLang } from '@/hooks/useLang'
@@ -24,6 +26,7 @@ import {
   getProjectYear,
   getProjectYearCounts,
   getInitialProjectYear,
+  getProjectSelectionForKey,
   getYearOptions,
   isProjectShowcaseStyleReady,
   selectDefaultProject,
@@ -79,6 +82,238 @@ function ProjectShowcaseLoading({ lang }) {
       >
         {lang === 'zh' ? '正在加载作品…' : 'LOADING WORKS…'}
       </span>
+    </div>
+  )
+}
+
+function MobileProjectSelector({ projects, selectedProject, lang, onSelect }) {
+  const rootRef = useRef(null)
+  const triggerRef = useRef(null)
+  const listboxRef = useRef(null)
+  const [open, setOpen] = useState(false)
+  const [highlightedId, setHighlightedId] = useState(selectedProject.id)
+  const projectIds = projects.map(project => project.id)
+  const selectedIndex = projects.findIndex(project => project.id === selectedProject.id)
+  const selectedLocalized = localizeProject(selectedProject, lang)
+  const SelectedTypeIcon = typeIcons[selectedProject.project_type] || Monitor
+
+  const close = (restoreFocus = false) => {
+    setOpen(false)
+    if (restoreFocus) triggerRef.current?.focus()
+  }
+
+  const choose = projectId => {
+    onSelect(projectId)
+    close(true)
+  }
+
+  const moveHighlight = key => {
+    setHighlightedId(currentId => getProjectSelectionForKey(projectIds, currentId, key))
+  }
+
+  useEffect(() => {
+    if (!open) return
+
+    const frameId = window.requestAnimationFrame(() => listboxRef.current?.focus())
+    const handlePointerDown = event => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => {
+      window.cancelAnimationFrame(frameId)
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [open])
+
+  const handleTriggerKeyDown = event => {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
+    event.preventDefault()
+    setOpen(true)
+    setHighlightedId(getProjectSelectionForKey(projectIds, selectedProject.id, event.key))
+  }
+
+  const handleListKeyDown = event => {
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault()
+      moveHighlight(event.key)
+      return
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      choose(highlightedId)
+      return
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      close(true)
+      return
+    }
+    if (event.key === 'Tab') close()
+  }
+
+  return (
+    <div ref={rootRef} className={`projects-mobile-selector ${open ? 'is-open' : ''}`}>
+      <span className="projects-mobile-selector-label">{lang === 'zh' ? '选择作品' : 'Select work'}</span>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="projects-mobile-selector-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls="projects-mobile-listbox"
+        onClick={() => {
+          setHighlightedId(selectedProject.id)
+          setOpen(current => !current)
+        }}
+        onKeyDown={handleTriggerKeyDown}
+      >
+        <span className="projects-mobile-selector-number">{String(selectedIndex + 1).padStart(2, '0')}</span>
+        <span className="projects-mobile-selector-name">{selectedLocalized.name}</span>
+        <span className="projects-mobile-selector-type">
+          <SelectedTypeIcon size={14} />
+          {typeLabel(selectedProject.project_type, lang)}
+        </span>
+        <span className="projects-mobile-selector-chevron" aria-hidden="true"><ChevronDown size={17} /></span>
+      </button>
+
+      {open && (
+        <div
+          ref={listboxRef}
+          id="projects-mobile-listbox"
+          className="projects-mobile-selector-listbox"
+          role="listbox"
+          tabIndex={-1}
+          aria-label={lang === 'zh' ? '作品列表' : 'Works list'}
+          aria-activedescendant={`projects-mobile-option-${highlightedId}`}
+          onKeyDown={handleListKeyDown}
+        >
+          {projects.map((project, index) => {
+            const localized = localizeProject(project, lang)
+            const TypeIcon = typeIcons[project.project_type] || Monitor
+            const selected = project.id === selectedProject.id
+            const highlighted = project.id === highlightedId
+
+            return (
+              <button
+                key={project.id}
+                id={`projects-mobile-option-${project.id}`}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                className={`projects-mobile-selector-option ${selected ? 'is-selected' : ''} ${highlighted ? 'is-highlighted' : ''}`}
+                onPointerMove={() => setHighlightedId(project.id)}
+                onClick={() => choose(project.id)}
+              >
+                <span className="projects-mobile-selector-number">{String(index + 1).padStart(2, '0')}</span>
+                <span className="projects-mobile-selector-name">{localized.name}</span>
+                <span className="projects-mobile-selector-type"><TypeIcon size={13} />{typeLabel(project.project_type, lang)}</span>
+                <span className="projects-mobile-selector-check" aria-hidden="true"><Check size={16} /></span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      <style jsx>{`
+        .projects-mobile-selector { display: none; }
+
+        @media (max-width: 760px) {
+          .projects-mobile-selector {
+            position: relative;
+            z-index: 8;
+            display: grid;
+            gap: 8px;
+            margin-bottom: 12px;
+          }
+          .projects-mobile-selector-label {
+            color: var(--muted);
+            font: 0.68rem/1.3 monospace;
+          }
+          .projects-mobile-selector-trigger,
+          .projects-mobile-selector-option {
+            display: grid;
+            grid-template-columns: 34px minmax(0, 1fr) auto 20px;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+            border: 0;
+            color: var(--muted);
+            background: var(--bg);
+            font-family: monospace;
+            text-align: left;
+            cursor: pointer;
+          }
+          .projects-mobile-selector-trigger {
+            min-height: 52px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+          }
+          .projects-mobile-selector.is-open .projects-mobile-selector-trigger {
+            border-color: color-mix(in srgb, var(--fg) 62%, var(--border));
+          }
+          .projects-mobile-selector-trigger:focus-visible,
+          .projects-mobile-selector-listbox:focus-visible {
+            outline: 2px solid var(--fg);
+            outline-offset: 3px;
+          }
+          .projects-mobile-selector-trigger:active { transform: scale(0.99); }
+          .projects-mobile-selector-number {
+            color: var(--muted);
+            font-size: 0.72rem;
+          }
+          .projects-mobile-selector-name {
+            overflow: hidden;
+            color: var(--fg);
+            font-size: 0.86rem;
+            font-weight: 600;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .projects-mobile-selector-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            white-space: nowrap;
+          }
+          .projects-mobile-selector-chevron { transition: transform 160ms ease; }
+          .projects-mobile-selector.is-open .projects-mobile-selector-chevron { transform: rotate(180deg); }
+          .projects-mobile-selector-listbox {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            left: 0;
+            z-index: 9;
+            overflow-y: auto;
+            max-height: min(340px, 50dvh);
+            border: 1px solid color-mix(in srgb, var(--fg) 38%, var(--border));
+            background: var(--bg);
+            box-shadow: 0 18px 44px color-mix(in srgb, var(--fg) 14%, transparent);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+          }
+          .projects-mobile-selector-option {
+            min-height: 52px;
+            padding: 0 14px;
+            border-bottom: 1px solid var(--border);
+          }
+          .projects-mobile-selector-option:last-child { border-bottom: 0; }
+          .projects-mobile-selector-option.is-highlighted {
+            color: var(--fg);
+            background: color-mix(in srgb, var(--fg) 5%, var(--bg));
+          }
+          .projects-mobile-selector-option:active { transform: scale(0.99); }
+          .projects-mobile-selector-check {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            color: var(--fg);
+          }
+          .projects-mobile-selector-option.is-selected .projects-mobile-selector-check { opacity: 1; }
+        }
+      `}</style>
     </div>
   )
 }
@@ -203,26 +438,16 @@ export default function ProjectsClient({ projects }) {
 
           {selectedProject ? (
             <>
-              <label className="projects-mobile-selector">
-                <span>{lang === 'zh' ? '选择作品' : 'Select work'}</span>
-                <select
-                  value={selectedProject.id}
-                  onChange={event => {
-                    setSelectedId(Number(event.target.value))
-                    setQrRequestedId(null)
-                    setQrCode(null)
-                  }}
-                >
-                  {visibleProjects.map((project, index) => {
-                    const localized = localizeProject(project, lang)
-                    return (
-                      <option key={project.id} value={project.id}>
-                        {String(index + 1).padStart(2, '0')} · {localized.name} · {typeLabel(project.project_type, lang)}
-                      </option>
-                    )
-                  })}
-                </select>
-              </label>
+              <MobileProjectSelector
+                projects={visibleProjects}
+                selectedProject={selectedProject}
+                lang={lang}
+                onSelect={projectId => {
+                  setSelectedId(projectId)
+                  setQrRequestedId(null)
+                  setQrCode(null)
+                }}
+              />
               <section className="projects-master-detail">
           <div className="projects-index" aria-label={lang === 'zh' ? '作品列表' : 'Works list'}>
             {visibleProjects.map((project, index) => {
@@ -448,7 +673,6 @@ export default function ProjectsClient({ projects }) {
         }
         .projects-type-filter button:hover,
         .projects-type-filter button.is-active { border-color: var(--fg); color: var(--fg); }
-        .projects-mobile-selector { display: none; }
         .projects-master-detail {
           display: grid;
           grid-template-columns: minmax(390px, 36%) minmax(0, 64%);
@@ -688,23 +912,6 @@ export default function ProjectsClient({ projects }) {
             width: calc(100vw - 2.5rem);
           }
           .projects-type-filter button { flex: 0 0 auto; min-height: 42px; }
-          .projects-mobile-selector {
-            display: grid;
-            gap: 8px;
-            margin-bottom: 12px;
-            color: var(--muted);
-            font: 0.68rem/1.3 monospace;
-          }
-          .projects-mobile-selector select {
-            width: 100%;
-            min-height: 48px;
-            padding: 0 14px;
-            border: 1px solid var(--border);
-            border-radius: 0;
-            color: var(--fg);
-            background: var(--bg);
-            font: 0.78rem/1 monospace;
-          }
           .projects-master-detail {
             display: block;
             height: auto;

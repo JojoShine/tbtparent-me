@@ -145,3 +145,18 @@ test('year counts and catalog tool threshold support larger project collections'
   assert.equal(projectShowcase.shouldShowProjectCatalogTools(new Array(15)), false)
   assert.equal(projectShowcase.shouldShowProjectCatalogTools(new Array(16)), true)
 })
+
+test('mobile project selector keyboard navigation moves and wraps across projects', () => {
+  assert.equal(
+    typeof projectShowcase.getProjectSelectionForKey,
+    'function',
+    'project selector keyboard helper must exist',
+  )
+
+  const projectIds = [11, 22, 33]
+  assert.equal(projectShowcase.getProjectSelectionForKey(projectIds, 22, 'ArrowDown'), 33)
+  assert.equal(projectShowcase.getProjectSelectionForKey(projectIds, 33, 'ArrowDown'), 11)
+  assert.equal(projectShowcase.getProjectSelectionForKey(projectIds, 11, 'ArrowUp'), 33)
+  assert.equal(projectShowcase.getProjectSelectionForKey(projectIds, 22, 'Home'), 11)
+  assert.equal(projectShowcase.getProjectSelectionForKey(projectIds, 22, 'End'), 33)
+})
