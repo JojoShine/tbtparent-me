@@ -644,9 +644,6 @@ export default function ProjectDetailPage() {
           white-space: nowrap;
         }
         .project-media-placeholder span { font: 0.72rem/1.4 monospace; }
-        .project-detail-page .cat-duty {
-          display: none;
-        }
         .project-content {
           width: 100%;
           max-width: none;
