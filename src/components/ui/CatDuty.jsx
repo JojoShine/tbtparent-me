@@ -114,7 +114,7 @@ function getDayOfYear() {
 function getDutyCat() {
   const now = new Date()
   const day = getDayOfYear()
-  const catIndex = day % cats.length
+  const catIndex = 1
   const cat = cats[catIndex]
   const quoteIndex = Math.floor(day / cats.length) % cat.quotes.length
   const motionClass = getCatMotionClass(cat.name)
