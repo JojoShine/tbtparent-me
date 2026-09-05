@@ -704,7 +704,7 @@ export default function ProjectDetailPage() {
           .project-layout {
             overflow-x: hidden;
             max-width: 100vw;
-            padding: 0 16px;
+            padding: 0;
             gap: 0;
           }
           .project-main {

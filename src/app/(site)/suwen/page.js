@@ -14,8 +14,7 @@ const fadeUp = {
 export default function SuwenPage() {
   return (
     <motion.div
-      className="max-w-4xl pb-8 md:pb-20"
-      style={{ margin: '0 auto' }}
+      className="site-page-reading pb-8 md:pb-20"
       initial="initial"
       animate="animate"
       variants={fadeUp}

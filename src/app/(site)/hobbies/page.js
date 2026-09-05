@@ -71,7 +71,7 @@ export default function HobbiesPage() {
 
   if (!loaded) {
     return (
-      <div className="max-w-4xl pb-8 md:pb-20" style={{ margin: '0 auto' }}>
+      <div className="site-page-reading pb-8 md:pb-20">
         <p style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>Loading...</p>
       </div>
     )
@@ -79,7 +79,7 @@ export default function HobbiesPage() {
 
   if (!hasContent) {
     return (
-      <div className="max-w-4xl pb-8 md:pb-20" style={{ margin: '0 auto' }}>
+      <div className="site-page-reading pb-8 md:pb-20">
         <h1 className="text-3xl md:text-4xl font-mono font-bold" style={{ color: 'var(--fg)', marginBottom: '16px' }}>
           {lang === 'zh' ? '书影' : 'Library'}
         </h1>
@@ -92,8 +92,7 @@ export default function HobbiesPage() {
 
   return (
     <motion.div
-      className="max-w-4xl pb-8 md:pb-20"
-      style={{ margin: '0 auto' }}
+      className="site-page-reading pb-8 md:pb-20"
       variants={stagger}
       initial="initial"
       animate="animate"

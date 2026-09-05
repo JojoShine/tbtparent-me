@@ -79,8 +79,7 @@ export default function HomeClient({ home, socialLinks, projects }) {
 
   return (
     <motion.div
-      className="max-w-3xl pb-8 md:pb-20"
-      style={{ margin: '0 auto' }}
+      className="site-page-reading pb-8 md:pb-20"
       variants={stagger}
       initial="initial"
       animate="animate"
@@ -230,4 +229,3 @@ export default function HomeClient({ home, socialLinks, projects }) {
     </motion.div>
   )
 }
-

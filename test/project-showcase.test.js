@@ -113,6 +113,18 @@ test('mobile projects use QR on desktop and direct links on mobile', () => {
   assert.equal(projectShowcase.getProjectTrialMode('dashboard', true), 'link')
 })
 
+test('archived projects expose a localized demo badge label', () => {
+  assert.equal(
+    typeof projectShowcase.getProjectArchivedLabel,
+    'function',
+    'archived project label helper must exist',
+  )
+
+  assert.equal(projectShowcase.getProjectArchivedLabel(true, 'zh'), '已下架')
+  assert.equal(projectShowcase.getProjectArchivedLabel(true, 'en'), 'Discontinued')
+  assert.equal(projectShowcase.getProjectArchivedLabel(false, 'zh'), '')
+})
+
 test('catalog filtering combines year, carrier, and text without changing source order', () => {
   assert.equal(
     typeof projectShowcase.filterProjectCatalog,

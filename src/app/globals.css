@@ -89,6 +89,29 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 公共站点页面统一框架 */
+.site-main {
+  padding: 1.5rem clamp(1.25rem, 5vw, 8rem) 0;
+}
+
+.site-page-shell {
+  width: 100%;
+  max-width: 75rem;
+  margin: 0 auto;
+}
+
+.site-page-reading {
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+@media (max-width: 767px) {
+  .site-main {
+    padding: 1.5rem 1rem 0;
+  }
+}
+
 /* 全局 placeholder 颜色一致性 */
 input::placeholder,
 textarea::placeholder,

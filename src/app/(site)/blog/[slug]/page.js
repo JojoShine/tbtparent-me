@@ -418,8 +418,9 @@ export default function BlogDetailPage() {
         .blog-layout {
           max-width: 1200px;
           margin: 0 auto;
-          padding: 0 24px;
+          padding: 0;
           display: flex;
+          justify-content: center;
           gap: 32px;
         }
         .blog-toc-area {
@@ -507,13 +508,14 @@ export default function BlogDetailPage() {
         .blog-main {
           flex: 1;
           min-width: 0;
+          max-width: 56rem;
         }
         @media (max-width: 1023px) {
           .blog-toc-area { display: none; }
           .blog-layout {
             overflow-x: hidden;
             max-width: 100vw;
-            padding: 0 16px;
+            padding: 0;
             gap: 0;
           }
           .blog-main {

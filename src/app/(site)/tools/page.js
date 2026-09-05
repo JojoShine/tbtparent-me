@@ -66,8 +66,8 @@ export default function ToolsPage() {
 
   return (
     <motion.div
-      className="max-w-6xl pb-8 md:pb-20"
-      style={{ margin: '0 auto', display: 'flex', flexDirection: 'column' }}
+      className="w-full pb-8 md:pb-20"
+      style={{ display: 'flex', flexDirection: 'column' }}
       variants={stagger}
       initial="initial"
       animate="animate"

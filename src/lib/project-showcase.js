@@ -96,3 +96,8 @@ export function getProjectTrialMode(projectType, isMobileViewport) {
   if (projectType === 'mobile' && !isMobileViewport) return 'qr'
   return 'link'
 }
+
+export function getProjectArchivedLabel(isArchived, lang) {
+  if (!isArchived) return ''
+  return lang === 'zh' ? '已下架' : 'Discontinued'
+}

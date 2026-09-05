@@ -43,7 +43,7 @@ export default function QAPage() {
 
   if (!loaded) {
     return (
-      <div className="max-w-4xl pb-8 md:pb-20" style={{ margin: '0 auto' }}>
+      <div className="site-page-reading pb-8 md:pb-20">
         <p style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>Loading...</p>
       </div>
     )
@@ -51,8 +51,7 @@ export default function QAPage() {
 
   return (
     <motion.div
-      className="max-w-4xl pb-8 md:pb-20"
-      style={{ margin: '0 auto' }}
+      className="site-page-reading pb-8 md:pb-20"
       variants={stagger}
       initial="initial"
       animate="animate"
