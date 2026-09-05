@@ -1,14 +1,22 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { Cake } from 'lucide-react'
 import { Solar } from 'lunar-javascript'
+
+import { getCatActionForHour, getSpriteFrame } from '@/lib/cat-animation'
 
 const cats = [
   {
     name: '雪宝',
-    image: '/assets/cats/雪宝-removebg-preview.png',
-    sprites: ['/videos/cats/xuebao/02.png', '/videos/cats/xuebao/03.png', '/videos/cats/xuebao/04.png', '/videos/cats/xuebao/05.png'],
+    image: '/assets/cats/v2/xuebao.png',
+    actions: [
+      { id: 'wave', src: '/videos/cats/v2/xuebao/wave.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 8 },
+      { id: 'stretch', src: '/videos/cats/v2/xuebao/stretch.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
+      { id: 'hop', src: '/videos/cats/v2/xuebao/hop.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 10 },
+      { id: 'typing', src: '/videos/cats/v2/xuebao/typing.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 9 },
+    ],
     role: '代码猫',
     gender: '♂',
     birthday: '02/18',
@@ -28,8 +36,13 @@ const cats = [
   },
   {
     name: '甜枣',
-    image: '/assets/cats/甜枣-removebg-preview.png',
-    sprites: ['/videos/cats/tianzao/02.png', '/videos/cats/tianzao/03.png', '/videos/cats/tianzao/04.png', '/videos/cats/tianzao/05.png'],
+    image: '/assets/cats/v2/tianzao.png',
+    actions: [
+      { id: 'wave', src: '/videos/cats/v2/tianzao/wave.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 8 },
+      { id: 'idle', src: '/videos/cats/v2/tianzao/idle.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 6 },
+      { id: 'yawn', src: '/videos/cats/v2/tianzao/yawn.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
+      { id: 'tail', src: '/videos/cats/v2/tianzao/tail.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
+    ],
     role: '咖啡陪伴猫',
     gender: '♀',
     birthday: '08/18',
@@ -49,8 +62,13 @@ const cats = [
   },
   {
     name: '三塔',
-    image: '/assets/cats/三塔-removebg-preview.png',
-    sprites: ['/videos/cats/santa/02.png', '/videos/cats/santa/03.png', '/videos/cats/santa/04.png'],
+    image: '/assets/cats/v2/santa.png',
+    actions: [
+      { id: 'gesture', src: '/videos/cats/v2/santa/gesture.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 8 },
+      { id: 'look', src: '/videos/cats/v2/santa/look.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
+      { id: 'yawn', src: '/videos/cats/v2/santa/yawn.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
+      { id: 'sway', src: '/videos/cats/v2/santa/sway.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 9 },
+    ],
     role: '黑客猫',
     gender: '♂',
     birthday: '04/07',
@@ -117,8 +135,7 @@ function getDutyCat() {
   const catIndex = day % cats.length
   const cat = cats[catIndex]
   const quoteIndex = Math.floor(day / cats.length) % cat.quotes.length
-  const twoHourBlock = Math.floor(now.getHours() / 2)
-  const sprite = cat.sprites[twoHourBlock % cat.sprites.length]
+  const action = getCatActionForHour(cat.actions, now.getHours())
   const dailyQuote = dailyQuotes[day % dailyQuotes.length]
 
   // 获取农历和节气
@@ -135,89 +152,94 @@ function getDutyCat() {
   const weekDay = weekDays[now.getDay()]
   const solarStr = `${month}月${date}日 周${weekDay}`
 
-  return { ...cat, quote: cat.quotes[quoteIndex], sprite, dailyQuote, solarStr, lunarStr, jieQi, ganZhi }
+  return { ...cat, quote: cat.quotes[quoteIndex], action, dailyQuote, solarStr, lunarStr, jieQi, ganZhi }
 }
 
-function SpriteAnimation({ src, size = 200, fps = 12 }) {
+function SpriteAnimation({ action, fallbackSrc, size = 200 }) {
   const canvasRef = useRef(null)
+  const [ready, setReady] = useState(false)
+  const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const updatePreference = () => setReduceMotion(media.matches)
+
+    updatePreference()
+    media.addEventListener('change', updatePreference)
+    return () => media.removeEventListener('change', updatePreference)
+  }, [])
+
+  useEffect(() => {
+    if (reduceMotion || !action) return
+
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
-    const img = new Image()
+    const img = new window.Image()
     let animId = null
-    let validFrames = []
+    let active = true
 
-    // 立即清除为透明，避免加载时显示黑色
     ctx.clearRect(0, 0, size, size)
 
     img.onload = () => {
-      const cols = Math.floor(img.width / size)
-      const rows = Math.floor(img.height / size)
-
-      const probe = document.createElement('canvas')
-      probe.width = size
-      probe.height = size
-      const pCtx = probe.getContext('2d')
-
-      for (let i = 0; i < cols * rows; i++) {
-        const col = i % cols
-        const row = Math.floor(i / cols)
-        pCtx.clearRect(0, 0, size, size)
-        pCtx.drawImage(img, col * size, row * size, size, size, 0, 0, size, size)
-        const data = pCtx.getImageData(0, 0, size, size).data
-
-        // 检查四个角是否透明（背景）
-        const corners = [0, (size-1)*4, (size-1)*size*4, (size-1)*size*4 + (size-1)*4]
-        let bgTransparent = true
-        for (const idx of corners) {
-          if (data[idx + 3] > 10) { bgTransparent = false; break }
-        }
-
-        // 检查是否有内容（非透明像素）
-        let hasContent = false
-        for (let j = 3; j < data.length; j += 16) {
-          if (data[j] > 10) { hasContent = true; break }
-        }
-
-        if (bgTransparent && hasContent) validFrames.push({ col, row })
-      }
-
-      if (validFrames.length === 0) return
-
-      const interval = 1000 / fps
+      if (!active) return
+      const interval = 1000 / action.fps
       let lastTime = 0
       let frameIndex = 0
 
+      const drawFrame = () => {
+        const frame = getSpriteFrame(frameIndex, action, img.width, img.height)
+        ctx.clearRect(0, 0, size, size)
+        ctx.drawImage(img, frame.sx, frame.sy, frame.sw, frame.sh, 0, 0, size, size)
+      }
+
+      drawFrame()
+      setReady(true)
+
       const animate = (time) => {
         if (time - lastTime >= interval) {
-          const frame = validFrames[frameIndex % validFrames.length]
-          ctx.clearRect(0, 0, size, size)
-          ctx.drawImage(img, frame.col * size, frame.row * size, size, size, 0, 0, size, size)
           frameIndex++
+          drawFrame()
           lastTime = time
         }
         animId = requestAnimationFrame(animate)
       }
       animId = requestAnimationFrame(animate)
     }
-    img.src = src
+    img.onerror = () => {
+      if (active) setReady(false)
+    }
+    img.src = action.src
 
     return () => {
+      active = false
       if (animId) cancelAnimationFrame(animId)
       img.onload = null
+      img.onerror = null
     }
-  }, [src, size, fps])
+  }, [action, reduceMotion, size])
 
-  return <canvas ref={canvasRef} width={size} height={size} className="cat-image" />
+  return (
+    <div className="cat-animation">
+      <Image src={fallbackSrc} alt="" fill sizes="200px" className="cat-image" />
+      {!reduceMotion && action ? (
+        <canvas
+          ref={canvasRef}
+          width={size}
+          height={size}
+          className={`cat-image cat-animation-canvas${ready ? ' is-ready' : ''}`}
+        />
+      ) : null}
+    </div>
+  )
 }
 
 export default function CatDuty() {
   const [cat, setCat] = useState(null)
 
   useEffect(() => {
-    setCat(getDutyCat())
+    const frame = requestAnimationFrame(() => setCat(getDutyCat()))
+    return () => cancelAnimationFrame(frame)
   }, [])
 
   if (!cat) return null
@@ -257,7 +279,7 @@ export default function CatDuty() {
         <span className="cat-thought-dot cat-thought-dot-md" />
         <span className="cat-thought-dot cat-thought-dot-lg" />
       </div>
-      <SpriteAnimation src={cat.sprite} />
+      <SpriteAnimation key={cat.action?.src} action={cat.action} fallbackSrc={cat.image} />
       <style jsx global>{`
         .cat-duty {
           position: fixed;
@@ -269,12 +291,26 @@ export default function CatDuty() {
           align-items: center;
           pointer-events: none;
         }
-        .cat-image {
+        .cat-animation {
+          position: relative;
           width: clamp(150px, 15vw, 200px);
           height: clamp(150px, 15vw, 200px);
-          object-fit: contain;
           pointer-events: auto;
+        }
+        .cat-image {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
           background: transparent;
+        }
+        .cat-animation-canvas {
+          opacity: 0;
+          transition: opacity 120ms ease;
+        }
+        .cat-animation-canvas.is-ready {
+          opacity: 1;
         }
         .cat-thought-dots {
           display: flex;
