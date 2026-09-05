@@ -5,18 +5,17 @@ import Image from 'next/image'
 import { Cake } from 'lucide-react'
 import { Solar } from 'lunar-javascript'
 
-import { getCatActionForHour, getSpriteFrame } from '@/lib/cat-animation'
+import {
+  getSignatureCatAction,
+  getSpriteFrame,
+  getSpriteFrameIndex,
+  shouldShowCatFallback,
+} from '@/lib/cat-animation'
 
 const cats = [
   {
     name: '雪宝',
     image: '/assets/cats/v2/xuebao.png',
-    actions: [
-      { id: 'wave', src: '/videos/cats/v2/xuebao/wave.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 8 },
-      { id: 'stretch', src: '/videos/cats/v2/xuebao/stretch.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
-      { id: 'hop', src: '/videos/cats/v2/xuebao/hop.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 10 },
-      { id: 'typing', src: '/videos/cats/v2/xuebao/typing.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 9 },
-    ],
     role: '代码猫',
     gender: '♂',
     birthday: '02/18',
@@ -37,12 +36,6 @@ const cats = [
   {
     name: '甜枣',
     image: '/assets/cats/v2/tianzao.png',
-    actions: [
-      { id: 'wave', src: '/videos/cats/v2/tianzao/wave.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 8 },
-      { id: 'idle', src: '/videos/cats/v2/tianzao/idle.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 6 },
-      { id: 'yawn', src: '/videos/cats/v2/tianzao/yawn.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
-      { id: 'tail', src: '/videos/cats/v2/tianzao/tail.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
-    ],
     role: '咖啡陪伴猫',
     gender: '♀',
     birthday: '08/18',
@@ -63,12 +56,6 @@ const cats = [
   {
     name: '三塔',
     image: '/assets/cats/v2/santa.png',
-    actions: [
-      { id: 'gesture', src: '/videos/cats/v2/santa/gesture.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 8 },
-      { id: 'look', src: '/videos/cats/v2/santa/look.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
-      { id: 'yawn', src: '/videos/cats/v2/santa/yawn.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 7 },
-      { id: 'sway', src: '/videos/cats/v2/santa/sway.png?v=2', columns: 4, rows: 4, frameCount: 16, fps: 9 },
-    ],
     role: '黑客猫',
     gender: '♂',
     birthday: '04/07',
@@ -135,7 +122,7 @@ function getDutyCat() {
   const catIndex = day % cats.length
   const cat = cats[catIndex]
   const quoteIndex = Math.floor(day / cats.length) % cat.quotes.length
-  const action = getCatActionForHour(cat.actions, now.getHours())
+  const action = getSignatureCatAction(cat.name)
   const dailyQuote = dailyQuotes[day % dailyQuotes.length]
 
   // 获取农历和节气
@@ -159,6 +146,7 @@ function SpriteAnimation({ action, fallbackSrc, size = 200 }) {
   const canvasRef = useRef(null)
   const [ready, setReady] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
+  const showFallback = shouldShowCatFallback(ready, reduceMotion, action)
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -183,8 +171,7 @@ function SpriteAnimation({ action, fallbackSrc, size = 200 }) {
 
     img.onload = () => {
       if (!active) return
-      const interval = 1000 / action.fps
-      let lastTime = 0
+      let startTime = null
       let frameIndex = 0
 
       const drawFrame = () => {
@@ -197,10 +184,15 @@ function SpriteAnimation({ action, fallbackSrc, size = 200 }) {
       setReady(true)
 
       const animate = (time) => {
-        if (time - lastTime >= interval) {
-          frameIndex++
+        if (startTime === null) startTime = time
+        const nextFrameIndex = getSpriteFrameIndex(
+          time - startTime,
+          action.fps,
+          action.frameCount,
+        )
+        if (nextFrameIndex !== frameIndex) {
+          frameIndex = nextFrameIndex
           drawFrame()
-          lastTime = time
         }
         animId = requestAnimationFrame(animate)
       }
@@ -221,7 +213,9 @@ function SpriteAnimation({ action, fallbackSrc, size = 200 }) {
 
   return (
     <div className="cat-animation">
-      <Image src={fallbackSrc} alt="" fill sizes="200px" className="cat-image" />
+      {showFallback ? (
+        <Image src={fallbackSrc} alt="" fill sizes="200px" className="cat-image" />
+      ) : null}
       {!reduceMotion && action ? (
         <canvas
           ref={canvasRef}

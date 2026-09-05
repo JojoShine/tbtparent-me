@@ -1,21 +1,25 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { getCatActionForHour, getSpriteFrame } from '../src/lib/cat-animation.js'
+import * as catAnimation from '../src/lib/cat-animation.js'
 
-const actions = [
-  { id: 'wave' },
-  { id: 'idle' },
-  { id: 'yawn' },
-  { id: 'tail' },
-]
+const { getSpriteFrame, getSpriteFrameIndex, shouldShowCatFallback } = catAnimation
 
-test('cat actions rotate every two hours and wrap after the last action', () => {
-  assert.equal(getCatActionForHour(actions, 0).id, 'wave')
-  assert.equal(getCatActionForHour(actions, 1).id, 'wave')
-  assert.equal(getCatActionForHour(actions, 2).id, 'idle')
-  assert.equal(getCatActionForHour(actions, 8).id, 'wave')
-  assert.equal(getCatActionForHour(actions, 23).id, 'tail')
+test('each cat always uses one signature looping action', () => {
+  assert.equal(typeof catAnimation.getSignatureCatAction, 'function')
+  const { getSignatureCatAction } = catAnimation
+
+  assert.deepEqual(getSignatureCatAction('雪宝'), {
+    id: 'typing',
+    src: '/videos/cats/v2/xuebao/typing.png?v=3',
+    columns: 4,
+    rows: 4,
+    frameCount: 16,
+    fps: 12,
+  })
+  assert.equal(getSignatureCatAction('甜枣').id, 'tail')
+  assert.equal(getSignatureCatAction('三塔').id, 'look')
+  assert.equal(getSignatureCatAction('不存在的小猫'), null)
 })
 
 test('sprite frames map left-to-right then top-to-bottom', () => {
@@ -47,6 +51,18 @@ test('sprite frames map left-to-right then top-to-bottom', () => {
   })
 })
 
-test('empty action collections return no selected action', () => {
-  assert.equal(getCatActionForHour([], 12), null)
+test('static fallback disappears after the first animation frame is ready', () => {
+  const action = { id: 'wave' }
+
+  assert.equal(shouldShowCatFallback(false, false, action), true)
+  assert.equal(shouldShowCatFallback(true, false, action), false)
+  assert.equal(shouldShowCatFallback(true, true, action), true)
+  assert.equal(shouldShowCatFallback(true, false, null), true)
+})
+
+test('animation frame index is derived from elapsed time', () => {
+  assert.equal(getSpriteFrameIndex(0, 12, 16), 0)
+  assert.equal(getSpriteFrameIndex(84, 12, 16), 1)
+  assert.equal(getSpriteFrameIndex(500, 12, 16), 6)
+  assert.equal(getSpriteFrameIndex(1400, 12, 16), 0)
 })
