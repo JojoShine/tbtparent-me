@@ -1,16 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Cake } from 'lucide-react'
 import { Solar } from 'lunar-javascript'
 
-import {
-  getSignatureCatAction,
-  getSpriteFrame,
-  getSpriteFrameIndex,
-  shouldShowCatFallback,
-} from '@/lib/cat-animation'
+import { getCatMotionClass } from '@/lib/cat-animation'
 
 const cats = [
   {
@@ -122,7 +117,7 @@ function getDutyCat() {
   const catIndex = day % cats.length
   const cat = cats[catIndex]
   const quoteIndex = Math.floor(day / cats.length) % cat.quotes.length
-  const action = getSignatureCatAction(cat.name)
+  const motionClass = getCatMotionClass(cat.name)
   const dailyQuote = dailyQuotes[day % dailyQuotes.length]
 
   // 获取农历和节气
@@ -139,93 +134,7 @@ function getDutyCat() {
   const weekDay = weekDays[now.getDay()]
   const solarStr = `${month}月${date}日 周${weekDay}`
 
-  return { ...cat, quote: cat.quotes[quoteIndex], action, dailyQuote, solarStr, lunarStr, jieQi, ganZhi }
-}
-
-function SpriteAnimation({ action, fallbackSrc, size = 200 }) {
-  const canvasRef = useRef(null)
-  const [ready, setReady] = useState(false)
-  const [reduceMotion, setReduceMotion] = useState(false)
-  const showFallback = shouldShowCatFallback(ready, reduceMotion, action)
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const updatePreference = () => setReduceMotion(media.matches)
-
-    updatePreference()
-    media.addEventListener('change', updatePreference)
-    return () => media.removeEventListener('change', updatePreference)
-  }, [])
-
-  useEffect(() => {
-    if (reduceMotion || !action) return
-
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const img = new window.Image()
-    let animId = null
-    let active = true
-
-    ctx.clearRect(0, 0, size, size)
-
-    img.onload = () => {
-      if (!active) return
-      let startTime = null
-      let frameIndex = 0
-
-      const drawFrame = () => {
-        const frame = getSpriteFrame(frameIndex, action, img.width, img.height)
-        ctx.clearRect(0, 0, size, size)
-        ctx.drawImage(img, frame.sx, frame.sy, frame.sw, frame.sh, 0, 0, size, size)
-      }
-
-      drawFrame()
-      setReady(true)
-
-      const animate = (time) => {
-        if (startTime === null) startTime = time
-        const nextFrameIndex = getSpriteFrameIndex(
-          time - startTime,
-          action.fps,
-          action.frameCount,
-        )
-        if (nextFrameIndex !== frameIndex) {
-          frameIndex = nextFrameIndex
-          drawFrame()
-        }
-        animId = requestAnimationFrame(animate)
-      }
-      animId = requestAnimationFrame(animate)
-    }
-    img.onerror = () => {
-      if (active) setReady(false)
-    }
-    img.src = action.src
-
-    return () => {
-      active = false
-      if (animId) cancelAnimationFrame(animId)
-      img.onload = null
-      img.onerror = null
-    }
-  }, [action, reduceMotion, size])
-
-  return (
-    <div className="cat-animation">
-      {showFallback ? (
-        <Image src={fallbackSrc} alt="" fill sizes="200px" className="cat-image" />
-      ) : null}
-      {!reduceMotion && action ? (
-        <canvas
-          ref={canvasRef}
-          width={size}
-          height={size}
-          className={`cat-image cat-animation-canvas${ready ? ' is-ready' : ''}`}
-        />
-      ) : null}
-    </div>
-  )
+  return { ...cat, quote: cat.quotes[quoteIndex], motionClass, dailyQuote, solarStr, lunarStr, jieQi, ganZhi }
 }
 
 export default function CatDuty() {
@@ -273,7 +182,9 @@ export default function CatDuty() {
         <span className="cat-thought-dot cat-thought-dot-md" />
         <span className="cat-thought-dot cat-thought-dot-lg" />
       </div>
-      <SpriteAnimation key={cat.action?.src} action={cat.action} fallbackSrc={cat.image} />
+      <div className={`cat-animation ${cat.motionClass}`}>
+        <Image src={cat.image} alt="" fill sizes="200px" className="cat-image" />
+      </div>
       <style jsx global>{`
         .cat-duty {
           position: fixed;
@@ -290,6 +201,8 @@ export default function CatDuty() {
           width: clamp(150px, 15vw, 200px);
           height: clamp(150px, 15vw, 200px);
           pointer-events: auto;
+          transform-origin: 50% 100%;
+          will-change: transform;
         }
         .cat-image {
           position: absolute;
@@ -299,12 +212,27 @@ export default function CatDuty() {
           object-fit: contain;
           background: transparent;
         }
-        .cat-animation-canvas {
-          opacity: 0;
-          transition: opacity 120ms ease;
+        .cat-motion-work {
+          animation: cat-work 1.8s ease-in-out infinite;
         }
-        .cat-animation-canvas.is-ready {
-          opacity: 1;
+        .cat-motion-gentle {
+          animation: cat-gentle 3.2s ease-in-out infinite;
+        }
+        .cat-motion-watch {
+          animation: cat-watch 2.8s ease-in-out infinite;
+        }
+        @keyframes cat-work {
+          0%, 100% { transform: translate3d(0, 0, 0); }
+          35% { transform: translate3d(0, 1px, 0); }
+          70% { transform: translate3d(0, 0, 0); }
+        }
+        @keyframes cat-gentle {
+          0%, 100% { transform: translate3d(0, 0, 0); }
+          50% { transform: translate3d(1px, 0, 0); }
+        }
+        @keyframes cat-watch {
+          0%, 30%, 100% { transform: translate3d(0, 0, 0); }
+          48%, 62% { transform: translate3d(1px, 0, 0); }
         }
         .cat-thought-dots {
           display: flex;
@@ -544,6 +472,9 @@ export default function CatDuty() {
         }
         @media (max-width: 767px) {
           .cat-duty { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .cat-animation { animation: none; }
         }
       `}</style>
     </div>
