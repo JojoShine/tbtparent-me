@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Cake } from 'lucide-react'
 import { Solar } from 'lunar-javascript'
 
-import { getCatMotionClass } from '@/lib/cat-animation'
+import { getCatMotionClass, getDutyCatIndex } from '@/lib/cat-animation'
 
 const cats = [
   {
@@ -114,7 +114,7 @@ function getDayOfYear() {
 function getDutyCat() {
   const now = new Date()
   const day = getDayOfYear()
-  const catIndex = 1
+  const catIndex = getDutyCatIndex(day, cats.length)
   const cat = cats[catIndex]
   const quoteIndex = Math.floor(day / cats.length) % cat.quotes.length
   const motionClass = getCatMotionClass(cat.name)

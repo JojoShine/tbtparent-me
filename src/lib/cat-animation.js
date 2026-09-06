@@ -7,3 +7,7 @@ const catMotionClasses = {
 export function getCatMotionClass(catName) {
   return catMotionClasses[catName] ?? ''
 }
+
+export function getDutyCatIndex(day, catCount) {
+  return day % catCount
+}
