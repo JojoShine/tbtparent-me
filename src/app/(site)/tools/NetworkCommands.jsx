@@ -174,7 +174,6 @@ export default function NetworkCommands() {
             fontFamily: 'monospace',
             fontSize: '0.85rem',
             cursor: 'pointer',
-            transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
           }}
         >
           {lang === 'zh' ? '华为' : 'Huawei'}
@@ -190,7 +189,6 @@ export default function NetworkCommands() {
             fontFamily: 'monospace',
             fontSize: '0.85rem',
             cursor: 'pointer',
-            transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
           }}
         >
           {lang === 'zh' ? '华三' : 'H3C'}

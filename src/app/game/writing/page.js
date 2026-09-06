@@ -302,7 +302,6 @@ export default function WritingGame() {
               backgroundColor: selectedCategory === cat.key ? 'var(--fg)' : 'transparent',
               color: selectedCategory === cat.key ? 'var(--bg)' : 'var(--muted)',
               cursor: 'pointer',
-              transition: 'all 0.15s ease',
             }}
           >
             {lang === 'zh' ? cat.label_zh : cat.label_en}

@@ -183,7 +183,7 @@ export default function CatDuty() {
         <span className="cat-thought-dot cat-thought-dot-lg" />
       </div>
       <div className={`cat-animation ${cat.motionClass}`}>
-        <Image src={cat.image} alt="" fill sizes="200px" className="cat-image" />
+        <Image src={cat.image} alt="" fill sizes="200px" loading="eager" className="cat-image" />
       </div>
       <style jsx global>{`
         .cat-duty {
@@ -470,7 +470,7 @@ export default function CatDuty() {
           align-items: center;
           gap: 3px;
         }
-        @media (max-width: 767px) {
+        @media (max-width: 1279px) {
           .cat-duty { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {

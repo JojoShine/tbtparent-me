@@ -36,7 +36,7 @@ export default function Navbar() {
         <Logo />
         
         {/* 桌面端导航 */}
-        <div className="hidden md:flex gap-8 items-center">
+        <div className="hidden xl:flex gap-8 items-center shrink-0">
           {navItems.map(item => (
             <Link
               key={item.path}
@@ -98,7 +98,7 @@ export default function Navbar() {
 
         {/* 移动端汉堡菜单按钮 */}
         <button
-          className="md:hidden p-2 -mr-2"
+          className="xl:hidden p-2 -mr-2"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="菜单"
           style={{ color: 'var(--fg)' }}
@@ -110,8 +110,8 @@ export default function Navbar() {
       {/* 移动端菜单 */}
       {menuOpen && (
         <div
-          className="md:hidden fixed inset-0 z-40"
-          style={{ backgroundColor: 'var(--bg)', top: '60px' }}
+          className="mobile-nav-panel xl:hidden fixed inset-0 z-40"
+          style={{ backgroundColor: 'var(--bg)' }}
         >
           <div className="flex flex-col" style={{ padding: '24px 24px 0' }}>
             {navItems.map(item => (

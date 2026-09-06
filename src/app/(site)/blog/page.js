@@ -102,7 +102,6 @@ export default function BlogPage() {
                 color: !activeTag ? 'var(--bg)' : 'var(--muted)',
                 borderRadius: '2px',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease',
               }}
             >
               {lang === 'zh' ? '全部' : 'All'}
@@ -121,7 +120,6 @@ export default function BlogPage() {
                   color: activeTag === tag ? 'var(--bg)' : 'var(--muted)',
                   borderRadius: '2px',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
                 }}
               >
                 {tag}

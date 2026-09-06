@@ -2,6 +2,7 @@
 
 import { useTheme } from '@/hooks/useTheme'
 import { Moon, Sun } from 'lucide-react'
+import { flushSync } from 'react-dom'
 
 export default function ThemeToggle() {
   const { theme, toggleTheme, mounted } = useTheme()
@@ -13,7 +14,9 @@ export default function ThemeToggle() {
     }
 
     document.startViewTransition(() => {
-      toggleTheme()
+      flushSync(() => {
+        toggleTheme()
+      })
     })
   }
 

@@ -192,7 +192,6 @@ export default function ImageCompressor() {
                     fontFamily: 'monospace',
                     fontSize: '0.75rem',
                     cursor: 'pointer',
-                    transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
                   }}
                 >
                   {option.label}
@@ -220,7 +219,6 @@ export default function ImageCompressor() {
                     fontFamily: 'monospace',
                     fontSize: '0.75rem',
                     cursor: 'pointer',
-                    transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
                   }}
                 >
                   {option.label}

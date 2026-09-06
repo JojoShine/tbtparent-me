@@ -8,7 +8,6 @@
    ============================================ */
 
 :root {
-  color-scheme: light;
   /* Light Mode - 极简白底 */
   --bg: #ffffff;
   --fg: #000000;
@@ -58,8 +57,16 @@
   --cell-empty-bg: rgba(255, 255, 255, 0.03);
 }
 
-/* 强制确保主题切换时颜色正确应用 */
-html.dark {
+/* 原生表单控件跟随主题，但不切换根画布的 color-scheme */
+input,
+select,
+textarea {
+  color-scheme: light;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
   color-scheme: dark;
 }
 
@@ -81,8 +88,12 @@ body::-webkit-scrollbar,
   display: none; /* Chrome/Safari/Edge */
 }
 
+html,
 body {
   background-color: var(--bg);
+}
+
+body {
   color: var(--fg);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -128,14 +139,24 @@ select::placeholder {
 }
 
 /* View Transitions API - 主题切换动画 */
+::view-transition-group(root) {
+  animation: none;
+}
+
+::view-transition-image-pair(root) {
+  isolation: isolate;
+}
+
 ::view-transition-old(root) {
   animation: none;
   z-index: 1;
+  mix-blend-mode: normal;
 }
 
 ::view-transition-new(root) {
-  animation: theme-expand 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  z-index: 9999;
+  animation: theme-expand 1.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+  z-index: 2;
+  mix-blend-mode: normal;
 }
 
 @keyframes theme-expand {
@@ -163,9 +184,17 @@ select::placeholder {
   padding: 1rem 1.5rem;
 }
 
+.mobile-nav-panel {
+  top: 64px;
+}
+
 @media (min-width: 768px) {
   .navbar-padding {
     padding: 1.5rem 5rem;
+  }
+
+  .mobile-nav-panel {
+    top: 80px;
   }
 }
 

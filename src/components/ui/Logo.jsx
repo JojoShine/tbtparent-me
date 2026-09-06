@@ -5,7 +5,7 @@ import Image from 'next/image'
 
 export default function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2.5 hover:opacity-70 transition-opacity">
+    <Link href="/" className="flex items-center gap-2.5 hover:opacity-70 transition-opacity shrink-0 whitespace-nowrap">
       {/* Logo 图片 */}
       <Image
         src="/assets/logo.jpg"

@@ -123,7 +123,6 @@ export default function HobbiesPage() {
                 cursor: 'pointer',
                 fontFamily: 'monospace',
                 fontSize: '0.85rem',
-                transition: 'all 0.15s ease',
               }}
             >
               {cat.label}

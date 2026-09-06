@@ -6,11 +6,11 @@ import { useSyncExternalStore, useEffect, useState } from 'react'
 let currentTheme = typeof window !== 'undefined'
   ? (localStorage.getItem('theme') || 'dark')
   : 'dark'
-let listener = null
+const listeners = new Set()
 
 function subscribe(cb) {
-  listener = cb
-  return () => { listener = null }
+  listeners.add(cb)
+  return () => { listeners.delete(cb) }
 }
 
 function getSnapshot() {
@@ -40,7 +40,7 @@ export function useTheme() {
     currentTheme = currentTheme === 'light' ? 'dark' : 'light'
     localStorage.setItem('theme', currentTheme)
     document.documentElement.classList.toggle('dark', currentTheme === 'dark')
-    if (listener) listener()
+    listeners.forEach(listener => listener())
   }
 
   return { theme, toggleTheme, mounted }
