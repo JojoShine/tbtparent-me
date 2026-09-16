@@ -252,7 +252,6 @@ export default function IdiomGamePage() {
         pinyin: guessPy,
         status,
         feedback,
-        targetPinyin: targetPy, // 保存目标拼音用于对比
         letterMatches: letterMatchesData.matches, // 保存每个字母的匹配情况
         toneMatch: checkToneMatch(guessPy, targetPy), // 保存声调是否匹配
       })
@@ -773,7 +772,6 @@ export default function IdiomGamePage() {
                         
                         {/* 汉字 */}
                         <div
-                          title={`${lang === 'zh' ? '目标' : 'Target'}: ${charData.targetPinyin}`}
                           className="font-mono text-2xl font-bold"
                           style={{
                             position: 'relative',
@@ -801,7 +799,6 @@ export default function IdiomGamePage() {
                       }}>
                         {(() => {
                           const pinyin = charData.pinyin
-                          const targetPinyin = charData.targetPinyin
                           
                           // 将带声调字符拆分为基础字母 + 声调类型
                           const splitToneChar = (char) => {
@@ -873,29 +870,6 @@ export default function IdiomGamePage() {
                               </>
                             )
                           }
-                          
-                          // 去除声调符号，获取纯字母
-                          const cleanPinyin = pinyin.replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g, (match) => {
-                            const map = { 'ā': 'a', 'á': 'a', 'ǎ': 'a', 'à': 'a', 
-                                         'ē': 'e', 'é': 'e', 'ě': 'e', 'è': 'e',
-                                         'ī': 'i', 'í': 'i', 'ǐ': 'i', 'ì': 'i',
-                                         'ō': 'o', 'ó': 'o', 'ǒ': 'o', 'ò': 'o',
-                                         'ū': 'u', 'ú': 'u', 'ǔ': 'u', 'ù': 'u',
-                                         'ǖ': 'v', 'ǘ': 'v', 'ǚ': 'v', 'ǜ': 'v' }
-                            return map[match] || match
-                          })
-                          const cleanTarget = targetPinyin.replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g, (match) => {
-                            const map = { 'ā': 'a', 'á': 'a', 'ǎ': 'a', 'à': 'a', 
-                                         'ē': 'e', 'é': 'e', 'ě': 'e', 'è': 'e',
-                                         'ī': 'i', 'í': 'i', 'ǐ': 'i', 'ì': 'i',
-                                         'ō': 'o', 'ó': 'o', 'ǒ': 'o', 'ò': 'o',
-                                         'ū': 'u', 'ú': 'u', 'ǔ': 'u', 'ù': 'u',
-                                         'ǖ': 'v', 'ǘ': 'v', 'ǚ': 'v', 'ǜ': 'v' }
-                            return map[match] || match
-                          })
-                          
-                          // 使用保存的声调匹配结果
-                          const isToneCorrect = charData.toneMatch === true
                           
                           return <>{renderPinyin(pinyin, false)}</>
                         })()}
