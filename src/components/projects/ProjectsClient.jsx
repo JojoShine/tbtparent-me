@@ -1,25 +1,17 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Monitor, Play, QrCode, Search, Smartphone } from 'lucide-react'
+import { ArrowUpRight, Cpu, Monitor, QrCode, Search, Smartphone } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useLang } from '@/hooks/useLang'
 import { localizeProject } from '@/lib/i18n-helpers'
-import { filterProjectCatalog, getProjectArchivedLabel, getProjectTrialMode, getProjectYear, isProjectShowcaseStyleReady, shouldShowProjectCatalogTools } from '@/lib/project-showcase'
+import { filterProjectCatalog, getProjectArchivedLabel, getProjectCover, getProjectTrialMode, getProjectTypeLabel, getProjectYear, isFeaturedProject, isProjectShowcaseStyleReady, shouldShowProjectCatalogTools } from '@/lib/project-showcase'
 import EmptyState from '@/components/ui/EmptyState'
 import GithubIcon from '@/components/ui/GithubIcon'
 
-const typeIcons = { mobile: Smartphone, pc: Monitor, dashboard: Monitor }
-
-function typeLabel(type, lang) {
-  const labels = {
-    mobile: { zh: '移动端', en: 'Mobile' },
-    pc: { zh: 'PC 端', en: 'Desktop' },
-    dashboard: { zh: '数据大屏', en: 'Dashboard' },
-  }
-  return labels[type]?.[lang] || labels.pc[lang]
-}
+const typeIcons = { mobile: Smartphone, pc: Monitor, dashboard: Monitor, integrated: Cpu }
 
 function projectState(project, lang) {
   if (project.archived) return lang === 'zh' ? '已下架' : 'Discontinued'
@@ -57,46 +49,31 @@ function ProjectRiverLoading({ lang }) {
   )
 }
 
-function ProjectMedia({ project, lang, active, onPlay, onError }) {
+function ProjectMedia({ project, lang, eager }) {
   const TypeIcon = typeIcons[project.project_type] || Monitor
-  const previewRef = useRef(null)
-  const [nearby, setNearby] = useState(false)
-  useEffect(() => {
-    const element = previewRef.current
-    if (!element || !project.video_url) return
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setNearby(true)
-        observer.disconnect()
-      }
-    }, { rootMargin: '100px' })
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [project.video_url])
+  const cover = getProjectCover(project)
 
-  if (!project.video_url || project.archived) {
+  if (!cover) {
     return (
       <div className="river-project-media river-project-media-static" aria-hidden="true">
         <TypeIcon size={28} strokeWidth={1.25} />
-        <span>{typeLabel(project.project_type, lang)}</span>
+        <span>{getProjectTypeLabel(project.project_type, lang)}</span>
         <strong>{project.name}</strong>
       </div>
     )
   }
 
-  if (active) {
-    return (
-      <div className="river-project-media is-playing">
-        <video src={project.video_url} controls autoPlay muted playsInline preload="metadata" onError={onError} />
-      </div>
-    )
-  }
-
   return (
-    <button ref={previewRef} type="button" className="river-project-media river-project-video-poster" onClick={onPlay} aria-label={`${lang === 'zh' ? '播放演示：' : 'Play demo: '}${project.name}`}>
-      {nearby && <video src={project.video_url} muted playsInline preload="metadata" onLoadedMetadata={event => { event.currentTarget.currentTime = .1 }} onError={onError} aria-hidden="true" />}
-      <span className="river-project-play"><Play size={16} fill="currentColor" />{lang === 'zh' ? '播放演示' : 'Play demo'}</span>
-    </button>
+    <div className="river-project-media river-project-cover">
+      <Image
+        src={cover.src}
+        alt={`${project.name} ${lang === 'zh' ? '项目封面' : 'project cover'}`}
+        width={cover.width}
+        height={cover.height}
+        sizes="(max-width: 760px) calc(100vw - 72px), 468px"
+        loading={eager ? 'eager' : 'lazy'}
+      />
+    </div>
   )
 }
 
@@ -136,32 +113,27 @@ function TrialAction({ project, lang, isMobileViewport, qrCode, qrOpen, onQrOpen
   )
 }
 
-function ProjectEntry({ rawProject, index, lang, isMobileViewport, activeVideoId, failedVideos, onVideo, qrState, onQrOpen }) {
+function ProjectEntry({ rawProject, index, lang, isMobileViewport, qrState, onQrOpen }) {
   const project = localizeProject(rawProject, lang)
   const TypeIcon = typeIcons[project.project_type] || Monitor
-  const videoFailed = failedVideos.has(project.id)
+  const featured = isFeaturedProject(rawProject)
 
   return (
     <article
-      className={`river-project ${index % 2 === 0 ? 'is-left' : 'is-right'} ${project.archived ? 'is-archived' : ''}`}
+      className={`river-project ${index % 2 === 0 ? 'is-left' : 'is-right'} ${project.archived ? 'is-archived' : ''} ${featured ? 'is-featured' : ''}`}
     >
       <div className="river-project-node" aria-hidden="true"><span /></div>
       <span className="river-project-date">{projectDate(project)}</span>
       <div className="river-project-visual">
-        {videoFailed ? (
-          <div className="river-project-media river-project-media-static">
-            <TypeIcon size={28} strokeWidth={1.25} /><span>{lang === 'zh' ? '演示暂不可用' : 'Demo unavailable'}</span><strong>{project.name}</strong>
-          </div>
-        ) : (
-          <ProjectMedia project={project} lang={lang} active={activeVideoId === project.id} onPlay={() => onVideo(project.id)} onError={() => onVideo(project.id, true)} />
-        )}
+        <ProjectMedia project={project} lang={lang} eager={index === 0} />
         {project.archived && <span className="river-project-archived-badge">{getProjectArchivedLabel(true, lang)}</span>}
       </div>
 
       <div className="river-project-content">
+        {featured && <div className="river-project-featured"><span>{lang === 'zh' ? '重点项目' : 'Featured project'}</span></div>}
         <div className="river-project-eyebrow">
           <span>{String(index + 1).padStart(2, '0')}</span>
-          <span><TypeIcon size={13} />{typeLabel(project.project_type, lang)}</span>
+          <span><TypeIcon size={13} />{getProjectTypeLabel(project.project_type, lang)}</span>
           <span className="river-project-status">{projectState(project, lang)}</span>
         </div>
         <h2>{project.name}</h2>
@@ -200,8 +172,6 @@ export default function ProjectsClient({ projects }) {
   const [stylesReady, setStylesReady] = useState(false)
   const [query, setQuery] = useState('')
   const [projectType, setProjectType] = useState('all')
-  const [activeVideoId, setActiveVideoId] = useState(null)
-  const [failedVideos, setFailedVideos] = useState(() => new Set())
   const [isMobileViewport, setIsMobileViewport] = useState(false)
   const [qrRequestedId, setQrRequestedId] = useState(null)
   const [qrCodes, setQrCodes] = useState({})
@@ -258,15 +228,6 @@ export default function ProjectsClient({ projects }) {
     }
   }
 
-  const handleVideo = (projectId, failed = false) => {
-    if (failed) {
-      setFailedVideos(current => new Set(current).add(projectId))
-      setActiveVideoId(null)
-      return
-    }
-    setActiveVideoId(projectId)
-  }
-
   if (projects.length === 0) return <EmptyState message={lang === 'zh' ? '暂无项目' : 'No projects yet'} />
 
   return (
@@ -276,7 +237,7 @@ export default function ProjectsClient({ projects }) {
         <div className="projects-river-tools">
           <label><Search size={15} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder={lang === 'zh' ? '搜索作品' : 'Search projects'} /></label>
           <select value={projectType} onChange={event => setProjectType(event.target.value)} aria-label={lang === 'zh' ? '项目类型' : 'Project type'}>
-            <option value="all">{lang === 'zh' ? '全部类型' : 'All types'}</option><option value="pc">{lang === 'zh' ? 'PC 端' : 'Desktop'}</option><option value="mobile">{lang === 'zh' ? '移动端' : 'Mobile'}</option><option value="dashboard">{lang === 'zh' ? '数据大屏' : 'Dashboard'}</option>
+            <option value="all">{lang === 'zh' ? '全部类型' : 'All types'}</option><option value="pc">{lang === 'zh' ? 'PC 端' : 'Desktop'}</option><option value="mobile">{lang === 'zh' ? '移动端' : 'Mobile'}</option><option value="dashboard">{lang === 'zh' ? '数据大屏' : 'Dashboard'}</option><option value="integrated">{lang === 'zh' ? '软硬一体' : 'Integrated System'}</option>
           </select>
         </div>
         )}
@@ -289,7 +250,7 @@ export default function ProjectsClient({ projects }) {
                 <div className="projects-year-heading"><span>{group.year}</span></div>
                 {group.projects.map(project => {
                   const index = visibleProjects.findIndex(item => item.id === project.id)
-                  return <ProjectEntry key={project.id} rawProject={project} index={index} lang={lang} isMobileViewport={isMobileViewport} activeVideoId={activeVideoId} failedVideos={failedVideos} onVideo={handleVideo} qrState={{ open: qrRequestedId === project.id, code: qrCodes[project.id] }} onQrOpen={openQr} />
+                  return <ProjectEntry key={project.id} rawProject={project} index={index} lang={lang} isMobileViewport={isMobileViewport} qrState={{ open: qrRequestedId === project.id, code: qrCodes[project.id] }} onQrOpen={openQr} />
                 })}
               </section>
             ))}
@@ -317,14 +278,11 @@ export default function ProjectsClient({ projects }) {
         .river-project.is-left .river-project-visual { padding-right: 18px; } .river-project.is-left .river-project-content { padding-left: 18px; } .river-project.is-right .river-project-content { padding-right: 18px; } .river-project.is-right .river-project-visual { padding-left: 18px; }
         .river-project-media { position: relative; display: flex; aspect-ratio: 16/10; width: 100%; min-height: 220px; overflow: hidden; border: 1px solid var(--border); border-radius: 2px; color: var(--fg); background: linear-gradient(135deg, color-mix(in srgb, var(--fg) 5%, transparent), transparent 62%), repeating-linear-gradient(90deg, transparent 0 48px, color-mix(in srgb, var(--fg) 3%, transparent) 49px 50px); }
         .river-project-media::after { content: ''; position: absolute; inset: 10px; border: 1px solid color-mix(in srgb, var(--fg) 7%, transparent); pointer-events: none; }
-        .river-project-media video { width: 100%; height: 100%; object-fit: contain; background: #050505; } .river-project-media.is-playing::after { display: none; }
+        .river-project-media.river-project-cover { min-height: 0; aspect-ratio: auto; }
+        .river-project-cover img { display: block; width: 100%; height: auto; }
         .river-project-media-static { flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 9px; padding: 28px; }
         .river-project-media-static span { color: var(--muted); font: .66rem/1.2 monospace; letter-spacing: .12em; text-transform: uppercase; }
         .river-project-media-static strong { max-width: 90%; font-size: clamp(1.45rem, 3vw, 2.5rem); font-weight: 500; line-height: 1; letter-spacing: -.04em; }
-        .river-project-video-poster { flex-direction: column; justify-content: space-between; padding: 24px; font: inherit; text-align: left; cursor: pointer; }
-        .river-project-video-poster:hover { border-color: color-mix(in srgb, var(--fg) 45%, var(--border)); } .river-project-video-poster:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
-        .river-project-media-type { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font: .66rem/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
-        .river-project-media-name { max-width: 90%; font-size: clamp(1.7rem, 3vw, 2.9rem); font-weight: 500; line-height: .98; letter-spacing: -.05em; } .river-project-play { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font: .7rem/1.2 monospace; }
         .river-project-eyebrow { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; color: var(--muted); font: .65rem/1.2 monospace; letter-spacing: .08em; text-transform: uppercase; }
         .river-project-eyebrow > span { display: inline-flex; align-items: center; gap: 6px; } .river-project-status { margin-left: auto; }
         .river-project-content h2 { margin: 16px 0 12px; font-size: clamp(1.75rem, 3vw, 2.8rem); font-weight: 500; line-height: 1; letter-spacing: -.045em; overflow-wrap: anywhere; }
@@ -352,7 +310,7 @@ export default function ProjectsClient({ projects }) {
           .river-project.is-left .river-project-visual, .river-project.is-left .river-project-content, .river-project.is-right .river-project-content, .river-project.is-right .river-project-visual { padding: 0; }
           .river-project-media { min-height: 0; aspect-ratio: 16/10; } .river-project-content h2 { font-size: clamp(2rem, 11vw, 3rem); } .river-project-status { margin-left: 0; } .river-project-qr-wrap { display: none; }
         }
-        @media (prefers-reduced-motion: reduce) { .river-project-action, .river-project-video-poster { transition: none; } }
+        @media (prefers-reduced-motion: reduce) { .river-project-action { transition: none; } }
         .projects-river-page { position: relative; isolation: isolate; padding-top: clamp(72px, 8vw, 104px); }
         .projects-river { --river-node-x: 0px; --river-section-gap: 70px; --river-media-offset: 40px; max-width: 1080px; padding: 0 32px 90px; }
         .projects-timeline-line { position: absolute; top: 0; bottom: 0; left: calc(50% - .5px); width: 1px; background: color-mix(in srgb, var(--fg) 35%, transparent); pointer-events: none; }
@@ -369,6 +327,9 @@ export default function ProjectsClient({ projects }) {
         .river-project.is-right .river-project-visual { padding: 0; }
         .river-project-visual { margin-top: var(--river-media-offset); }
         .river-project-eyebrow { display: none; }
+        .river-project-featured { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--fg); font: 600 10px/1.2 monospace; letter-spacing: .14em; text-transform: uppercase; }
+        .river-project-featured::after { content: ''; width: 44px; height: 1px; background: color-mix(in srgb, var(--fg) 50%, transparent); }
+        .river-project.is-featured .river-project-node span { outline-color: var(--fg); box-shadow: 0 0 0 4px color-mix(in srgb, var(--fg) 10%, transparent), 0 0 22px color-mix(in srgb, var(--fg) 32%, transparent); }
         .river-project-content h2 { margin: 0 0 12px; font-size: 36px; letter-spacing: -.025em; font-weight: 600; }
         .river-project-description { font-size: 14px; line-height: 1.75; color: var(--muted); }
         .river-project-tags { gap: 8px; margin-top: 16px; }
@@ -386,9 +347,6 @@ export default function ProjectsClient({ projects }) {
         .river-project-action-primary:hover { border-color: var(--fg); color: var(--bg); background: var(--fg); opacity: .82; }
         .river-project-media { min-height: 0; aspect-ratio: 1.58; background: color-mix(in srgb, var(--bg) 97%, var(--fg)); }
         .river-project-media::after { display: none; }
-        .river-project-video-poster { padding: 0; }
-        .river-project-video-poster video { position: absolute; inset: 0; pointer-events: none; }
-        .river-project-play { position: absolute; bottom: 12px; right: 12px; padding: 7px 9px; background: #080b0cba; border-radius: 2px; color: #eee; font-size: 10px; }
         .river-project-media-static { opacity: .45; padding: 24px; }
         .river-project-media-static strong { font-size: 23px; }
         @media (max-width: 760px) {

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ExternalLink, Play, BookOpen, FileText, ChevronDown, ChevronUp, Film, X } from 'lucide-react'
 import { useLang } from '@/hooks/useLang'
 import EmptyState from '@/components/ui/EmptyState'
+import { getLibraryPath } from '@/lib/public-routes'
 
 const fadeUp = {
   initial: { opacity: 0, y: 10 },
@@ -17,7 +18,7 @@ const stagger = {
   animate: { transition: { staggerChildren: 0.08 } }
 }
 
-export default function HobbiesPage() {
+export default function LibraryPage() {
   const { lang } = useLang()
   const [videos, setVideos] = useState([])
   const [novels, setNovels] = useState([])
@@ -215,7 +216,7 @@ export default function HobbiesPage() {
                       {novel.chapters.map(chapter => (
                         <Link
                           key={chapter.id}
-                          href={`/hobbies/${chapter.id}`}
+                          href={getLibraryPath(chapter.id)}
                           className="font-mono"
                           style={{
                             display: 'flex',

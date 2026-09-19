@@ -2,6 +2,26 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  images: {
+    localPatterns: [
+      {
+        pathname: '/**',
+        search: '',
+      },
+      {
+        pathname: '/api/archive/files',
+      },
+    ],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/hobbies/:path*',
+        destination: '/library/:path*',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {

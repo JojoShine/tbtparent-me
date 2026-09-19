@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { withAuth } from '@/lib/auth'
+import { isAdminRequest, withAuth } from '@/lib/auth'
 import { revalidateTag, unstable_cache } from 'next/cache.js'
 
 const BLOG_FIELDS = [
@@ -17,15 +17,17 @@ function pickBlogFields(body) {
 }
 
 const getCachedBlogBySlug = unstable_cache(
-  slug => prisma.blog.findUnique({ where: { slug }, include: { images: true } }),
+  slug => prisma.blog.findFirst({
+    where: { slug, status: 'published', deleted_at: null },
+    include: { images: true },
+  }),
   ['blog-by-slug'],
   { revalidate: 300, tags: ['blog-data'] },
 )
 
 const getCachedBlogList = unstable_cache(
-  async (status, tag, page, pageSize) => {
-    const where = { deleted_at: null }
-    if (status) where.status = status
+  async (tag, page, pageSize) => {
+    const where = { status: 'published', deleted_at: null }
     if (tag) {
       where.OR = [
         { tags_zh: { has: tag } },
@@ -79,9 +81,12 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const slug = searchParams.get('slug')
+    const isAdmin = isAdminRequest(request)
 
     if (slug) {
-      const blog = await getCachedBlogBySlug(slug)
+      const blog = isAdmin
+        ? await prisma.blog.findFirst({ where: { slug, deleted_at: null }, include: { images: true } })
+        : await getCachedBlogBySlug(slug)
       return Response.json(blog)
     }
 
@@ -90,7 +95,42 @@ export async function GET(request) {
     const page = parseInt(searchParams.get('page') || '1')
     const pageSize = Math.min(Math.max(parseInt(searchParams.get('pageSize') || '10'), 1), 100)
 
-    return Response.json(await getCachedBlogList(status || '', tag || '', page, pageSize))
+    if (!isAdmin) {
+      return Response.json(await getCachedBlogList(tag || '', page, pageSize))
+    }
+
+    const where = { deleted_at: null }
+    if (status) where.status = status
+    if (tag) {
+      where.OR = [
+        { tags_zh: { has: tag } },
+        { tags_en: { has: tag } },
+      ]
+    }
+    const [tagBlogs, total, blogs] = await Promise.all([
+      prisma.blog.findMany({
+        where: { status: 'published', deleted_at: null },
+        select: { tags_zh: true, tags_en: true },
+      }),
+      prisma.blog.count({ where }),
+      prisma.blog.findMany({
+        where,
+        orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: {
+          id: true, title_zh: true, title_en: true, slug: true,
+          excerpt_zh: true, excerpt_en: true, tags_zh: true, tags_en: true,
+          cover_image: true, published_at: true, status: true, pinned: true,
+          createdAt: true, updatedAt: true,
+        },
+      }),
+    ])
+    const allTags = [...new Set(tagBlogs.flatMap(blog => [
+      ...(blog.tags_zh || []),
+      ...(blog.tags_en || []),
+    ]))]
+    return Response.json({ blogs, total, page, pageSize, allTags })
   } catch (error) {
     console.error('blog GET error:', error)
     return Response.json({ error: 'Internal server error' }, { status: 500 })

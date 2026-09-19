@@ -4,6 +4,7 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import { projectCapabilities } from './project-capabilities-data.js'
+import { aroundMeProjectData } from './around-me-data.js'
 import { buildCapabilityInitialization } from '../src/lib/project-capability-initializer.js'
 
 const prisma = new PrismaClient()
@@ -60,6 +61,7 @@ If you think I can help you with business or tech, feel free to reach out via th
   // ========== 项目 ==========
   await prisma.project.createMany({
     data: [
+      aroundMeProjectData,
       {
         name_zh: 'DataMesh',
         name_en: 'DataMesh',

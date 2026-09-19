@@ -5,10 +5,42 @@ import * as projectShowcase from '../src/lib/project-showcase.js'
 
 const {
   filterProjectsByYear,
+  getProjectCover,
+  getProjectCoverPath,
   getProjectYear,
+  getProjectTypeLabel,
   getYearOptions,
+  isFeaturedProject,
   selectDefaultProject,
 } = projectShowcase
+
+test('integrated projects use the approved localized category label', () => {
+  assert.equal(getProjectTypeLabel('integrated', 'zh'), '软硬一体')
+  assert.equal(getProjectTypeLabel('integrated', 'en'), 'Integrated System')
+})
+
+test('project covers read URL and intrinsic dimensions from project data', () => {
+  const project = {
+    name_zh: 'AroundMe',
+    cover_url: '/api/archive/files?path=tbtparent-me%2Fprojects%2Fcovers%2Faround-me.png',
+    cover_width: 1536,
+    cover_height: 1024,
+  }
+
+  assert.deepEqual(getProjectCover(project), {
+    src: project.cover_url,
+    width: 1536,
+    height: 1024,
+  })
+  assert.equal(getProjectCoverPath(project), project.cover_url)
+  assert.equal(getProjectCover({ name_zh: 'AroundMe' }), null)
+})
+
+test('project cover metadata requires a URL and positive intrinsic dimensions', () => {
+  assert.equal(getProjectCover({ cover_url: '/cover.png', cover_width: 0, cover_height: 1024 }), null)
+  assert.equal(getProjectCover({ cover_url: '/cover.png', cover_width: 1536, cover_height: null }), null)
+  assert.equal(getProjectCover({ cover_url: '', cover_width: 1536, cover_height: 1024 }), null)
+})
 
 const projects = [
   { id: 1, createdAt: '2025-05-01T00:00:00.000Z', recent_focus: false },
@@ -86,6 +118,22 @@ test('projects sort by year descending, then sort order ascending, then id', () 
   assert.deepEqual(unordered.map(project => project.id), [1, 2, 4, 3, 5])
 })
 
+test('AroundMe is marked as featured and sorted before every other project', () => {
+  assert.equal(isFeaturedProject({ name_zh: 'AroundMe', name_en: 'Around Me' }), true)
+  assert.equal(isFeaturedProject({ name_zh: 'DataMesh', name_en: 'DataMesh' }), false)
+
+  const catalog = [
+    { id: 1, name_zh: 'DataMesh', createdAt: '2026-12-01T00:00:00.000Z', sortOrder: 0 },
+    { id: 2, name_zh: 'AroundMe', createdAt: '2026-01-01T00:00:00.000Z', sortOrder: 99 },
+    { id: 3, name_zh: 'FlowCraft', createdAt: '2026-09-01T00:00:00.000Z', sortOrder: 1 },
+  ]
+
+  assert.deepEqual(
+    projectShowcase.sortProjectsByYearAndOrder(catalog).map(project => project.id),
+    [2, 1, 3],
+  )
+})
+
 test('PC project trials are unavailable only in a mobile viewport', () => {
   assert.equal(
     typeof projectShowcase.isProjectTrialAllowed,
@@ -135,18 +183,19 @@ test('catalog filtering combines year, carrier, and text without changing source
   const catalog = [
     { id: 1, createdAt: '2026-03-01', project_type: 'pc', name_zh: '数据平台', name_en: 'Data Platform', tags_zh: ['治理'], tags_en: ['Governance'] },
     { id: 2, createdAt: '2026-01-01', project_type: 'mobile', name_zh: '移动工具', name_en: 'Mobile Kit', tags_zh: ['效率'], tags_en: ['Utility'] },
+    { id: 4, createdAt: '2026-01-01', project_type: 'mobile', name_zh: 'custom-app', name_en: 'custom_app', tags_zh: ['效率'], tags_en: ['Utility'] },
     { id: 3, createdAt: '2025-01-01', project_type: 'pc', name_zh: '旧项目', name_en: 'Legacy', tags_zh: ['治理'], tags_en: ['Governance'] },
   ]
 
   assert.deepEqual(
     projectShowcase.filterProjectCatalog(catalog, { activeYear: 2026, projectType: 'mobile', query: '' }).map(project => project.id),
-    [2],
+    [2, 4],
   )
   assert.deepEqual(
     projectShowcase.filterProjectCatalog(catalog, { activeYear: null, projectType: 'all', query: 'governance' }).map(project => project.id),
     [1, 3],
   )
-  assert.deepEqual(catalog.map(project => project.id), [1, 2, 3])
+  assert.deepEqual(catalog.map(project => project.id), [1, 2, 4, 3])
 })
 
 test('year counts and catalog tool threshold support larger project collections', () => {

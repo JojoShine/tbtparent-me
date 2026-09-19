@@ -1,5 +1,23 @@
 import { minioClient, MINIO_BUCKET } from '@/lib/minio'
 
+const INLINE_TYPES = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  mp4: 'video/mp4',
+  mov: 'video/quicktime',
+  webm: 'video/webm',
+  avi: 'video/x-msvideo',
+  mkv: 'video/x-matroska',
+  wmv: 'video/x-ms-wmv',
+  flv: 'video/x-flv',
+  mp3: 'audio/mpeg',
+  wav: 'audio/wav',
+  ogg: 'audio/ogg',
+}
+
 // 获取文件（公开访问）
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
@@ -20,37 +38,19 @@ export async function GET(request) {
     }
 
     // 从 MinIO 获取文件流和元数据
-    const stat = await minioClient.statObject(bucket, objectName)
+    await minioClient.statObject(bucket, objectName)
     const stream = await minioClient.getObject(bucket, objectName)
-    
-    // 根据文件扩展名设置 Content-Type
     const ext = objectName.split('.').pop()?.toLowerCase()
-    const contentTypeMap = {
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'webp': 'image/webp',
-      'svg': 'image/svg+xml',
-      'mp4': 'video/mp4',
-      'mov': 'video/quicktime',
-      'webm': 'video/webm',
-      'avi': 'video/x-msvideo',
-      'mkv': 'video/x-matroska',
-      'wmv': 'video/x-ms-wmv',
-      'flv': 'video/x-flv',
-      'mp3': 'audio/mpeg',
-      'wav': 'audio/wav',
-      'ogg': 'audio/ogg',
-    }
-    const contentType = contentTypeMap[ext] || stat.metaData['content-type'] || 'application/octet-stream'
-    
-    // 返回文件流，带正确的 Content-Type 和缓存头
+    const contentType = INLINE_TYPES[ext]
+    const isInline = Boolean(contentType)
+    const safeName = encodeURIComponent(objectName.split('/').pop() || 'download')
+
     return new Response(stream, {
       headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `inline`,
-        'Cache-Control': 'public, max-age=31536000', // 缓存 1 年
+        'Content-Type': contentType || 'application/octet-stream',
+        'Content-Disposition': isInline ? 'inline' : `attachment; filename*=UTF-8''${safeName}`,
+        'Cache-Control': isInline ? 'public, max-age=31536000' : 'no-store',
+        'X-Content-Type-Options': 'nosniff',
       },
     })
   } catch (error) {

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getLibraryPath } from '@/lib/public-routes'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tbtparent.me'
 
@@ -8,7 +9,7 @@ const staticPages = [
   { url: '/about', priority: 0.8, changeFrequency: 'monthly' },
   { url: '/blog', priority: 0.9, changeFrequency: 'daily' },
   { url: '/projects', priority: 0.8, changeFrequency: 'weekly' },
-  { url: '/hobbies', priority: 0.7, changeFrequency: 'weekly' },
+  { url: getLibraryPath(), priority: 0.7, changeFrequency: 'weekly' },
   { url: '/tools', priority: 0.7, changeFrequency: 'monthly' },
   { url: '/qa', priority: 0.5, changeFrequency: 'monthly' },
   { url: '/game', priority: 0.6, changeFrequency: 'monthly' },
@@ -65,7 +66,7 @@ export default async function sitemap() {
       select: { id: true, updatedAt: true },
     })
     chapterEntries = chapters.map(ch => ({
-      url: `${SITE_URL}/hobbies/${ch.id}`,
+      url: `${SITE_URL}${getLibraryPath(ch.id)}`,
       lastModified: ch.updatedAt?.toISOString() || now,
       changeFrequency: 'monthly',
       priority: 0.5,

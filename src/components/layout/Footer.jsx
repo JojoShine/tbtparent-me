@@ -3,32 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useLang } from '@/hooks/useLang'
 
-// 生成或获取浏览器唯一标识
-function getVisitorId() {
-  let id = localStorage.getItem('visitor-id')
-  if (!id) {
-    id = crypto.randomUUID ? crypto.randomUUID() : 
-      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-        const r = Math.random() * 16 | 0
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
-      })
-    localStorage.setItem('visitor-id', id)
-  }
-  return id
-}
-
 export default function Footer() {
   const { lang } = useLang()
   const [stats, setStats] = useState(null)
 
   useEffect(() => {
-    const visitorId = getVisitorId()
-    
-    // 始终调用 POST，服务端基于 visitorId 判断是否今日首次
     fetch('/api/visits', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ visitorId }),
       cache: 'no-store',
     })
       .then(res => res.json())

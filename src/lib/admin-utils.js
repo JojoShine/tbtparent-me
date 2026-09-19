@@ -21,8 +21,10 @@ async function getError(res, fallback) {
 }
 
 export async function apiGet(url) {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`GET ${url} failed`)
+  const res = await fetch(url, { headers: getHeaders() })
+  if (!res.ok) {
+    throw await getError(res, `GET ${url} failed`)
+  }
   return res.json()
 }
 

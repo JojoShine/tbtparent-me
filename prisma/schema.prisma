@@ -52,6 +52,9 @@ model Project {
   content_zh     String?
   recent_focus   Boolean             @default(false)
   video_url      String?
+  cover_url      String?
+  cover_width    Int?
+  cover_height   Int?
   deleted_at     DateTime?
   capabilities   ProjectCapability[]
 }

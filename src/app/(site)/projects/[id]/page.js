@@ -290,7 +290,7 @@ export default function ProjectDetailPage() {
 
   const localized = localizeProject(project, lang)
   const tags = localized.tags || []
-  const isArchived = project.deadline_zh === '已下架' || project.deadline_en === 'Discontinued'
+  const isArchived = localized.archived
   const hasDemo = !!project.demo_url && !isArchived
   const hasVideo = !!project.video_url
   const isMobile = project.project_type === 'mobile'

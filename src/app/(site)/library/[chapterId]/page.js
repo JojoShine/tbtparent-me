@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import 'highlight.js/styles/github-dark.css'
 import { useLang } from '@/hooks/useLang'
+import { getLibraryPath } from '@/lib/public-routes'
 
 export default function ChapterPage() {
   const { chapterId } = useParams()
@@ -78,7 +79,7 @@ export default function ChapterPage() {
     <div className="max-w-4xl pb-8 md:pb-12" style={{ margin: '0 auto' }}>
       {/* 返回按钮 */}
       <button
-        onClick={() => router.push('/hobbies')}
+        onClick={() => router.push(getLibraryPath())}
         className="font-mono"
         style={{
           display: 'inline-flex',
@@ -162,7 +163,7 @@ export default function ChapterPage() {
         }}>
           {prevChapter ? (
             <Link
-              href={`/hobbies/${prevChapter.id}`}
+              href={getLibraryPath(prevChapter.id)}
               className="font-mono"
               style={{
                 padding: '8px 0',
@@ -185,7 +186,7 @@ export default function ChapterPage() {
           
           {nextChapter ? (
             <Link
-              href={`/hobbies/${nextChapter.id}`}
+              href={getLibraryPath(nextChapter.id)}
               className="font-mono"
               style={{
                 padding: '8px 0',

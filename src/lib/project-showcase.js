@@ -1,3 +1,31 @@
+export function isFeaturedProject(project) {
+  return [project?.name, project?.name_zh, project?.name_en]
+    .map(name => String(name ?? '').trim().toLowerCase().replaceAll(' ', ''))
+    .includes('aroundme')
+}
+
+export function getProjectTypeLabel(type, lang) {
+  const labels = {
+    mobile: { zh: '移动端', en: 'Mobile' },
+    pc: { zh: 'PC 端', en: 'Desktop' },
+    dashboard: { zh: '数据大屏', en: 'Dashboard' },
+    integrated: { zh: '软硬一体', en: 'Integrated System' },
+  }
+  return labels[type]?.[lang] || labels.pc[lang]
+}
+
+export function getProjectCover(project) {
+  const src = String(project?.cover_url ?? '').trim()
+  const width = Number(project?.cover_width)
+  const height = Number(project?.cover_height)
+  if (!src || !Number.isInteger(width) || width <= 0 || !Number.isInteger(height) || height <= 0) return null
+  return { src, width, height }
+}
+
+export function getProjectCoverPath(project) {
+  return getProjectCover(project)?.src || ''
+}
+
 export function getProjectYear(project) {
   if (!project?.createdAt) return null
   const date = new Date(project.createdAt)
@@ -77,6 +105,9 @@ export function isProjectShowcaseStyleReady(element, readStyle = globalThis.getC
 
 export function sortProjectsByYearAndOrder(projects) {
   return [...projects].sort((left, right) => {
+    const featuredDifference = Number(isFeaturedProject(right)) - Number(isFeaturedProject(left))
+    if (featuredDifference !== 0) return featuredDifference
+
     const yearDifference = (getProjectYear(right) ?? -Infinity) - (getProjectYear(left) ?? -Infinity)
     if (yearDifference !== 0) return yearDifference
 

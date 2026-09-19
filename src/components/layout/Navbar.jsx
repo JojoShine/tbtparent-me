@@ -9,6 +9,7 @@ import Logo from '@/components/ui/Logo'
 import LanguageSwitch from '@/components/ui/LanguageSwitch'
 import GithubIcon from '@/components/ui/GithubIcon'
 import { useLang } from '@/hooks/useLang'
+import { getLibraryPath } from '@/lib/public-routes'
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -22,7 +23,7 @@ export default function Navbar() {
     { key: 'nav.projects', path: '/projects' },
     { key: 'nav.tools', path: '/tools' },
     { key: 'nav.game', path: '/game' },
-    { key: 'nav.hobbies', path: '/hobbies' },
+    { key: 'nav.hobbies', path: getLibraryPath() },
   ]
 
   // 点击导航链接后关闭菜单
@@ -361,7 +362,7 @@ function SearchModal({ onClose }) {
                     <div className="space-y-2">
                       {results.novels.map(novel => (
                         <Link key={novel.id}
-                          href={novel.chapters?.length > 0 ? `/hobbies/${novel.chapters[0].id}` : '/hobbies'}
+                          href={getLibraryPath(novel.chapters?.[0]?.id)}
                           onClick={onClose}
                           className="block p-3 rounded transition-colors hover:opacity-70"
                           style={{ backgroundColor: 'var(--border)' }}>

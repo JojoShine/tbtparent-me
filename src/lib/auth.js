@@ -56,13 +56,15 @@ export function verifyAdminToken(token, secret, now = Math.floor(Date.now() / 10
   }
 }
 
+export function isAdminRequest(req) {
+  const authHeader = req.headers.get('authorization')
+  const token = authHeader?.match(/^Bearer\s+(.+)$/i)?.[1]
+  return verifyAdminToken(token, process.env.ADMIN_SECRET)
+}
+
 export function withAuth(handler) {
   return async (req) => {
-    const authHeader = req.headers.get('authorization')
-    const token = authHeader?.match(/^Bearer\s+(.+)$/i)?.[1]
-    const secret = process.env.ADMIN_SECRET
-
-    if (!verifyAdminToken(token, secret)) {
+    if (!isAdminRequest(req)) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

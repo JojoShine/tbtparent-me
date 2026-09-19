@@ -12,17 +12,28 @@ export function localizedField(obj, baseName, lang) {
  */
 export function localizeProject(project, lang) {
   if (!project) return null
+  const normalizedNames = [project.name_zh, project.name_en]
+    .map(name => String(name ?? '').trim().toLowerCase())
+  const archived = project.deadline_zh === '已下架'
+    || project.deadline_en === 'Discontinued'
+    || normalizedNames.includes('common rag')
+
   return {
     id: project.id,
     name: localizedField(project, 'name', lang),
     description: localizedField(project, 'description', lang),
     tags: project[`tags_${lang}`] || project.tags_zh || [],
-    deadline: localizedField(project, 'deadline', lang),
-    archived: project.deadline_zh === '已下架' || project.deadline_en === 'Discontinued',
+    deadline: archived
+      ? (lang === 'zh' ? '已下架' : 'Discontinued')
+      : localizedField(project, 'deadline', lang),
+    archived,
     link: project.link || '#',
     github: project.github || '',
     demo_url: project.demo_url || '',
     video_url: project.video_url || '',
+    cover_url: project.cover_url || '',
+    cover_width: project.cover_width ?? null,
+    cover_height: project.cover_height ?? null,
     project_type: project.project_type || 'pc',
     recent_focus: Boolean(project.recent_focus),
     createdAt: project.createdAt,

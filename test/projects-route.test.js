@@ -188,6 +188,19 @@ test('POST /api/projects creates normalized capabilities in one transaction', as
   assert.deepEqual(result.capabilities, calls.creates[0].data.capabilities.create)
 })
 
+test('project API preserves cover metadata in the Prisma payload', async () => {
+  const response = await POST(await authenticatedRequest('POST', projectBody({
+    cover_url: '/api/archive/files?path=tbtparent-me%2Fprojects%2Fcovers%2Fdatamesh.png',
+    cover_width: '1536',
+    cover_height: '1024',
+  })))
+
+  assert.equal(response.status, 200)
+  assert.equal(calls.creates[0].data.cover_url, '/api/archive/files?path=tbtparent-me%2Fprojects%2Fcovers%2Fdatamesh.png')
+  assert.equal(calls.creates[0].data.cover_width, 1536)
+  assert.equal(calls.creates[0].data.cover_height, 1024)
+})
+
 test('PUT /api/projects preserves capabilities when the field is omitted', async () => {
   const body = projectBody({ id: 1 })
   delete body.capabilities
@@ -215,6 +228,10 @@ test('GET /api/projects detail requests ordered capabilities', async () => {
   assert.deepEqual(result.capabilities, storedCapabilities)
   assert.deepEqual(calls.detailQueries[0].include, {
     capabilities: { orderBy: { sortOrder: 'asc' } },
+  })
+  assert.deepEqual(calls.detailQueries[0].where, {
+    id: 1,
+    deleted_at: null,
   })
 })
 

@@ -12,6 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.js",
+    "db:sync-around-me": "node prisma/sync-around-me.js",
+    "db:sync-project-covers": "node prisma/sync-project-covers.js",
     "db:init-project-capabilities": "node prisma/init-project-capabilities.js",
     "db:studio": "prisma studio"
   },

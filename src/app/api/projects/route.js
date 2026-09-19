@@ -10,6 +10,7 @@ const PROJECT_FIELDS = [
   'tags_zh', 'tags_en', 'deadline_zh', 'deadline_en',
   'link', 'github', 'demo_url', 'project_type', 'sortOrder',
   'content_en', 'content_zh', 'recent_focus', 'video_url',
+  'cover_url', 'cover_width', 'cover_height',
 ]
 
 function pickProjectFields(body) {
@@ -19,6 +20,10 @@ function pickProjectFields(body) {
     data[field] = typeof body[field] === 'string' ? body[field].trim() : body[field]
   }
   if (data.link === '#') data.link = ''
+  for (const field of ['cover_width', 'cover_height']) {
+    if (!(field in data)) continue
+    data[field] = data[field] === '' || data[field] === null ? null : Number(data[field])
+  }
   return data
 }
 
@@ -40,7 +45,7 @@ export async function GET(request) {
 
     if (id) {
       const project = await prisma.project.findUnique({
-        where: { id: parseInt(id) },
+        where: { id: parseInt(id), deleted_at: null },
         include: CAPABILITY_INCLUDE,
       })
       return Response.json(project)

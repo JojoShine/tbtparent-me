@@ -59,34 +59,34 @@ export const projectCapabilities = {
       icon: 'box',
     },
   ],
-  'custom-app': [
+  AroundMe: [
     {
-      title_zh: '品牌化装配',
-      title_en: 'Brand Assembly',
-      description_zh: '通过品牌配置、设计变量和模块清单快速组合不同品牌的应用形态。',
-      description_en: 'Assembles distinct branded apps quickly from brand configuration, design tokens, and module manifests.',
+      title_zh: '知识与 RAG',
+      title_en: 'Knowledge & RAG',
+      description_zh: '接入个人文档、项目资料和代码，建立能够持续更新的个人知识库。',
+      description_en: 'Connects personal documents, project materials, and code into a continuously updated knowledge base.',
+      icon: 'database',
+    },
+    {
+      title_zh: '长期记忆',
+      title_en: 'Long-term Memory',
+      description_zh: '记录重要事件、偏好、关系和历史决策，让跨时间与跨设备交互保持连续。',
+      description_en: 'Preserves important events, preferences, relationships, and decisions across time and devices.',
       icon: 'layers',
     },
     {
-      title_zh: '共享业务外壳',
-      title_en: 'Shared App Shell',
-      description_zh: '复用导航、登录、首页、消息、个人中心和升级流程，减少品牌应用重复建设。',
-      description_en: 'Reuses navigation, authentication, home, messages, profiles, and upgrades across branded applications.',
-      icon: 'box',
+      title_zh: 'Agent 与能力扩展',
+      title_en: 'Agents & Skills',
+      description_zh: '通过 Skill 和 Agent 连接外部系统、设备与服务，并为重要操作保留人工确认。',
+      description_en: 'Uses skills and agents to connect services and devices while keeping humans in control of important actions.',
+      icon: 'workflow',
     },
     {
-      title_zh: '设备能力抽象',
-      title_en: 'Device Abstraction',
-      description_zh: '通过统一接口接入相机、定位、分享、存储等原生能力，保持跨平台调用一致。',
-      description_en: 'Exposes camera, location, sharing, storage, and other native features through consistent cross-platform contracts.',
+      title_zh: '通信与信息整理',
+      title_en: 'Communication & Triage',
+      description_zh: '统一整理电话、短信和消息，提取事项与承诺，只在需要决策时提醒用户。',
+      description_en: 'Organizes calls, texts, and messages, extracts commitments, and interrupts only when decisions are needed.',
       icon: 'mobile',
-    },
-    {
-      title_zh: '安全 Web Bridge',
-      title_en: 'Secure Web Bridge',
-      description_zh: '控制可信来源、调用权限和数据边界，保障 Web 内容与原生能力之间的交互。',
-      description_en: 'Controls trusted origins, permissions, and data boundaries between web content and native capabilities.',
-      icon: 'shield',
     },
   ],
   password_manager: [
@@ -270,4 +270,3 @@ export const projectCapabilities = {
     },
   ],
 }
-

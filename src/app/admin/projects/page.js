@@ -13,6 +13,7 @@ const emptyProject = {
   tags_zh: [], tags_en: [],
   deadline_zh: '', deadline_en: '',
   link: '', github: '', demo_url: '', video_url: '',
+  cover_url: '', cover_width: null, cover_height: null,
   project_type: 'pc', recent_focus: false, sortOrder: 0,
   capabilities: [],
 }
@@ -21,6 +22,7 @@ const typeOptions = [
   { value: 'mobile', label: '手机' },
   { value: 'pc', label: 'PC' },
   { value: 'dashboard', label: '大屏' },
+  { value: 'integrated', label: '软硬一体' },
 ]
 
 export default function AdminProjects() {
@@ -28,6 +30,7 @@ export default function AdminProjects() {
   const [editing, setEditing] = useState(null)
   const [msg, setMsg] = useState('')
   const [translating, setTranslating] = useState({})
+  const [uploadingCover, setUploadingCover] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize] = useState(20)
   const [searchKeyword, setSearchKeyword] = useState('')
@@ -99,6 +102,51 @@ export default function AdminProjects() {
     } catch (e) {
       setMsg('保存失败: ' + e.message)
     }
+  }
+
+  const handleCoverUpload = async event => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploadingCover(true)
+    try {
+      const bitmap = await createImageBitmap(file)
+      const width = bitmap.width
+      const height = bitmap.height
+      bitmap.close()
+
+      const formData = new FormData()
+      formData.set('file', file)
+      const response = await fetch('/api/projects/cover', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('admin_token') || ''}` },
+        body: formData,
+      })
+      const result = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(result?.error || '上传失败')
+
+      setEditing(current => ({
+        ...current,
+        cover_url: result.cover_url,
+        cover_width: width,
+        cover_height: height,
+      }))
+      setMsg('封面上传成功，保存项目后生效 ✓')
+    } catch (error) {
+      setMsg('封面上传失败: ' + error.message)
+    } finally {
+      setUploadingCover(false)
+      event.target.value = ''
+    }
+  }
+
+  const clearCover = () => {
+    setEditing(current => ({
+      ...current,
+      cover_url: null,
+      cover_width: null,
+      cover_height: null,
+    }))
   }
 
   const handleEdit = async (p) => {
@@ -290,6 +338,26 @@ export default function AdminProjects() {
               </button>
             </label>
             <textarea style={{ ...textareaStyle, minHeight: '120px' }} value={editing.description_en} onChange={e => handleChange('description_en', e.target.value)} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>项目封面</label>
+            {editing.cover_url && editing.cover_width > 0 && editing.cover_height > 0 && (
+              <div style={{ maxWidth: '560px', marginBottom: '10px' }}>
+                <img
+                  src={editing.cover_url}
+                  alt="项目封面预览"
+                  width={editing.cover_width}
+                  height={editing.cover_height}
+                  style={{ display: 'block', width: '100%', height: 'auto', border: '1px solid var(--border)' }}
+                />
+              </div>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleCoverUpload} disabled={uploadingCover} />
+              {editing.cover_url && <button type="button" style={secondaryButtonStyle} onClick={clearCover}>清除封面</button>}
+              {uploadingCover && <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>上传中...</span>}
+            </div>
           </div>
 
           <ProjectCapabilitiesEditor

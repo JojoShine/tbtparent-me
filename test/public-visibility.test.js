@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { access } from 'node:fs/promises'
 import { mock, test } from 'node:test'
 
 const prismaModule = new URL('../src/lib/prisma.js', import.meta.url).href
@@ -21,4 +22,19 @@ test('temporarily hidden experiences are excluded from public discovery', async 
   assert.equal(paths.includes('/suwen'), false)
   assert.equal(paths.includes('/game/english'), false)
   assert.equal(paths.includes('/game/writing'), false)
+})
+
+test('removed AI experiences no longer have routable source files', async () => {
+  const removedRoutes = [
+    '../src/app/(site)/suwen/page.js',
+    '../src/app/game/writing/page.js',
+    '../src/app/api/suwen/route.js',
+    '../src/app/api/writing/route.js',
+    '../src/app/api/writing/prompt/route.js',
+    '../src/app/api/writing/optimize/route.js',
+  ]
+
+  for (const route of removedRoutes) {
+    await assert.rejects(access(new URL(route, import.meta.url)))
+  }
 })
