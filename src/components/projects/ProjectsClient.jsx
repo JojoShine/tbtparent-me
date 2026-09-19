@@ -10,6 +10,7 @@ import { localizeProject } from '@/lib/i18n-helpers'
 import { filterProjectCatalog, getProjectArchivedLabel, getProjectCover, getProjectTrialMode, getProjectTypeLabel, getProjectYear, isFeaturedProject, isProjectShowcaseStyleReady, shouldShowProjectCatalogTools } from '@/lib/project-showcase'
 import EmptyState from '@/components/ui/EmptyState'
 import GithubIcon from '@/components/ui/GithubIcon'
+import ImageLightbox, { IMAGE_ZOOM_CURSOR } from '@/components/ui/ImageLightbox'
 
 const typeIcons = { mobile: Smartphone, pc: Monitor, dashboard: Monitor, integrated: Cpu }
 
@@ -49,7 +50,7 @@ function ProjectRiverLoading({ lang }) {
   )
 }
 
-function ProjectMedia({ project, lang, eager }) {
+function ProjectMedia({ project, lang, eager, onPreview }) {
   const TypeIcon = typeIcons[project.project_type] || Monitor
   const cover = getProjectCover(project)
 
@@ -63,16 +64,27 @@ function ProjectMedia({ project, lang, eager }) {
     )
   }
 
+  const alt = `${project.name} ${lang === 'zh' ? '项目封面' : 'project cover'}`
+
   return (
     <div className="river-project-media river-project-cover">
+      <button
+        type="button"
+        className="river-project-cover-button"
+        onClick={() => onPreview({ src: cover.src, alt })}
+        aria-label={lang === 'zh' ? `放大查看${project.name}封面` : `Enlarge ${project.name} cover`}
+        style={{ cursor: IMAGE_ZOOM_CURSOR }}
+      >
       <Image
         src={cover.src}
-        alt={`${project.name} ${lang === 'zh' ? '项目封面' : 'project cover'}`}
+        alt={alt}
         width={cover.width}
         height={cover.height}
         sizes="(max-width: 760px) calc(100vw - 72px), 468px"
         loading={eager ? 'eager' : 'lazy'}
+        style={{ cursor: IMAGE_ZOOM_CURSOR }}
       />
+      </button>
     </div>
   )
 }
@@ -113,7 +125,7 @@ function TrialAction({ project, lang, isMobileViewport, qrCode, qrOpen, onQrOpen
   )
 }
 
-function ProjectEntry({ rawProject, index, lang, isMobileViewport, qrState, onQrOpen }) {
+function ProjectEntry({ rawProject, index, lang, isMobileViewport, qrState, onQrOpen, onPreview }) {
   const project = localizeProject(rawProject, lang)
   const TypeIcon = typeIcons[project.project_type] || Monitor
   const featured = isFeaturedProject(rawProject)
@@ -125,7 +137,7 @@ function ProjectEntry({ rawProject, index, lang, isMobileViewport, qrState, onQr
       <div className="river-project-node" aria-hidden="true"><span /></div>
       <span className="river-project-date">{projectDate(project)}</span>
       <div className="river-project-visual">
-        <ProjectMedia project={project} lang={lang} eager={index === 0} />
+        <ProjectMedia project={project} lang={lang} eager={index === 0} onPreview={onPreview} />
         {project.archived && <span className="river-project-archived-badge">{getProjectArchivedLabel(true, lang)}</span>}
       </div>
 
@@ -175,6 +187,7 @@ export default function ProjectsClient({ projects }) {
   const [isMobileViewport, setIsMobileViewport] = useState(false)
   const [qrRequestedId, setQrRequestedId] = useState(null)
   const [qrCodes, setQrCodes] = useState({})
+  const [previewImage, setPreviewImage] = useState(null)
   const showCatalogTools = shouldShowProjectCatalogTools(projects)
 
   useEffect(() => {
@@ -250,13 +263,15 @@ export default function ProjectsClient({ projects }) {
                 <div className="projects-year-heading"><span>{group.year}</span></div>
                 {group.projects.map(project => {
                   const index = visibleProjects.findIndex(item => item.id === project.id)
-                  return <ProjectEntry key={project.id} rawProject={project} index={index} lang={lang} isMobileViewport={isMobileViewport} qrState={{ open: qrRequestedId === project.id, code: qrCodes[project.id] }} onQrOpen={openQr} />
+                  return <ProjectEntry key={project.id} rawProject={project} index={index} lang={lang} isMobileViewport={isMobileViewport} qrState={{ open: qrRequestedId === project.id, code: qrCodes[project.id] }} onQrOpen={openQr} onPreview={setPreviewImage} />
                 })}
               </section>
             ))}
           </div>
         )}
       </> : <ProjectRiverLoading lang={lang} />}
+
+      <ImageLightbox image={previewImage} onClose={() => setPreviewImage(null)} lang={lang} />
 
       <style jsx global>{`
         .projects-river-page { --project-showcase-ready: 1; --river-line: color-mix(in srgb, var(--fg) 30%, transparent); --river-soft: color-mix(in srgb, var(--fg) 7%, transparent); width: 100%; padding: clamp(36px, 6vw, 70px) 0 120px; }
@@ -279,7 +294,9 @@ export default function ProjectsClient({ projects }) {
         .river-project-media { position: relative; display: flex; aspect-ratio: 16/10; width: 100%; min-height: 220px; overflow: hidden; border: 1px solid var(--border); border-radius: 2px; color: var(--fg); background: linear-gradient(135deg, color-mix(in srgb, var(--fg) 5%, transparent), transparent 62%), repeating-linear-gradient(90deg, transparent 0 48px, color-mix(in srgb, var(--fg) 3%, transparent) 49px 50px); }
         .river-project-media::after { content: ''; position: absolute; inset: 10px; border: 1px solid color-mix(in srgb, var(--fg) 7%, transparent); pointer-events: none; }
         .river-project-media.river-project-cover { min-height: 0; aspect-ratio: auto; }
-        .river-project-cover img { display: block; width: 100%; height: auto; }
+        .river-project-cover-button { display: block; width: 100%; padding: 0; border: 0; color: inherit; background: transparent; cursor: zoom-in; }
+        .river-project-cover-button:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+        .river-project-cover img { display: block; width: 100%; height: auto; cursor: zoom-in; }
         .river-project-media-static { flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 9px; padding: 28px; }
         .river-project-media-static span { color: var(--muted); font: .66rem/1.2 monospace; letter-spacing: .12em; text-transform: uppercase; }
         .river-project-media-static strong { max-width: 90%; font-size: clamp(1.45rem, 3vw, 2.5rem); font-weight: 500; line-height: 1; letter-spacing: -.04em; }

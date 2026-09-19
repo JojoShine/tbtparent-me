@@ -14,6 +14,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import MermaidBlock from '@/components/ui/MermaidBlock'
 import GithubIcon from '@/components/ui/GithubIcon'
+import ImageLightbox, { IMAGE_ZOOM_CURSOR } from '@/components/ui/ImageLightbox'
 import { useLang } from '@/hooks/useLang'
 import { useTheme } from '@/hooks/useTheme'
 import { localizedField, localizeProject } from '@/lib/i18n-helpers'
@@ -101,6 +102,7 @@ export default function ProjectDetailPage() {
   const [qrDataUrl, setQrDataUrl] = useState(null)
   const [activeId, setActiveId] = useState('')
   const [showTop, setShowTop] = useState(false)
+  const [previewImage, setPreviewImage] = useState(null)
   const qrGeneratedRef = useRef(false)
 
   useEffect(() => {
@@ -249,7 +251,15 @@ export default function ProjectDetailPage() {
       )
     },
     img: ({ src, alt, ...props }) => (
-      <img src={src} alt={alt || ''} loading="lazy" style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px', margin: '1rem 0', display: 'block' }} {...props} />
+      <button
+        type="button"
+        className="project-content-image-button"
+        onClick={() => src && setPreviewImage({ src, alt: alt || '' })}
+        aria-label={lang === 'zh' ? '放大查看图片' : 'Enlarge image'}
+        style={{ cursor: IMAGE_ZOOM_CURSOR }}
+      >
+        <img src={src} alt={alt || ''} loading="lazy" {...props} style={{ ...props.style, cursor: IMAGE_ZOOM_CURSOR }} />
+      </button>
     ),
     video: ({ src, children, ...props }) => (
       <video
@@ -262,7 +272,7 @@ export default function ProjectDetailPage() {
         {children}
       </video>
     ),
-  }), [theme])
+  }), [theme, lang])
 
   const formatDate = (dateStr) => {
     if (!dateStr) return ''
@@ -488,6 +498,8 @@ export default function ProjectDetailPage() {
         </button>
       )}
 
+      <ImageLightbox image={previewImage} onClose={() => setPreviewImage(null)} lang={lang} />
+
       <style jsx global>{`
         .project-hero {
           display: flex;
@@ -650,6 +662,19 @@ export default function ProjectDetailPage() {
           margin: 0 auto;
           padding-top: 58px;
         }
+        .project-content .project-content-image-button {
+          display: block;
+          max-width: 100%;
+          margin: 1rem 0;
+          padding: 0;
+          overflow: hidden;
+          border: 0;
+          border-radius: 4px;
+          background: transparent;
+          cursor: zoom-in;
+        }
+        .project-content .project-content-image-button:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+        .project-content .project-content-image-button img { display: block; max-width: 100%; height: auto; margin: 0; cursor: zoom-in; }
         .project-layout {
           max-width: 920px;
           margin: 0 auto;
