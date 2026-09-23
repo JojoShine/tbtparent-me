@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useLang } from '@/hooks/useLang'
 import { localizedField } from '@/lib/i18n-helpers'
-import EmptyState from '@/components/ui/EmptyState'
 import ImageCompressor from './ImageCompressor'
 import QRCodeGenerator from './QRCodeGenerator'
 import IPQuery from './IPQuery'
@@ -237,10 +236,6 @@ export default function ToolsPage() {
       {!loaded && externalTools.length === 0 && (
         <p style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>Loading...</p>
       )}
-      {loaded && externalTools.filter(tool => tool.available).length === 0 && categories.every(() => true) && (
-        <EmptyState message={lang === 'zh' ? '暂无可用工具' : 'No tools available'} />
-      )}
-
       <style jsx global>{`
         /* 菜单按钮只在 hover 时有过渡，选中态切换无过渡避免闪烁 */
         .tool-menu-item {
