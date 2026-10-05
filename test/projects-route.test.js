@@ -242,3 +242,26 @@ test('POST /api/projects retains existing URL validation', async () => {
   assert.deepEqual(await response.json(), { error: 'Invalid github' })
   assert.equal(calls.transactions, 0)
 })
+
+test('project creation preserves an uploaded QR code independently of its demo link', async () => {
+  const response = await POST(await authenticatedRequest('POST', projectBody({
+    demo_url: 'https://example.com/demo',
+    demo_qr_url: '/api/archive/files?path=tbtparent-me%2Fprojects%2Fqr.png',
+  })))
+  assert.equal(response.status, 200)
+  assert.equal(calls.creates[0].data.demo_qr_url, '/api/archive/files?path=tbtparent-me%2Fprojects%2Fqr.png')
+  assert.equal(calls.creates[0].data.demo_url, 'https://example.com/demo')
+})
+
+test('project update can remove a QR attachment without changing its demo link', async () => {
+  const response = await PUT(await authenticatedRequest('PUT', { id: 1, demo_qr_url: null }))
+  assert.equal(response.status, 200)
+  assert.equal(calls.updates[0].data.demo_qr_url, null)
+  assert.equal('demo_url' in calls.updates[0].data, false)
+})
+
+test('project QR attachments reject unsafe URL schemes', async () => {
+  const response = await POST(await authenticatedRequest('POST', projectBody({ demo_qr_url: 'javascript:alert(1)' })))
+  assert.equal(response.status, 400)
+  assert.equal(calls.creates.length, 0)
+})

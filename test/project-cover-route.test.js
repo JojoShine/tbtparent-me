@@ -72,3 +72,20 @@ test('project cover upload stores an image in the project cover prefix', async (
   assert.deepEqual(uploads[0][4], { 'Content-Type': 'image/png' })
   assert.equal(result.cover_url, `/api/archive/files?path=${encodeURIComponent(`tbtparent-me/${uploads[0][1]}`)}`)
 })
+
+test('QR attachments retain their original bytes and use their own image prefix', async () => {
+  const bytes = new Uint8Array([137, 80, 78, 71])
+  const form = new FormData()
+  form.set('file', new File([bytes], 'wechat.png', { type: 'image/png' }))
+  form.set('purpose', 'demo-qr')
+  const response = await POST(new Request('http://localhost/api/projects/cover', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${createJwt(process.env.ADMIN_SECRET)}` },
+    body: form,
+  }))
+  const result = await response.json()
+  assert.equal(response.status, 200)
+  assert.match(uploads[0][1], /^projects\/demo-qr\//)
+  assert.deepEqual(uploads[0][2], Buffer.from(bytes))
+  assert.equal(result.demo_qr_url, `/api/archive/files?path=${encodeURIComponent(`tbtparent-me/${uploads[0][1]}`)}`)
+})

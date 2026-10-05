@@ -12,7 +12,7 @@ const emptyProject = {
   content_zh: '', content_en: '',
   tags_zh: [], tags_en: [],
   deadline_zh: '', deadline_en: '',
-  link: '', github: '', demo_url: '', video_url: '',
+  link: '', github: '', demo_url: '', demo_qr_url: '', video_url: '',
   cover_url: '', cover_width: null, cover_height: null,
   project_type: 'pc', recent_focus: false, sortOrder: 0,
   capabilities: [],
@@ -31,6 +31,7 @@ export default function AdminProjects() {
   const [msg, setMsg] = useState('')
   const [translating, setTranslating] = useState({})
   const [uploadingCover, setUploadingCover] = useState(false)
+  const [uploadingQr, setUploadingQr] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize] = useState(20)
   const [searchKeyword, setSearchKeyword] = useState('')
@@ -136,6 +137,33 @@ export default function AdminProjects() {
       setMsg('封面上传失败: ' + error.message)
     } finally {
       setUploadingCover(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleQrUpload = async event => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setUploadingQr(true)
+    try {
+      const bitmap = await createImageBitmap(file)
+      bitmap.close()
+      const formData = new FormData()
+      formData.set('file', file)
+      formData.set('purpose', 'demo-qr')
+      const response = await fetch('/api/projects/cover', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('admin_token') || ''}` },
+        body: formData,
+      })
+      const result = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(result?.error || '上传失败')
+      handleChange('demo_qr_url', result.demo_qr_url)
+      setMsg('二维码附件上传成功，保存项目后生效 ✓')
+    } catch (error) {
+      setMsg('二维码附件上传失败: ' + error.message)
+    } finally {
+      setUploadingQr(false)
       event.target.value = ''
     }
   }
@@ -440,7 +468,7 @@ export default function AdminProjects() {
               <input style={inputStyle} value={editing.github || ''} onChange={e => handleChange('github', e.target.value)} placeholder="https://github.com/..." />
             </div>
             <div>
-              <label style={labelStyle}>演示地址</label>
+              <label style={labelStyle}>演示链接（自动生成二维码）</label>
               <input style={inputStyle} value={editing.demo_url || ''} onChange={e => handleChange('demo_url', e.target.value)} placeholder="https://..." />
             </div>
             <div>
@@ -476,6 +504,17 @@ export default function AdminProjects() {
             </div>
           </div>
 
+          <div>
+            <label style={labelStyle} htmlFor="demo-qr-upload">二维码附件（二维码或小程序码原图）</label>
+            <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: '10px' }}>
+              可只填写演示链接，也可只上传二维码图片。两者都有时，扫码展示附件，直接访问使用链接。图片不会重新生成或压缩。
+            </p>
+            {editing.demo_qr_url && <img src={editing.demo_qr_url} alt="演示二维码附件预览" style={{ display: 'block', width: '180px', height: '180px', objectFit: 'contain', background: '#fff', marginBottom: '10px' }} />}
+            <input id="demo-qr-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleQrUpload} disabled={uploadingQr} />
+            {editing.demo_qr_url && <button type="button" style={secondaryButtonStyle} onClick={() => handleChange('demo_qr_url', null)}>清除二维码附件</button>}
+            {uploadingQr && <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>上传中...</span>}
+          </div>
+
           {/* 近期聚焦开关 */}
           <div>
             <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
@@ -501,7 +540,7 @@ export default function AdminProjects() {
           </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button style={buttonStyle} onClick={handleSave}>保存</button>
+            <button style={buttonStyle} onClick={handleSave} disabled={uploadingCover || uploadingQr}>保存</button>
             <button style={secondaryButtonStyle} onClick={() => { setEditing(null); setMsg('') }}>取消</button>
           </div>
         </div>

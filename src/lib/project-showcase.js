@@ -122,7 +122,8 @@ export function isProjectTrialAllowed(projectType, isMobileViewport) {
   return projectType !== 'pc' || !isMobileViewport
 }
 
-export function getProjectTrialMode(projectType, isMobileViewport) {
+export function getProjectTrialMode(projectType, isMobileViewport, hasQrImage = false) {
+  if (hasQrImage) return 'qr'
   if (projectType === 'pc' && isMobileViewport) return 'hidden'
   if (projectType === 'mobile' && !isMobileViewport) return 'qr'
   return 'link'

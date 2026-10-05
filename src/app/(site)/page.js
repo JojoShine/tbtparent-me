@@ -20,6 +20,7 @@ const getHomePageData = unstable_cache(
           tags_en: true,
           github: true,
           demo_url: true,
+          demo_qr_url: true,
           project_type: true,
           sortOrder: true,
           createdAt: true,

@@ -19,6 +19,7 @@ export async function GET() {
         link: true,
         github: true,
         demo_url: true,
+        demo_qr_url: true,
         project_type: true,
         recent_focus: true,
         video_url: true,

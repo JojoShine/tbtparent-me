@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { ArrowUpRight, Monitor, Play, QrCode, Smartphone, Tv } from 'lucide-react'
-import QRCode from 'qrcode'
+import { getProjectQrCode } from '@/lib/project-qr-code'
 import GithubIcon from '@/components/ui/GithubIcon'
 
 const typeIconMap = { mobile: Smartphone, pc: Monitor, dashboard: Tv }
@@ -30,17 +30,17 @@ export default function ProjectCard({ project, fromHome = false }) {
   const [videoFailed, setVideoFailed] = useState(false)
   const TypeIcon = typeIconMap[project.project_type] || Monitor
   const isArchived = Boolean(project.archived)
-  const hasDemo = Boolean(project.demo_url) && !isArchived
+  const hasDemo = Boolean(project.demo_url || project.demo_qr_url) && !isArchived
   const hasVideo = Boolean(project.video_url) && !videoFailed
   const isMobile = project.project_type === 'mobile'
   const detailUrl = `/projects/${project.id}${fromHome ? '?from=home' : ''}`
 
   useEffect(() => {
     if (!qrRequested || !hasDemo || qrDataUrl) return
-    QRCode.toDataURL(project.demo_url, { width: 320, margin: 1 })
+    getProjectQrCode(project, { width: 320, margin: 1 })
       .then(setQrDataUrl)
       .catch(console.error)
-  }, [hasDemo, project.demo_url, qrDataUrl, qrRequested])
+  }, [hasDemo, project, qrDataUrl, qrRequested])
 
   useEffect(() => {
     if (!hasVideo || isArchived || !mediaRef.current) return
@@ -130,7 +130,7 @@ export default function ProjectCard({ project, fromHome = false }) {
             <span className="project-archived-action">项目已下架</span>
           ) : (
             <>
-              {hasDemo && (
+              {hasDemo && project.demo_url && (
                 <a
                   href={project.demo_url}
                   target="_blank"
@@ -146,15 +146,16 @@ export default function ProjectCard({ project, fromHome = false }) {
                   <GithubIcon size={15} /> 源码
                 </a>
               )}
-              {hasDemo && isMobile && (
-                <div className="project-card-qr-trigger" onMouseEnter={() => setQrRequested(true)}>
-                  <button type="button">
+              {hasDemo && (isMobile || project.demo_qr_url) && (
+                <div className={`project-card-qr-trigger ${project.demo_qr_url ? 'has-qr-image' : ''}`} onMouseEnter={() => setQrRequested(true)} onFocus={() => setQrRequested(true)}>
+                  <button type="button" onClick={() => setQrRequested(true)}>
                     <QrCode size={15} /> 扫码体验
                   </button>
                   {qrDataUrl && (
                     <div className="project-card-qr" onClick={event => event.stopPropagation()}>
                       <img src={qrDataUrl} alt={`${project.name} 试用地址二维码`} />
-                      <span>扫码打开在线版本</span>
+                      <span>{project.demo_qr_url ? '扫码体验，或保存原图后识别' : '扫码打开在线版本'}</span>
+                      {project.demo_qr_url && <a href={project.demo_qr_url} target="_blank" rel="noreferrer">查看原图</a>}
                     </div>
                   )}
                 </div>
@@ -423,7 +424,8 @@ export default function ProjectCard({ project, fromHome = false }) {
           color: var(--muted);
           font: 0.68rem monospace;
         }
-        .project-card-qr-trigger:hover .project-card-qr { display: grid; }
+        .project-card-qr-trigger:hover .project-card-qr,
+        .project-card-qr-trigger:focus-within .project-card-qr { display: grid; }
         .project-card-qr img { width: 146px; height: 146px; }
         @media (max-width: 760px) {
           .project-card-body { padding: 22px 20px 24px; gap: 18px; }
@@ -431,6 +433,7 @@ export default function ProjectCard({ project, fromHome = false }) {
           .project-card-actions .project-pc-live-action { display: none; }
           .project-card-actions .project-mobile-live-action { display: inline-flex; }
           .project-card-qr-trigger { display: none; }
+          .project-card-qr-trigger.has-qr-image { display: block; }
         }
       `}</style>
     </motion.article>

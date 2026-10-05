@@ -44,6 +44,7 @@ model Project {
   link           String
   github         String?
   demo_url       String?
+  demo_qr_url    String?
   project_type   String              @default("pc")
   sortOrder      Int                 @default(0)
   createdAt      DateTime            @default(now())

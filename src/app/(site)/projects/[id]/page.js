@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Smartphone, Monitor, Tv, QrCode } from 'lucide-react'
-import QRCode from 'qrcode'
+import { getProjectQrCode } from '@/lib/project-qr-code'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
@@ -135,10 +135,10 @@ export default function ProjectDetailPage() {
   }, [id])
 
   useEffect(() => {
-    if (project?.demo_url && project.deadline_zh !== '已下架' && project.deadline_en !== 'Discontinued' && !qrGeneratedRef.current) {
+    if ((project?.demo_url || project?.demo_qr_url) && project.deadline_zh !== '已下架' && project.deadline_en !== 'Discontinued' && !qrGeneratedRef.current) {
       // 根据主题设置二维码颜色
       const isDark = document.documentElement.classList.contains('dark')
-      QRCode.toDataURL(project.demo_url, { 
+      getProjectQrCode(project, {
         width: 400, 
         margin: 1, 
         color: isDark ? {
@@ -301,11 +301,10 @@ export default function ProjectDetailPage() {
   const localized = localizeProject(project, lang)
   const tags = localized.tags || []
   const isArchived = localized.archived
-  const hasDemo = !!project.demo_url && !isArchived
+  const hasDemo = Boolean(project.demo_url || project.demo_qr_url) && !isArchived
   const hasVideo = !!project.video_url
-  const isMobile = project.project_type === 'mobile'
   const trialMode = viewportReady
-    ? getProjectTrialMode(project.project_type, isSmallScreen)
+    ? getProjectTrialMode(project.project_type, isSmallScreen, Boolean(project.demo_qr_url))
     : 'hidden'
 
   return (
@@ -375,13 +374,15 @@ export default function ProjectDetailPage() {
             {project.github && (
               <a href={project.github} target="_blank" rel="noopener noreferrer"><GithubIcon size={16} /> GitHub</a>
             )}
-            {hasDemo && isMobile && trialMode === 'qr' && (
+            {hasDemo && trialMode === 'qr' && (
               <div className="project-detail-qr-trigger">
                 <button type="button"><QrCode size={15} /> {lang === 'zh' ? '扫码体验' : 'Scan to try'}</button>
                 {qrDataUrl && (
                   <div className="project-qr">
                     <img src={qrDataUrl} alt={lang === 'zh' ? '在线试用二维码' : 'Demo QR code'} />
-                    <span>{lang === 'zh' ? '手机扫码打开' : 'Scan to open'}</span>
+                    <span>{lang === 'zh' ? '扫码体验，或保存原图后识别' : 'Scan to try, or save the image to scan'}</span>
+                    {project.demo_qr_url && <a href={project.demo_qr_url} target="_blank" rel="noreferrer">{lang === 'zh' ? '查看原图' : 'View original'}</a>}
+                    {project.demo_qr_url && project.demo_url && <a href={project.demo_url} target="_blank" rel="noreferrer">{lang === 'zh' ? '打开演示链接' : 'Open demo link'}</a>}
                   </div>
                 )}
               </div>
@@ -611,7 +612,8 @@ export default function ProjectDetailPage() {
           color: var(--muted);
           font: 0.68rem monospace;
         }
-        .project-detail-qr-trigger:hover .project-qr { display: grid; }
+        .project-detail-qr-trigger:hover .project-qr,
+        .project-detail-qr-trigger:focus-within .project-qr { display: grid; }
         .project-qr img { width: 148px; height: 148px; }
         .project-hero-media {
           width: 100%;

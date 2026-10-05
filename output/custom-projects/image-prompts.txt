@@ -1,0 +1,13 @@
+Generation mode: built-in image_gen tool.
+Style reference: existing DataMesh promotional cover from the configured project image storage.
+
+custom_wechat_app:
+Generate ONE standalone 1536x1024 landscape Chinese project promotional cover for custom_wechat_app. Use attached DataMesh image ONLY as visual style reference: premium dark navy office, glowing cyan/blue translucent 3D capability modules, cute dark-haired young adult male developer in black jacket working on laptop on right, clean white lower information band. Do NOT reproduce DataMesh content. Title verbatim custom_wechat_app at upper left, subtitle 微信小程序全栈底座. Main visual: luminous smartphone with a small modular cube icon at center and four connected glass panels labeled 微信登录, 原生能力, WebView, 支付与退款. Tech line Taro · React · NestJS · PostgreSQL. Lower white band with three readable sections: 01 项目定位 : 可复用的微信小程序全栈框架; 02 核心能力 : 登录与资料 · 私有文件 · 支付退款 · 对账; 03 工程交付 : 共享契约 · 模块复用 · 容器部署. Small status badge 已上线 · 微信扫码体验. All copy must be clear, correctly spelled, spacious. No QR code, no fake scannable code, no DataMesh branding. Match reference lighting, material quality, character styling and overall series composition. This is a promotional illustration, not an actual application screenshot.
+
+custom_app:
+Generate ONE standalone 1536x1024 landscape Chinese promotional cover for custom_app. Attached DataMesh poster is ONLY a visual style reference. Same premium deep navy office, luminous cyan translucent 3D modular architecture, cute dark-haired young adult male developer in black jacket at laptop on right, polished white information band at bottom. Title verbatim custom_app upper left. Subtitle 样式与能力解耦的 Flutter 应用底座. Tech line Flutter · WebView · JSSDK · 原生能力. Central visual: two elegant floating smartphones with different generic brand themes, above a glowing foundation platform labeled 非视觉能力底座. Connected glass modules labeled 应用接入平台, App 支撑服务, 综合运管. Small clean SDK strip 支付宝 · 微信 · 高德 · 友盟. Bottom white band three readable sections: 01 核心理念 : 页面与品牌独立 · 通用能力复用; 02 平台协同 : 应用接入 · 支撑服务 · 运维与运营; 03 能力集成 : 账号会话 · WebView · 原生调用 · SDK 集成. Preserve coherent series composition, cyan/teal/purple accents, high quality 3D objects and readable Chinese type. Avoid DataMesh labels, QR codes, invented metrics, claims of production certification or app-store release. Promotional illustration rather than real app screenshot.
+
+Workspace assets:
+public/images/projects/covers/custom-wechat-app.png
+public/images/projects/covers/custom-app.png
+public/images/projects/custom-wechat-app/wechat-code.jpg (original, unmodified)

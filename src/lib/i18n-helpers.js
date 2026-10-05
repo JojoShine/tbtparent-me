@@ -30,6 +30,7 @@ export function localizeProject(project, lang) {
     link: project.link || '#',
     github: project.github || '',
     demo_url: project.demo_url || '',
+    demo_qr_url: project.demo_qr_url || '',
     video_url: project.video_url || '',
     cover_url: project.cover_url || '',
     cover_width: project.cover_width ?? null,

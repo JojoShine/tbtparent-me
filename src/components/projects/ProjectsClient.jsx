@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight, Cpu, Monitor, QrCode, Search, Smartphone } from 'lucide-react'
-import QRCode from 'qrcode'
+import { getProjectQrCode } from '@/lib/project-qr-code'
 import { useLang } from '@/hooks/useLang'
 import { localizeProject } from '@/lib/i18n-helpers'
 import { filterProjectCatalog, getProjectArchivedLabel, getProjectCover, getProjectTrialMode, getProjectTypeLabel, getProjectYear, isFeaturedProject, isProjectShowcaseStyleReady, shouldShowProjectCatalogTools } from '@/lib/project-showcase'
@@ -91,8 +91,8 @@ function ProjectMedia({ project, lang, eager, onPreview }) {
 
 function TrialAction({ project, lang, isMobileViewport, qrCode, qrOpen, onQrOpen, onQrClose }) {
   const destination = project.demo_url || project.link
-  if (!destination || destination === '#') return null
-  const mode = getProjectTrialMode(project.project_type, isMobileViewport)
+  if ((!destination || destination === '#') && !project.demo_qr_url) return null
+  const mode = getProjectTrialMode(project.project_type, isMobileViewport, Boolean(project.demo_qr_url))
   if (mode === 'hidden') return null
 
   if (mode === 'qr') {
@@ -112,6 +112,9 @@ function TrialAction({ project, lang, isMobileViewport, qrCode, qrOpen, onQrOpen
         {qrOpen && (
           <span className="river-project-qr" role="status">
             {qrCode ? <img src={qrCode} alt={lang === 'zh' ? '项目演示二维码' : 'Project demo QR code'} /> : <span>{lang === 'zh' ? '生成中…' : 'Loading…'}</span>}
+            {project.demo_qr_url && <small>{lang === 'zh' ? '扫码体验，或保存原图后识别' : 'Scan to try, or save the image to scan'}</small>}
+            {project.demo_qr_url && <a href={project.demo_qr_url} target="_blank" rel="noreferrer">{lang === 'zh' ? '查看原图' : 'View original'}</a>}
+            {project.demo_qr_url && project.demo_url && <a href={project.demo_url} target="_blank" rel="noreferrer">{lang === 'zh' ? '打开演示链接' : 'Open demo link'}</a>}
           </span>
         )}
       </span>
@@ -230,11 +233,10 @@ export default function ProjectsClient({ projects }) {
       setQrRequestedId(null)
       return
     }
-    const destination = project.demo_url || project.link
     setQrRequestedId(project.id)
-    if (qrCodes[project.id] || !destination || destination === '#') return
+    if (qrCodes[project.id]) return
     try {
-      const code = await QRCode.toDataURL(destination, { width: 220, margin: 1 })
+      const code = await getProjectQrCode(project, { width: 220, margin: 1 })
       setQrCodes(current => ({ ...current, [project.id]: code }))
     } catch {
       setQrCodes(current => ({ ...current, [project.id]: '' }))
@@ -314,18 +316,20 @@ export default function ProjectsClient({ projects }) {
         .river-project-action:hover { border-color: color-mix(in srgb, var(--fg) 55%, var(--border)); background: var(--river-soft); color: var(--fg); } .river-project-action:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
         .river-project-action-primary { border-color: var(--fg); color: var(--bg); background: var(--fg); } .river-project-action-primary:hover { border-color: var(--fg); color: var(--bg); background: var(--fg); opacity: .86; }
         .river-project-qr-wrap { position: relative; display: inline-flex; } .river-project-qr { position: absolute; right: 0; bottom: calc(100% + 10px); z-index: 10; display: grid; width: 174px; min-height: 174px; place-items: center; padding: 10px; border: 1px solid var(--border); background: #fff; box-shadow: 0 18px 50px rgba(0,0,0,.28); color: #222; font: .68rem/1.2 monospace; }
-        .river-project-qr img { width: 152px; height: 152px; } .river-project-archived-note { margin-top: 22px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font: .67rem/1.55 monospace; }
+        .river-project-qr::after { content: ""; position: absolute; top: 100%; left: 0; right: 0; height: 10px; }
+        .river-project-qr img { width: 152px; height: 152px; object-fit: contain; } .river-project-archived-note { margin-top: 22px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font: .67rem/1.55 monospace; }
         .river-project-archived-badge { position: absolute; right: 14px; bottom: 14px; z-index: 2; padding: 6px 10px; border: 1px solid color-mix(in srgb, var(--fg) 32%, transparent); border-radius: 2px; color: color-mix(in srgb, var(--fg) 48%, transparent); background: color-mix(in srgb, var(--bg) 82%, transparent); font: 10px/1.2 monospace; letter-spacing: .12em; transform: rotate(-8deg); transform-origin: center; }
         .river-project.is-archived .river-project-media { opacity: .5; filter: grayscale(1); } .river-project.is-archived .river-project-content { opacity: .58; } .river-project.is-archived .river-project-node span { background: var(--muted); box-shadow: 0 0 0 1px var(--river-line); }
         @media (max-width: 900px) { .river-project { grid-template-columns: minmax(0,1fr) 70px minmax(0,1fr); } .river-project.is-left .river-project-visual { padding-right: 8px; } .river-project.is-left .river-project-content { padding-left: 8px; } .river-project.is-right .river-project-content { padding-right: 8px; } .river-project.is-right .river-project-visual { padding-left: 8px; } .river-project-media { min-height: 220px; } }
         @media (max-width: 760px) {
+          .river-project-qr { left: 0; right: auto; }
           .projects-river-page { padding-top: 28px; padding-bottom: 72px; }
           .projects-river-tools { margin: 0 auto 54px; padding: 0 18px; } .projects-river { padding: 0 18px 0 52px; }
           .projects-year-heading, .projects-year-group:nth-of-type(even) .projects-year-heading { top: -30px; right: auto; left: 0; } .projects-year-heading span { font-size: 3.2rem; }
           .river-project, .river-project.is-right { grid-template-columns: 1fr; grid-template-areas: 'visual' 'content'; gap: 26px; min-height: 0; margin-bottom: 94px; }
           .river-project-node { position: absolute; top: 28px; left: -32px; } .river-project-node span { position: static; width: 10px; height: 10px; margin: 0; transform: none; } .river-project-date { top: 26px; left: -10px; transform: none; }
           .river-project.is-left .river-project-visual, .river-project.is-left .river-project-content, .river-project.is-right .river-project-content, .river-project.is-right .river-project-visual { padding: 0; }
-          .river-project-media { min-height: 0; aspect-ratio: 16/10; } .river-project-content h2 { font-size: clamp(2rem, 11vw, 3rem); } .river-project-status { margin-left: 0; } .river-project-qr-wrap { display: none; }
+          .river-project-media { min-height: 0; aspect-ratio: 16/10; } .river-project-content h2 { font-size: clamp(2rem, 11vw, 3rem); } .river-project-status { margin-left: 0; }
         }
         @media (prefers-reduced-motion: reduce) { .river-project-action { transition: none; } }
         .projects-river-page { position: relative; isolation: isolate; padding-top: clamp(72px, 8vw, 104px); }
