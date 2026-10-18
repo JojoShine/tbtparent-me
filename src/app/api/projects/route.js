@@ -8,7 +8,7 @@ import { normalizeCapabilities } from '@/lib/project-capabilities'
 const PROJECT_FIELDS = [
   'name_zh', 'name_en', 'description_zh', 'description_en',
   'tags_zh', 'tags_en', 'deadline_zh', 'deadline_en',
-  'link', 'github', 'demo_url', 'demo_qr_url', 'project_type', 'sortOrder',
+  'link', 'github', 'demo_url', 'demo_qr_url', 'project_type', 'status', 'is_open_source', 'sortOrder',
   'content_en', 'content_zh', 'recent_focus', 'video_url',
   'cover_url', 'cover_width', 'cover_height',
 ]
@@ -32,6 +32,8 @@ const CAPABILITY_INCLUDE = {
 }
 
 function validateProjectUrls(data) {
+  if (data.status !== undefined && !['planning', 'in_progress', 'completed'].includes(data.status)) return 'Invalid status'
+  if ('is_open_source' in data && typeof data.is_open_source !== 'boolean') return 'Invalid is_open_source'
   if (data.demo_qr_url && !isValidUrl(data.demo_qr_url) && !data.demo_qr_url.startsWith('/api/archive/files?path=')) {
     return 'Invalid demo_qr_url'
   }

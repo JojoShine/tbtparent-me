@@ -16,3 +16,12 @@ test('Common RAG is treated as discontinued even when legacy database status is 
   assert.equal(localizeProject(project, 'zh').deadline, '已下架')
   assert.equal(localizeProject(project, 'en').deadline, 'Discontinued')
 })
+
+
+test('localized projects preserve explicit open-source visibility in either language', () => {
+  for (const lang of ['zh', 'en']) {
+    assert.equal(localizeProject({ is_open_source: true }, lang).is_open_source, true)
+    assert.equal(localizeProject({ is_open_source: false, github: 'https://github.com/example/project' }, lang).is_open_source, false)
+    assert.equal(localizeProject({}, lang).is_open_source, false)
+  }
+})

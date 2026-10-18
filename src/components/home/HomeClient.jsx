@@ -161,7 +161,7 @@ export default function HomeClient({ home, socialLinks, projects }) {
       {/* 简介 */}
       <motion.section variants={fadeUp} style={{ padding: '16px 0' }}>
         {bio.split('\n\n').map((paragraph, i, arr) => (
-          <p key={i} className="text-base leading-loose max-w-prose" style={{ color: 'var(--fg)', marginBottom: i < arr.length - 1 ? '16px' : 0 }}>
+          <p key={i} className="text-base leading-loose max-w-[80ch]" style={{ color: 'var(--fg)', marginBottom: i < arr.length - 1 ? '16px' : 0 }}>
             {renderParagraph(paragraph)}
           </p>
         ))}

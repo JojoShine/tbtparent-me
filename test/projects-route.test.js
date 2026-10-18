@@ -265,3 +265,39 @@ test('project QR attachments reject unsafe URL schemes', async () => {
   assert.equal(response.status, 400)
   assert.equal(calls.creates.length, 0)
 })
+
+test('project status is persisted independently from discontinued availability', async () => {
+  const response = await POST(await authenticatedRequest('POST', projectBody({ status: 'completed', deadline_zh: '已下架' })))
+  assert.equal(response.status, 200)
+  assert.equal(calls.creates[0].data.status, 'completed')
+  assert.equal(calls.creates[0].data.deadline_zh, '已下架')
+})
+
+test('invalid project status is rejected before database writes', async () => {
+  const response = await PUT(await authenticatedRequest('PUT', { id: 1, status: 'unknown' }))
+  assert.equal(response.status, 400)
+  assert.equal(calls.updates.length, 0)
+})
+
+
+test('project creation saves the open-source flag independently from its repository URL', async () => {
+  const response = await POST(await authenticatedRequest('POST', projectBody({ is_open_source: true, github: '' })))
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).is_open_source, true)
+  assert.equal(calls.creates[0].data.is_open_source, true)
+})
+
+test('project update can hide the open-source label without clearing its repository URL', async () => {
+  const response = await PUT(await authenticatedRequest('PUT', { id: 1, is_open_source: false }))
+  assert.equal(response.status, 200)
+  assert.equal(calls.updates[0].data.is_open_source, false)
+  assert.equal('github' in calls.updates[0].data, false)
+})
+
+test('invalid open-source flags are rejected before database writes', async () => {
+  for (const is_open_source of ['false', 1, null]) {
+    const response = await PUT(await authenticatedRequest('PUT', { id: 1, is_open_source }))
+    assert.equal(response.status, 400)
+  }
+  assert.equal(calls.transactions, 0)
+})

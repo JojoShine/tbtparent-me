@@ -9,6 +9,8 @@ import { useLang } from '@/hooks/useLang'
 import { localizeProject } from '@/lib/i18n-helpers'
 import { filterProjectCatalog, getProjectArchivedLabel, getProjectCover, getProjectTrialMode, getProjectTypeLabel, getProjectYear, isFeaturedProject, isProjectShowcaseStyleReady, shouldShowProjectCatalogTools } from '@/lib/project-showcase'
 import EmptyState from '@/components/ui/EmptyState'
+import ProjectStatusBadge from '@/components/ui/ProjectStatusBadge'
+import ProjectOpenSourceBadge from '@/components/ui/ProjectOpenSourceBadge'
 import GithubIcon from '@/components/ui/GithubIcon'
 import ImageLightbox, { IMAGE_ZOOM_CURSOR } from '@/components/ui/ImageLightbox'
 
@@ -151,7 +153,11 @@ function ProjectEntry({ rawProject, index, lang, isMobileViewport, qrState, onQr
           <span><TypeIcon size={13} />{getProjectTypeLabel(project.project_type, lang)}</span>
           <span className="river-project-status">{projectState(project, lang)}</span>
         </div>
-        <h2>{project.name}</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <h2>{project.name}</h2>
+          <ProjectStatusBadge status={project.status} lang={lang} />
+          <ProjectOpenSourceBadge isOpenSource={project.is_open_source} lang={lang} />
+        </div>
         <p className="river-project-description">{project.description}</p>
 
         {project.tags.length > 0 && <div className="river-project-tags">{project.tags.map(tag => <span key={tag}>{tag}</span>)}</div>}

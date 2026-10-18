@@ -36,6 +36,8 @@ export function localizeProject(project, lang) {
     cover_width: project.cover_width ?? null,
     cover_height: project.cover_height ?? null,
     project_type: project.project_type || 'pc',
+    status: project.status || 'planning',
+    is_open_source: project.is_open_source === true,
     recent_focus: Boolean(project.recent_focus),
     createdAt: project.createdAt,
     capabilities: (project.capabilities || []).map(capability => ({

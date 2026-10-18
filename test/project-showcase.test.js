@@ -221,3 +221,12 @@ test('mobile project selector keyboard navigation moves and wraps across project
   assert.equal(projectShowcase.getProjectSelectionForKey(projectIds, 22, 'Home'), 11)
   assert.equal(projectShowcase.getProjectSelectionForKey(projectIds, 22, 'End'), 33)
 })
+
+test('project status labels distinguish planning, development and completion in both languages', () => {
+  assert.equal(projectShowcase.getProjectStatusLabel('planning', 'zh'), '规划中')
+  assert.equal(projectShowcase.getProjectStatusLabel('in_progress', 'zh'), '执行中')
+  assert.equal(projectShowcase.getProjectStatusLabel('completed', 'zh'), '已完成')
+  assert.equal(projectShowcase.getProjectStatusLabel('planning', 'en'), 'Planned')
+  assert.equal(projectShowcase.getProjectStatusLabel('in_progress', 'en'), 'In progress')
+  assert.equal(projectShowcase.getProjectStatusLabel('completed', 'en'), 'Completed')
+})

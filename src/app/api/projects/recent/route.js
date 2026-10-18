@@ -21,6 +21,8 @@ export async function GET() {
         demo_url: true,
         demo_qr_url: true,
         project_type: true,
+        status: true,
+        is_open_source: true,
         recent_focus: true,
         video_url: true,
         sortOrder: true,

@@ -133,3 +133,12 @@ export function getProjectArchivedLabel(isArchived, lang) {
   if (!isArchived) return ''
   return lang === 'zh' ? '已下架' : 'Discontinued'
 }
+
+export function getProjectStatusLabel(status, lang) {
+  const labels = {
+    planning: { zh: '规划中', en: 'Planned' },
+    in_progress: { zh: '执行中', en: 'In progress' },
+    completed: { zh: '已完成', en: 'Completed' },
+  }
+  return (labels[status] || labels.planning)[lang === 'en' ? 'en' : 'zh']
+}

@@ -22,6 +22,8 @@ const getHomePageData = unstable_cache(
           demo_url: true,
           demo_qr_url: true,
           project_type: true,
+          status: true,
+          is_open_source: true,
           sortOrder: true,
           createdAt: true,
         },

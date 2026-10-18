@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete, apiTranslate, inputStyle, textareaStyle, buttonStyle, secondaryButtonStyle, translateButtonStyle, labelStyle } from '@/lib/admin-utils'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ProjectCapabilitiesEditor from '@/components/admin/ProjectCapabilitiesEditor'
+import ProjectStatusBadge from '@/components/ui/ProjectStatusBadge'
+import ProjectOpenSourceBadge from '@/components/ui/ProjectOpenSourceBadge'
 import { updateCapability } from '@/lib/project-capability-editor'
 
 const emptyProject = {
@@ -14,7 +16,7 @@ const emptyProject = {
   deadline_zh: '', deadline_en: '',
   link: '', github: '', demo_url: '', demo_qr_url: '', video_url: '',
   cover_url: '', cover_width: null, cover_height: null,
-  project_type: 'pc', recent_focus: false, sortOrder: 0,
+  project_type: 'pc', status: 'planning', is_open_source: false, recent_focus: false, sortOrder: 0,
   capabilities: [],
 }
 
@@ -262,6 +264,8 @@ export default function AdminProjects() {
               <div>
                 <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--fg)' }}>{p.name_zh}</span>
                 <span style={{ marginLeft: '8px', fontSize: '0.8rem', color: 'var(--muted)' }}>{p.deadline_zh}</span>
+                <ProjectStatusBadge status={p.status} lang="zh" />
+                <ProjectOpenSourceBadge isOpenSource={p.is_open_source} lang="zh" />
                 {p.recent_focus && (
                   <span style={{ marginLeft: '8px', fontSize: '0.7rem', padding: '1px 6px', backgroundColor: 'var(--fg)', color: 'var(--bg)', borderRadius: '2px' }}>聚焦</span>
                 )}
@@ -513,6 +517,27 @@ export default function AdminProjects() {
             <input id="demo-qr-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleQrUpload} disabled={uploadingQr} />
             {editing.demo_qr_url && <button type="button" style={secondaryButtonStyle} onClick={() => handleChange('demo_qr_url', null)}>清除二维码附件</button>}
             {uploadingQr && <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>上传中...</span>}
+          </div>
+
+          <div>
+            <label style={labelStyle} htmlFor="project-status">项目状态</label>
+            <select id="project-status" style={inputStyle} value={editing.status || 'planning'} onChange={event => handleChange('status', event.target.value)}>
+              <option value="planning">规划中</option>
+              <option value="in_progress">执行中</option>
+              <option value="completed">已完成</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={editing.is_open_source || false}
+                onChange={e => handleChange('is_open_source', e.target.checked)}
+                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              />
+              <span>开源（关闭时不展示标签）</span>
+            </label>
           </div>
 
           {/* 近期聚焦开关 */}

@@ -13,6 +13,8 @@ import { defaultSchema } from 'hast-util-sanitize'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import MermaidBlock from '@/components/ui/MermaidBlock'
+import ProjectStatusBadge from '@/components/ui/ProjectStatusBadge'
+import ProjectOpenSourceBadge from '@/components/ui/ProjectOpenSourceBadge'
 import GithubIcon from '@/components/ui/GithubIcon'
 import ImageLightbox, { IMAGE_ZOOM_CURSOR } from '@/components/ui/ImageLightbox'
 import { useLang } from '@/hooks/useLang'
@@ -344,6 +346,8 @@ export default function ProjectDetailPage() {
           <div className="project-meta font-mono">
             <span>{(() => { const Icon = typeIconMap[localized.project_type] || Monitor; return <Icon size={14} /> })()}</span>
             {project.createdAt && <span>{formatDate(project.createdAt)}</span>}
+            <ProjectStatusBadge status={project.status} lang={lang} />
+            <ProjectOpenSourceBadge isOpenSource={project.is_open_source} lang={lang} />
             {localized.deadline && <span className={isArchived ? 'project-archived-state' : ''}>{localized.deadline}</span>}
           </div>
 

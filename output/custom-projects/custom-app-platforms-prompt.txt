@@ -1,0 +1,5 @@
+Generation mode: built-in image_gen.
+Edit target: public/images/projects/covers/custom-app-v2.png.
+Final asset: public/images/projects/covers/custom-app-platforms.png.
+
+undefined

@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation'
 import { ArrowUpRight, Monitor, Play, QrCode, Smartphone, Tv } from 'lucide-react'
 import { getProjectQrCode } from '@/lib/project-qr-code'
 import GithubIcon from '@/components/ui/GithubIcon'
+import ProjectStatusBadge from '@/components/ui/ProjectStatusBadge'
+import ProjectOpenSourceBadge from '@/components/ui/ProjectOpenSourceBadge'
+import { useLang } from '@/hooks/useLang'
 
 const typeIconMap = { mobile: Smartphone, pc: Monitor, dashboard: Tv }
 const typeLabelMap = { mobile: '移动端', pc: 'PC 端', dashboard: '数据大屏' }
@@ -19,6 +22,7 @@ function projectHost(url) {
 }
 
 export default function ProjectCard({ project, fromHome = false }) {
+  const { lang } = useLang()
   const router = useRouter()
   const mediaRef = useRef(null)
   const videoRef = useRef(null)
@@ -116,6 +120,10 @@ export default function ProjectCard({ project, fromHome = false }) {
             <span>{isArchived ? '已下架' : hasVideo ? '视频演示' : hasDemo ? '在线体验' : '项目案例'}</span>
           </div>
           <h3>{project.name}</h3>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <ProjectStatusBadge status={project.status} lang={lang} />
+            <ProjectOpenSourceBadge isOpenSource={project.is_open_source} lang={lang} />
+          </div>
           <p>{project.description}</p>
         </div>
 
