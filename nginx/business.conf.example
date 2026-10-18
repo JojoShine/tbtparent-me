@@ -1,6 +1,6 @@
-# /etc/nginx/business/tbtparent-me/tbtparent-me.conf
+# /etc/nginx/business/tbtparent.me/tbtparent-me.conf
 # Include once from the EXISTING HTTPS server:
-# include /etc/nginx/business/tbtparent-me/*.conf;
+# include /etc/nginx/business/tbtparent.me/*.conf;
 # Replace existing root locations before loading; preserve other businesses (/surveys, etc.).
 # Keep domain, certificates, HTTPS redirect and any 404 policy in the existing server.
 location / {

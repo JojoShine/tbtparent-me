@@ -73,7 +73,7 @@ docker compose --env-file .env.prod -f compose.prod.yaml run --rm --no-deps migr
 
 先保留 PM2 在 5001 运行，将容器单独在 31000 拉起并检查 `curl --fail http://127.0.0.1:31000/healthz`。还要验证首页、作品、后台登录、MinIO 图片、文件下载及已有其他业务路径。
 
-根站点片段安装为 `/etc/nginx/business/tbtparent-me/tbtparent-me.conf`，内容取同一 Release 的 `business.conf.example`。在现有 HTTPS server 中添加一次 `include /etc/nginx/business/tbtparent-me/*.conf;`，保留现有域名、证书和 HTTP→HTTPS 跳转。
+根站点片段安装为 `/etc/nginx/business/tbtparent.me/tbtparent-me.conf`，内容取同一 Release 的 `business.conf.example`。在现有 HTTPS server 中只保留一次 `include /etc/nginx/business/tbtparent.me/*.conf;`；已有该 include 时直接复用，不再创建另一份目录或 include。保留现有域名、证书和 HTTP→HTTPS 跳转。
 
 原站点 `location /`、`/_next/static/`、`/assets/`、`/api/` 若仍转发 5001，应在保存原配置后替换为新根片段或逐条核对并改到 31000。不能重复 location，也不能重复 include。保留 `/surveys`、`/owl` 等其他业务的独立 location；它们优先于根路径。原有 404 落地页策略留在宿主机，根据实际站点配置核对，不自动覆盖。
 
