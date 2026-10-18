@@ -7,7 +7,7 @@ export const qingwenProjectData = {
   tags_en: ['Surveys', 'Custom Questions', 'Cross-device Forms', 'Response Collection', 'Results'],
   deadline_zh: '持续完善中',
   deadline_en: 'Continuously evolving',
-  status: 'in_progress',
+  status: 'completed',
   project_type: 'pc',
   recent_focus: false,
   content_zh: `## 做了什么
