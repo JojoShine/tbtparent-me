@@ -1,0 +1,45 @@
+name: ${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME is required}
+services:
+  app:
+    image: ${APP_IMAGE:?APP_IMAGE is required}
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "8080"
+      BASE_PATH: ${BASE_PATH:-}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      ADMIN_SECRET: ${ADMIN_SECRET:?ADMIN_SECRET is required}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:?MINIO_ENDPOINT is required}
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:?MINIO_ACCESS_KEY is required}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?MINIO_SECRET_KEY is required}
+      MINIO_BUCKET: ${MINIO_BUCKET:-tbtparent-me}
+      BAIDU_IP_AK: ${BAIDU_IP_AK:-}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://tbtparent.me,https://www.tbtparent.me}
+    ports:
+      - "127.0.0.1:${APP_PORT:?APP_PORT is required}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: [CMD, /app/bin/healthcheck]
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 12
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  migrate:
+    image: ${APP_IMAGE:?APP_IMAGE is required}
+    profiles: [ops]
+    restart: "no"
+    environment:
+      DATABASE_URL: ${MIGRATION_DATABASE_URL:?MIGRATION_DATABASE_URL is required}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: [/app/bin/migrate]

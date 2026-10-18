@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# tbtparent-me
 
-## Getting Started
+个人站，使用 Next.js 16、React 19、Prisma、外部 PostgreSQL 和 MinIO。
 
-First, run the development server:
+## 本地开发
 
-```bash
+使用 Node.js 22.23.3 或更新的兼容版本：
+
+```sh
+npm ci
+cp .env.example .env
+# 配置开发数据库和 MinIO，然后显式迁移、初始化。
+npx prisma generate
+npx prisma migrate deploy
+node prisma/bootstrap.js
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`prisma/bootstrap.js` 只创建缺失的首页与关于页基础记录，不导入示例作品、不覆盖已有内容。历史 `prisma/seed.js` 会写入演示数据，不用于生产初始化。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+npm test
+bash deploy/build.sh
+bash deploy/verify-image.sh tbtparent-me:local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 生产部署
 
-## Learn More
+使用 Docker 和 GHCR。完整操作步骤、旧 PM2 迁移、备份和回滚见 [DEPLOYMENT.md](DEPLOYMENT.md)。部署约定来源：[deploy-standards](https://github.com/JojoShine/deploy-standards/blob/main/DEPLOYMENT.md)，本次对齐版本 `e797017c869dadf9cc994f4aea9e4d97eea38e01`。
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+GitHub Actions 对 PR 执行检查及隔离数据库镜像验收；main 发布已验收的完整 SHA 标签；`vX.Y.Z` 发布提升同一镜像摘要并附带匹配部署文件。服务器只拉镜像，不构建源码。

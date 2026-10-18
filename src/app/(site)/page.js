@@ -1,4 +1,5 @@
 import { unstable_cache } from 'next/cache.js'
+import { connection } from 'next/server'
 import HomeClient from '@/components/home/HomeClient'
 import { prisma } from '@/lib/prisma'
 import { sortProjectsByYearAndOrder } from '@/lib/project-showcase'
@@ -36,6 +37,7 @@ const getHomePageData = unstable_cache(
 )
 
 export default async function HomePage() {
+  await connection()
   const [home, socialLinks, projects] = await getHomePageData()
 
   return <HomeClient home={home} socialLinks={socialLinks} projects={projects} />

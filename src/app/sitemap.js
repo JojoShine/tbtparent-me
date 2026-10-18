@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { getLibraryPath } from '@/lib/public-routes'
 
+export const dynamic = 'force-dynamic'
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tbtparent.me'
 
 // 静态页面

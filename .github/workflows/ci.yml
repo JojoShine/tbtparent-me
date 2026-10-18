@@ -1,0 +1,74 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.23.3
+          cache: npm
+      - run: npm ci
+      - run: npx --no-install prisma generate
+      - run: npm test
+      - run: npx --no-install eslint src/app/healthz/route.js prisma/bootstrap.js test/health-route.test.js test/deployment-release.test.js test/deployment-publish.test.js
+      - run: bash -n deploy/*.sh
+      - name: Validate production Compose without real credentials
+        run: docker compose --env-file .env.prod.example -f compose.prod.yaml config --quiet
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          target: runtime
+          load: true
+          push: false
+          platforms: linux/amd64
+          tags: tbtparent-me:verified
+          build-args: |
+            VCS_REF=${{ github.sha }}
+            APP_VERSION=sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - run: bash deploy/verify-image.sh tbtparent-me:verified
+      - name: Export the exact verified image for publication
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker save tbtparent-me:verified | gzip > /tmp/verified-image.tar.gz
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: verified-image
+          path: /tmp/verified-image.tar.gz
+          retention-days: 1
+          compression-level: 0
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: verified-image
+          path: /tmp
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish immutable commit candidate
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+        run: bash deploy/publish-candidate.sh
