@@ -189,8 +189,8 @@ export default function CatDuty() {
         .cat-duty {
           position: fixed;
           bottom: clamp(12px, 2vh, 24px);
-          right: clamp(16px, 4vw, 60px);
-          z-index: 999;
+          right: var(--cat-duty-right);
+          z-index: 20;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -280,7 +280,7 @@ export default function CatDuty() {
           border-radius: 12px;
           padding: 0;
           margin-bottom: 0;
-          width: 280px;
+          width: var(--cat-duty-width);
           max-height: 55vh;
           overflow-y: auto;
           box-shadow: 0 4px 24px rgba(0,0,0,0.1);
@@ -470,7 +470,7 @@ export default function CatDuty() {
           align-items: center;
           gap: 3px;
         }
-        @media (max-width: 1279px) {
+        @media (max-width: 1279px), (max-height: 699px) {
           .cat-duty { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {

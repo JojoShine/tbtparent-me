@@ -101,6 +101,12 @@ body {
 }
 
 /* 公共站点页面统一框架 */
+:root {
+  --cat-duty-width: 280px;
+  --cat-duty-right: clamp(16px, 4vw, 60px);
+  --cat-duty-gap: 32px;
+}
+
 .site-main {
   padding: 1.5rem clamp(1.25rem, 5vw, 8rem) 0;
 }
@@ -108,6 +114,7 @@ body {
 .site-page-shell {
   width: 100%;
   max-width: 75rem;
+  min-width: 0;
   margin: 0 auto;
 }
 
@@ -120,6 +127,18 @@ body {
 @media (max-width: 767px) {
   .site-main {
     padding: 1.5rem 1rem 0;
+  }
+}
+
+/* The fixed cat occupies a reserved rail, including beside the footer. */
+@media (min-width: 1280px) and (min-height: 700px) {
+  .site-main {
+    padding-right: calc(var(--cat-duty-right) + var(--cat-duty-width) + var(--cat-duty-gap));
+  }
+
+  .site-footer {
+    padding-left: clamp(1.25rem, 5vw, 8rem);
+    padding-right: calc(var(--cat-duty-right) + var(--cat-duty-width) + var(--cat-duty-gap));
   }
 }
 

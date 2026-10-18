@@ -13,7 +13,7 @@ export default function SiteLayout({ children }) {
           {children}
         </div>
       </main>
-      <div className="relative z-10 mt-auto">
+      <div className="site-footer relative z-10 mt-auto">
         <Footer />
       </div>
       <CatDuty />

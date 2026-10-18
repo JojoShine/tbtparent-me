@@ -8,10 +8,10 @@ export default function GameLayout({ children }) {
     <>
       <ParticleBackground />
       <Navbar />
-      <main className="flex-1 relative z-10" style={{ padding: '1.5rem clamp(1.25rem, 5vw, 8rem) 0' }}>
+      <main className="site-main flex-1 relative z-10">
         {children}
       </main>
-      <div className="relative z-10 mt-auto">
+      <div className="site-footer relative z-10 mt-auto">
         <Footer />
       </div>
       <CatDuty />
