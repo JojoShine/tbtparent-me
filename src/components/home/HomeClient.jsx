@@ -7,6 +7,7 @@ import { ExternalLink, Mail, MessageCircle, Cat } from 'lucide-react'
 import { useLang } from '@/hooks/useLang'
 import { localizedField, localizeProject } from '@/lib/i18n-helpers'
 import ProjectCard from '@/components/ui/ProjectCard'
+import WuyuShop from '@/components/home/WuyuShop'
 
 // 图标映射
 const iconMap = {
@@ -194,6 +195,10 @@ export default function HomeClient({ home, socialLinks, projects }) {
             )
           })}
         </div>
+      </motion.section>
+
+      <motion.section variants={fadeUp} style={{ padding: '24px 0' }}>
+        <WuyuShop lang={lang} />
       </motion.section>
 
       {/* 项目卡片 */}

@@ -8,10 +8,10 @@ export default function GameLayout({ children }) {
     <>
       <ParticleBackground />
       <Navbar />
-      <main className="site-main flex-1 relative z-10">
+      <main className="site-main game-main flex-1 relative z-10">
         {children}
       </main>
-      <div className="site-footer relative z-10 mt-auto">
+      <div className="relative z-10 mt-auto">
         <Footer />
       </div>
       <CatDuty />

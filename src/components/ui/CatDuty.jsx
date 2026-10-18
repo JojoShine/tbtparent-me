@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { Cake } from 'lucide-react'
 import { Solar } from 'lunar-javascript'
@@ -139,16 +140,52 @@ function getDutyCat() {
 
 export default function CatDuty() {
   const [cat, setCat] = useState(null)
+  const [hasRoom, setHasRoom] = useState(false)
+  const cardRef = useRef(null)
+  const pathname = usePathname()
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setCat(getDutyCat()))
     return () => cancelAnimationFrame(frame)
   }, [])
 
+  useEffect(() => {
+    if (!cat) return
+    const main = document.querySelector('.site-main')
+    const footer = document.querySelector('footer')
+    const content = main?.querySelector('.site-page-reading')
+      || main?.querySelector('.site-page-shell') || main?.firstElementChild
+    if (!content) return
+
+    const measure = () => {
+      const card = cardRef.current
+      if (!card || window.innerWidth < 1280 || window.innerHeight < 700) {
+        setHasRoom(false)
+        return
+      }
+      const footerRight = Math.max(0, ...Array.from(footer?.querySelectorAll('a, span') || [])
+        .map(element => element.getBoundingClientRect().right))
+      const protectedRight = Math.max(content.getBoundingClientRect().right, footerRight)
+      const gap = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cat-duty-gap'))
+      setHasRoom(card.getBoundingClientRect().left >= protectedRight + gap)
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(content)
+    if (main) observer.observe(main)
+    if (footer) observer.observe(footer)
+    window.addEventListener('resize', measure)
+    const frame = requestAnimationFrame(measure)
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [cat, pathname])
+
   if (!cat) return null
 
   return (
-    <div className="cat-duty">
+    <div ref={cardRef} className="cat-duty" data-visible={hasRoom} aria-hidden={!hasRoom}>
       <div className="cat-bubble">
         <div className="cat-bubble-bar">
           <span className="cat-bubble-dot cat-bubble-dot-r" />
@@ -192,9 +229,13 @@ export default function CatDuty() {
           right: var(--cat-duty-right);
           z-index: 20;
           display: flex;
+          visibility: hidden;
           flex-direction: column;
           align-items: center;
           pointer-events: none;
+        }
+        .cat-duty[data-visible="true"] {
+          visibility: visible;
         }
         .cat-animation {
           position: relative;

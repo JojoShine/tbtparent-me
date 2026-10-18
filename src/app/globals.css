@@ -118,6 +118,10 @@ body {
   margin: 0 auto;
 }
 
+.game-main > * {
+  margin-inline: auto;
+}
+
 .site-page-reading {
   width: 100%;
   max-width: 56rem;
@@ -127,18 +131,6 @@ body {
 @media (max-width: 767px) {
   .site-main {
     padding: 1.5rem 1rem 0;
-  }
-}
-
-/* The fixed cat occupies a reserved rail, including beside the footer. */
-@media (min-width: 1280px) and (min-height: 700px) {
-  .site-main {
-    padding-right: calc(var(--cat-duty-right) + var(--cat-duty-width) + var(--cat-duty-gap));
-  }
-
-  .site-footer {
-    padding-left: clamp(1.25rem, 5vw, 8rem);
-    padding-right: calc(var(--cat-duty-right) + var(--cat-duty-width) + var(--cat-duty-gap));
   }
 }
 
