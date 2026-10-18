@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useLang } from '@/hooks/useLang'
+import { TOOL_GROUPS as toolStructure, BUILTIN_TOOLS } from '@/lib/tool-catalog'
 import { localizedField } from '@/lib/i18n-helpers'
 import ImageCompressor from './ImageCompressor'
 import QRCodeGenerator from './QRCodeGenerator'
@@ -25,30 +27,13 @@ const stagger = {
   animate: { transition: { staggerChildren: 0.1 } }
 }
 
-// 工具分类和子功能
-const toolStructure = [
-  {
-    key: 'office',
-    label: '办公',
-    children: [
-      { key: 'image-compressor', label: '图片压缩' },
-      { key: 'qrcode-generator', label: '二维码生成' },
-      { key: 'photo-tool', label: '证件照制作' },
-      { key: 'background-remover', label: 'AI抠图' },
-    ]
-  },
-  {
-    key: 'network',
-    label: '网络',
-    children: [
-      { key: 'ip-query', label: 'IP查询' },
-      { key: 'ip-calculator', label: 'IP计算器' },
-      { key: 'network-planning', label: '组网规划' },
-      { key: 'network-latency', label: '延迟测试' },
-      { key: 'dns-lookup', label: 'DNS查询' },
-    ]
-  },
-]
+function ToolSelection({ onSelect }) {
+  const key = useSearchParams().get('tool')
+  useEffect(() => {
+    if (BUILTIN_TOOLS.some(tool => tool.key === key)) onSelect(key)
+  }, [key, onSelect])
+  return null
+}
 
 export default function ToolsPage() {
   const { lang, t } = useLang()
@@ -71,6 +56,7 @@ export default function ToolsPage() {
       initial="initial"
       animate="animate"
     >
+      <Suspense fallback={null}><ToolSelection onSelect={setActiveTool} /></Suspense>
       <motion.section variants={fadeUp} style={{ marginBottom: '32px' }}>
         <h1 className="text-3xl md:text-4xl font-mono font-bold" style={{ color: 'var(--fg)' }}>
           {t('nav.tools')}

@@ -1,3 +1,4 @@
+import { PUBLIC_BLOG_ENABLED } from '@/lib/site-features'
 import { prisma } from '@/lib/prisma'
 import { getLibraryPath } from '@/lib/public-routes'
 
@@ -9,7 +10,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tbtparent.me'
 const staticPages = [
   { url: '/', priority: 1.0, changeFrequency: 'weekly' },
   { url: '/about', priority: 0.8, changeFrequency: 'monthly' },
-  { url: '/blog', priority: 0.9, changeFrequency: 'daily' },
+  ...(PUBLIC_BLOG_ENABLED ? [{ url: '/blog', priority: 0.9, changeFrequency: 'daily' }] : []),
   { url: '/projects', priority: 0.8, changeFrequency: 'weekly' },
   { url: getLibraryPath(), priority: 0.7, changeFrequency: 'weekly' },
   { url: '/tools', priority: 0.7, changeFrequency: 'monthly' },
@@ -33,7 +34,7 @@ export default async function sitemap() {
 
   // 动态页面：博客文章
   let blogEntries = []
-  try {
+  if (PUBLIC_BLOG_ENABLED) try {
     const blogs = await prisma.blog.findMany({
       where: { status: 'published', deleted_at: null },
       select: { slug: true, updatedAt: true },

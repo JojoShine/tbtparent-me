@@ -27,8 +27,8 @@ export const metadata = {
     default: '甜宝塔家长 | tbtparent',
     template: '%s | 甜宝塔家长',
   },
-  description: '极简黑白个人站 - 技术博客、开源项目、在线工具、小游戏。涵盖运维、开发、AI、数据等领域。',
-  keywords: ['tbtparent', '甜宝塔家长', '个人博客', '技术博客', '运维', '开发', 'AI', '在线工具', '小游戏'],
+  description: '极简黑白个人站 - 作品展示、在线工具、小游戏。涵盖运维、开发、AI、数据等领域。',
+  keywords: ['tbtparent', '甜宝塔家长', '个人作品', '运维', '开发', 'AI', '在线工具', '小游戏'],
   authors: [{ name: 'tbtparent', url: SITE_URL }],
   creator: 'tbtparent',
   robots: {
@@ -38,6 +38,7 @@ export const metadata = {
   },
   alternates: {
     canonical: SITE_URL,
+    types: { 'application/rss+xml': `${SITE_URL}/api/rss` },
   },
   openGraph: {
     type: 'website',
@@ -45,13 +46,13 @@ export const metadata = {
     url: SITE_URL,
     siteName: '甜宝塔家长',
     title: '甜宝塔家长 | tbtparent',
-    description: '极简黑白个人站 - 技术博客、开源项目、在线工具、小游戏',
+    description: '极简黑白个人站 - 作品展示、在线工具、小游戏',
     images: [{ url: '/assets/logo.jpg', width: 512, height: 512, alt: '甜宝塔家长' }],
   },
   twitter: {
     card: 'summary',
     title: '甜宝塔家长 | tbtparent',
-    description: '极简黑白个人站 - 技术博客、开源项目、在线工具、小游戏',
+    description: '极简黑白个人站 - 作品展示、在线工具、小游戏',
     images: ['/assets/logo.jpg'],
   },
   icons: {
@@ -88,7 +89,7 @@ export default function RootLayout({ children }) {
               name: '甜宝塔家长',
               alternateName: 'tbtparent',
               url: SITE_URL,
-              description: '极简黑白个人站 - 技术博客、开源项目、在线工具、小游戏',
+              description: '极简黑白个人站 - 作品展示、在线工具、小游戏',
               author: { '@type': 'Person', name: 'tbtparent', url: SITE_URL },
               potentialAction: {
                 '@type': 'SearchAction',

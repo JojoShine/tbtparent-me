@@ -9,6 +9,8 @@ import Logo from '@/components/ui/Logo'
 import LanguageSwitch from '@/components/ui/LanguageSwitch'
 import GithubIcon from '@/components/ui/GithubIcon'
 import { useLang } from '@/hooks/useLang'
+import { PUBLIC_BLOG_ENABLED } from '@/lib/site-features'
+import { BUILTIN_TOOLS as builtinTools, getToolPath } from '@/lib/tool-catalog'
 import { getLibraryPath } from '@/lib/public-routes'
 
 export default function Navbar() {
@@ -19,7 +21,7 @@ export default function Navbar() {
   
   const navItems = [
     { key: 'nav.home', path: '/' },
-    { key: 'nav.blog', path: '/blog' },
+    ...(PUBLIC_BLOG_ENABLED ? [{ key: 'nav.blog', path: '/blog' }] : []),
     { key: 'nav.projects', path: '/projects' },
     { key: 'nav.tools', path: '/tools' },
     { key: 'nav.game', path: '/game' },
@@ -156,17 +158,6 @@ export default function Navbar() {
 }
 
 // 搜索弹窗组件
-const builtinTools = [
-  { key: 'image-compressor', label_zh: '图片压缩', label_en: 'Image Compressor', category_zh: '办公' },
-  { key: 'qrcode-generator', label_zh: '二维码生成', label_en: 'QR Code Generator', category_zh: '办公' },
-  { key: 'photo-tool', label_zh: '证件照制作', label_en: 'ID Photo Maker', category_zh: '办公' },
-  { key: 'background-remover', label_zh: 'AI抠图', label_en: 'AI Background Remover', category_zh: '办公' },
-  { key: 'ip-query', label_zh: 'IP查询', label_en: 'IP Query', category_zh: '网络' },
-  { key: 'ip-calculator', label_zh: 'IP计算器', label_en: 'IP Calculator', category_zh: '网络' },
-  { key: 'network-planning', label_zh: '组网规划', label_en: 'Network Planning', category_zh: '网络' },
-  { key: 'network-latency', label_zh: '延迟测试', label_en: 'Network Latency', category_zh: '网络' },
-  { key: 'dns-lookup', label_zh: 'DNS查询', label_en: 'DNS Lookup', category_zh: '网络' },
-]
 
 const searchPages = [
   { key: 'idiom-game', label_zh: '成语闯关', label_en: 'Idiom Game', description_zh: '猜成语小游戏', path: '/game/idiom' },
@@ -192,7 +183,7 @@ function SearchModal({ onClose }) {
   // 打开时加载全部可搜索数据（只请求一次）
   useEffect(() => {
     Promise.all([
-      fetch('/api/blog?pageSize=200').then(r => r.json()).then(d => d.blogs || []).catch(() => []),
+      PUBLIC_BLOG_ENABLED ? fetch('/api/blog?pageSize=200').then(r => r.json()).then(d => d.blogs || []).catch(() => []) : Promise.resolve([]),
       fetch('/api/projects').then(r => r.json()).catch(() => []),
       fetch('/api/tools').then(r => r.json()).catch(() => []),
       fetch('/api/archive/novels').then(r => r.json()).catch(() => []),
@@ -271,7 +262,7 @@ function SearchModal({ onClose }) {
               composingRef.current = false
               setSearch(e.target.value)
             }}
-            placeholder="搜索博客、作品、工具、游戏..."
+            placeholder={PUBLIC_BLOG_ENABLED ? '搜索博客、作品、工具、游戏...' : '搜索作品、工具、游戏...'}
             className="flex-1 min-w-0 bg-transparent outline-none font-mono text-base placeholder:text-[color:var(--muted)]"
             style={{ color: 'var(--fg)' }}
             autoFocus
@@ -291,7 +282,7 @@ function SearchModal({ onClose }) {
         {!q ? (
           <div className="text-center text-[color:var(--muted)] p-6">
             <p className="font-mono text-sm">输入关键词开始搜索</p>
-            <p className="font-mono text-xs mt-2">支持博客、项目、工具、游戏检索</p>
+            <p className="font-mono text-xs mt-2">{PUBLIC_BLOG_ENABLED ? '支持博客、项目、工具、游戏检索' : '支持作品、工具、游戏检索'}</p>
           </div>
         ) : !cache ? (
           <div className="text-center text-[color:var(--muted)] p-6">
@@ -344,7 +335,7 @@ function SearchModal({ onClose }) {
                     <h3 className="font-mono text-xs mb-2 text-[color:var(--muted)]">工具</h3>
                     <div className="space-y-2">
                       {results.tools.map(tool => (
-                        <Link key={tool.id} href="/tools" onClick={onClose}
+                        <Link key={tool.id} href={tool._builtin ? getToolPath(tool.id) : (tool.link || '/tools')} onClick={onClose}
                           className="block p-3 rounded transition-colors hover:opacity-70"
                           style={{ backgroundColor: 'var(--border)' }}>
                           <p className="font-mono text-sm text-[color:var(--fg)]">{tool.name_zh}</p>

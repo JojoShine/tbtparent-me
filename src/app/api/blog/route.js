@@ -1,3 +1,4 @@
+import { PUBLIC_BLOG_ENABLED } from '@/lib/site-features'
 import { prisma } from '@/lib/prisma'
 import { isAdminRequest, withAuth } from '@/lib/auth'
 import { revalidateTag, unstable_cache } from 'next/cache.js'
@@ -82,6 +83,9 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const slug = searchParams.get('slug')
     const isAdmin = isAdminRequest(request)
+    if (!PUBLIC_BLOG_ENABLED && !isAdmin) {
+      return Response.json({ error: 'Not found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } })
+    }
 
     if (slug) {
       const blog = isAdmin

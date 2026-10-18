@@ -53,25 +53,12 @@ test.after(() => {
 
 test.beforeEach(() => { calls.length = 0 })
 
-test('public blog detail only queries published, non-deleted posts', async () => {
-  const response = await GET(new Request('http://localhost/api/blog?slug=draft-post'))
-
-  assert.equal(response.status, 200)
-  assert.deepEqual(calls[0][1].where, {
-    slug: 'draft-post',
-    status: 'published',
-    deleted_at: null,
-  })
-})
-
-test('public blog list ignores a caller-provided draft status', async () => {
-  await GET(new Request('http://localhost/api/blog?status=draft'))
-
-  const countCall = calls.find(([method]) => method === 'count')
-  assert.deepEqual(countCall[1].where, {
-    status: 'published',
-    deleted_at: null,
-  })
+test('hidden public blog list and detail return 404 without loading content', async () => {
+  for (const path of ['/api/blog', '/api/blog?slug=draft-post', '/api/blog?status=published']) {
+    const response = await GET(new Request('http://localhost' + path))
+    assert.equal(response.status, 404)
+    assert.equal(calls.length, 0)
+  }
 })
 
 test('authenticated admin blog list can query drafts', async () => {
@@ -84,4 +71,12 @@ test('authenticated admin blog list can query drafts', async () => {
     status: 'draft',
     deleted_at: null,
   })
+})
+
+test('authenticated admin can still load retained blog content', async () => {
+  const response = await GET(new Request('http://localhost/api/blog?slug=draft-post', {
+    headers: { Authorization: `Bearer ${createJwt(process.env.ADMIN_SECRET)}` },
+  }))
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).slug, 'draft-post')
 })
