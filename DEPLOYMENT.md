@@ -84,6 +84,8 @@ curl --fail https://tbtparent.me/healthz
 
 确认公网及其他业务正常后再停止旧 PM2 进程；保留原部署目录及启动配置直到回滚窗口结束。旧 deploy/nginx.conf 和 ecosystem.config.cjs 仅作 PM2 回滚参考，不再作为新部署入口。以后仅镜像升级通常不改 Nginx。
 
+旧入口 `https://www.counttech.cloud/project-manager/` 的停服提示由宿主机单独维护：`nginx/project-manager-redirect.html` 安装到 `/srv/www/project-manager-retired.html`，`nginx/project-manager-retired.conf` 安装到 `/etc/nginx/business/counttech.cloud/project-manager.conf`。复用该域名原有的 include，备份后检查 Nginx 配置并重载，无需重建应用镜像。旧入口及子页面显示 5 秒倒计时，可暂停、继续或立即前往 `https://tbtparent.me/flowcraft/`；不转发旧路径和参数，旧表单提交返回 410。未启用 JavaScript 时保留普通跳转链接。
+
 ## 回滚与日常运维
 
 迁移失败不替换旧应用。容器启动或健康失败，恢复上一版本 Compose 与 APP_IMAGE digest，然后 `up -d --no-build --wait app`，重新检查健康。首次 PM2 切换失败则恢复原 Nginx 并检查后恢复 PM2。应用回滚不会自动回滚数据库；迁移应先加结构、后切应用、另发版本删旧结构。破坏性变更需另行安排数据库恢复。
