@@ -14,7 +14,7 @@ const emptyProject = {
   content_zh: '', content_en: '',
   tags_zh: [], tags_en: [],
   deadline_zh: '', deadline_en: '',
-  link: '', github: '', demo_url: '', demo_qr_url: '', video_url: '',
+  link: '', github: '', demo_url: '', demo_qr_url: '', console_url: '', video_url: '',
   cover_url: '', cover_width: null, cover_height: null,
   project_type: 'pc', status: 'planning', is_open_source: false, recent_focus: false, sortOrder: 0,
   capabilities: [],
@@ -476,6 +476,10 @@ export default function AdminProjects() {
               <input style={inputStyle} value={editing.demo_url || ''} onChange={e => handleChange('demo_url', e.target.value)} placeholder="https://..." />
             </div>
             <div>
+              <label style={labelStyle} htmlFor="console-url">运管后台地址（独立网页入口，可选）</label>
+              <input id="console-url" type="url" style={inputStyle} value={editing.console_url || ''} onChange={e => handleChange('console_url', e.target.value)} placeholder="https://.../console/" />
+            </div>
+            <div>
               <label style={labelStyle}>演示视频地址</label>
               <input style={inputStyle} value={editing.video_url || ''} onChange={e => handleChange('video_url', e.target.value)} placeholder="https://...mp4" />
             </div>
@@ -511,7 +515,7 @@ export default function AdminProjects() {
           <div>
             <label style={labelStyle} htmlFor="demo-qr-upload">二维码附件（二维码或小程序码原图）</label>
             <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: '10px' }}>
-              可只填写演示链接，也可只上传二维码图片。两者都有时，扫码展示附件，直接访问使用链接。图片不会重新生成或压缩。
+              可只填写演示链接，也可只上传二维码图片。两者都有时，扫码展示附件，直接访问使用链接。运管后台作为独立入口，可与 App 下载码同时展示。图片不会重新生成或压缩。
             </p>
             {editing.demo_qr_url && <img src={editing.demo_qr_url} alt="演示二维码附件预览" style={{ display: 'block', width: '180px', height: '180px', objectFit: 'contain', background: '#fff', marginBottom: '10px' }} />}
             <input id="demo-qr-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleQrUpload} disabled={uploadingQr} />

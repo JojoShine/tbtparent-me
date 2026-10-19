@@ -138,6 +138,11 @@ export default function ProjectCard({ project, fromHome = false }) {
             <span className="project-archived-action">项目已下架</span>
           ) : (
             <>
+              {project.console_url && (
+                <a href={project.console_url} target="_blank" rel="noopener noreferrer" className="project-primary-action">
+                  {lang === 'zh' ? '运管后台' : 'Operations console'} <ArrowUpRight size={15} />
+                </a>
+              )}
               {hasDemo && project.demo_url && (
                 <a
                   href={project.demo_url}

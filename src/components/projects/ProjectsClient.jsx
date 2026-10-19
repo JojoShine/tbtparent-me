@@ -177,6 +177,7 @@ function ProjectEntry({ rawProject, index, lang, isMobileViewport, qrState, onQr
           <div className="river-project-archived-note">{lang === 'zh' ? '该作品已停止维护，相关入口已关闭' : 'This project is no longer maintained and its links are disabled.'}</div>
         ) : (
           <div className="river-project-actions">
+            {project.console_url && <a className="river-project-action river-project-action-primary" href={project.console_url} target="_blank" rel="noopener noreferrer">{lang === 'zh' ? '运管后台' : 'Operations console'}<ArrowUpRight size={14} /></a>}
             <TrialAction project={project} lang={lang} isMobileViewport={isMobileViewport} qrCode={qrState.code} qrOpen={qrState.open} onQrOpen={() => onQrOpen(project)} onQrClose={() => onQrOpen(null)} />
             <Link className="river-project-action" href={`/projects/${project.id}`}>{lang === 'zh' ? '查看详情' : 'View details'}<ArrowUpRight size={14} /></Link>
             {project.github && <a className="river-project-action" href={project.github} target="_blank" rel="noreferrer"><GithubIcon size={14} />GitHub</a>}

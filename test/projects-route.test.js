@@ -266,6 +266,40 @@ test('project QR attachments reject unsafe URL schemes', async () => {
   assert.equal(calls.creates.length, 0)
 })
 
+test('project creation keeps a console URL separate from app demo and QR destinations', async () => {
+  const response = await POST(await authenticatedRequest('POST', projectBody({
+    console_url: ' https://example.com/console ',
+    demo_url: 'https://example.com/app',
+    demo_qr_url: '/api/archive/files?path=tbtparent-me%2Fapp-download.jpg',
+  })))
+  assert.equal(response.status, 200)
+  assert.equal(calls.creates[0].data.console_url, 'https://example.com/console')
+  assert.equal(calls.creates[0].data.demo_url, 'https://example.com/app')
+  assert.equal(calls.creates[0].data.demo_qr_url, '/api/archive/files?path=tbtparent-me%2Fapp-download.jpg')
+})
+
+test('a console-only update leaves app experience and capabilities untouched', async () => {
+  const response = await PUT(await authenticatedRequest('PUT', { id: 1, console_url: 'https://example.com/console' }))
+  assert.equal(response.status, 200)
+  assert.deepEqual(calls.updates[0].data, { console_url: 'https://example.com/console' })
+  assert.equal(calls.deletes.length, 0)
+  assert.equal(calls.capabilityCreates.length, 0)
+})
+
+test('clearing a console URL preserves the app experience', async () => {
+  const response = await PUT(await authenticatedRequest('PUT', { id: 1, console_url: null }))
+  assert.equal(response.status, 200)
+  assert.deepEqual(calls.updates[0].data, { console_url: null })
+})
+
+test('unsafe console URLs are rejected before any database write', async () => {
+  for (const console_url of ['javascript:alert(1)', 'data:text/html,test', '/console']) {
+    const response = await PUT(await authenticatedRequest('PUT', { id: 1, console_url }))
+    assert.equal(response.status, 400)
+  }
+  assert.equal(calls.updates.length, 0)
+})
+
 test('project status is persisted independently from discontinued availability', async () => {
   const response = await POST(await authenticatedRequest('POST', projectBody({ status: 'completed', deadline_zh: '已下架' })))
   assert.equal(response.status, 200)

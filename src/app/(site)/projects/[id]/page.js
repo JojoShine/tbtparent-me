@@ -367,6 +367,11 @@ export default function ProjectDetailPage() {
           )}
 
           <div className="project-actions">
+            {!isArchived && project.console_url && (
+              <a href={project.console_url} target="_blank" rel="noopener noreferrer" className="primary-action">
+                {lang === 'zh' ? '运管后台' : 'Operations console'} <ExternalLinkIcon />
+              </a>
+            )}
             {hasDemo && trialMode === 'link' && (
               <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="primary-action">
                 {lang === 'zh' ? '立即试用' : 'Try it live'} <ExternalLinkIcon />

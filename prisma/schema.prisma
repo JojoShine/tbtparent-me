@@ -45,6 +45,7 @@ model Project {
   github         String?
   demo_url       String?
   demo_qr_url    String?
+  console_url    String?
   status         String              @default("planning")
   is_open_source Boolean             @default(false)
   project_type   String              @default("pc")
