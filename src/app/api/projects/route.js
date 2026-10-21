@@ -8,7 +8,7 @@ import { normalizeCapabilities } from '@/lib/project-capabilities'
 const PROJECT_FIELDS = [
   'name_zh', 'name_en', 'description_zh', 'description_en',
   'tags_zh', 'tags_en', 'deadline_zh', 'deadline_en',
-  'link', 'github', 'demo_url', 'demo_qr_url', 'console_url', 'project_type', 'status', 'is_open_source', 'sortOrder',
+  'link', 'github', 'demo_url', 'demo_qr_url', 'console_url', 'mobile_url', 'pc_url', 'project_type', 'status', 'is_open_source', 'sortOrder',
   'content_en', 'content_zh', 'recent_focus', 'video_url',
   'cover_url', 'cover_width', 'cover_height',
 ]
@@ -37,7 +37,7 @@ function validateProjectUrls(data) {
   if (data.demo_qr_url && !isValidUrl(data.demo_qr_url) && !data.demo_qr_url.startsWith('/api/archive/files?path=')) {
     return 'Invalid demo_qr_url'
   }
-  for (const field of ['link', 'github', 'demo_url', 'console_url', 'video_url']) {
+  for (const field of ['link', 'github', 'demo_url', 'console_url', 'mobile_url', 'pc_url', 'video_url']) {
     if (data[field] && !isValidUrl(data[field])) return `Invalid ${field}`
   }
   return null

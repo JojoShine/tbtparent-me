@@ -32,6 +32,8 @@ export function localizeProject(project, lang) {
     demo_url: project.demo_url || '',
     demo_qr_url: project.demo_qr_url || '',
     console_url: project.console_url || '',
+    mobile_url: project.mobile_url || '',
+    pc_url: project.pc_url || '',
     video_url: project.video_url || '',
     cover_url: project.cover_url || '',
     cover_width: project.cover_width ?? null,

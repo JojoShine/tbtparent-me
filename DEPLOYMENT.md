@@ -50,6 +50,8 @@ docker compose --env-file .env.prod -f compose.prod.yaml run --rm --no-deps migr
 
 顺序固定：**核对版本 → 备份数据库与当前配置 → 拉取镜像 → 迁移 → 启动 → 检查健康**。以下在 `/opt/tbtparent-me` 逐步执行；任何一步失败即停止。
 
+统一作品入口的 `20261021000000_unify_project_entrypoints` 迁移新增移动端与 PC 端链接：原移动项目的演示链接归入移动端，其余项目的演示链接归入 PC 端；已有后台链接优先作为 PC 端入口，二维码附件保持不变。先执行迁移再启动新版本。此后在作品管理中维护“移动端入口链接 / 二维码”和“PC 端入口链接”，页面按填写情况展示，不依赖项目类型或访问设备。旧字段保留以支持旧版本回滚。
+
 核对 version.txt 中提交、平台和 digest，与 .env.prod 的 APP_IMAGE 相同。先保存当前与上一版本 Compose、环境、Nginx 片段和 version.txt。通过组织批准的 PostgreSQL 凭据文件（例如权限 600 的 .pgpass）使用 pg_dump -Fc 备份实际业务库；检查退出码及 `pg_restore --list`，定期在隔离库演练恢复。备份、凭据和配置不要加入 Git。
 
 ```sh

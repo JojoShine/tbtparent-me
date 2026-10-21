@@ -73,7 +73,7 @@ If you think I can help you with business or tech, feel free to reach out via th
         deadline_en: 'Target completion: Dec 2026',
         link: '#',
         github: 'https://github.com/JojoShine/DataMesh',
-        demo_url: '',
+        pc_url: '',
         content_zh: `## 做了什么
 
 DataMesh 是一套面向企业的一体化数据服务体系，由数据交换、数据治理、数据资产和数据安全四个独立平台组成。统一身份认证连接四个平台，AI 智能问数以旁路方式接入并贯穿全局。
@@ -126,7 +126,7 @@ Users can find, understand, and request data faster, while administrators get a 
         deadline_en: 'Released',
         link: '#',
         github: 'https://github.com/JojoShine/FlowCraft',
-        demo_url: 'https://tbtparent.me/flowcraft/login',
+        pc_url: 'https://tbtparent.me/flowcraft/login',
       video_url: 'https://tbtparent-me.oss-cn-hangzhou.aliyuncs.com/flowcraft-demo.mp4',
         content_zh: `## 做了什么
 
@@ -180,7 +180,7 @@ Turn live project data into plans, reports, and reviews without repeatedly colle
         deadline_en: 'Ongoing project, 3-4 new apps per month',
         link: '#',
         github: 'https://github.com/JojoShine/app-portfolio',
-        demo_url: 'https://tbtparent.me/app-portfolio/',
+        mobile_url: 'https://tbtparent.me/app-portfolio/',
         content_zh: `## 做了什么
 
 app-portfolio 是一个持续更新的移动应用集合，收录 H5、小程序和轻量应用。每个应用都围绕一个具体场景设计，打开页面就能直接使用。

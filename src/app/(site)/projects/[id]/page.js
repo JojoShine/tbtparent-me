@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Smartphone, Monitor, Tv, QrCode } from 'lucide-react'
-import { getProjectQrCode } from '@/lib/project-qr-code'
+import { Smartphone, Monitor, Tv } from 'lucide-react'
+import ProjectEntrypoints from '@/components/ui/ProjectEntrypoints'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
@@ -20,7 +20,6 @@ import ImageLightbox, { IMAGE_ZOOM_CURSOR } from '@/components/ui/ImageLightbox'
 import { useLang } from '@/hooks/useLang'
 import { useTheme } from '@/hooks/useTheme'
 import { localizedField, localizeProject } from '@/lib/i18n-helpers'
-import { getProjectTrialMode } from '@/lib/project-showcase'
 
 const fadeUp = {
   initial: { opacity: 0, y: 10 },
@@ -33,16 +32,6 @@ function ArrowLeftIcon() {
     <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="19" y1="12" x2="5" y2="12" />
       <polyline points="12 19 5 12 12 5" />
-    </svg>
-  )
-}
-
-function ExternalLinkIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   )
 }
@@ -101,11 +90,9 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true)
   const [isSmallScreen, setIsSmallScreen] = useState(false)
   const [viewportReady, setViewportReady] = useState(false)
-  const [qrDataUrl, setQrDataUrl] = useState(null)
   const [activeId, setActiveId] = useState('')
   const [showTop, setShowTop] = useState(false)
   const [previewImage, setPreviewImage] = useState(null)
-  const qrGeneratedRef = useRef(false)
 
   useEffect(() => {
     document.body.classList.add('project-detail-page')
@@ -135,29 +122,6 @@ export default function ProjectDetailPage() {
         setLoading(false)
       })
   }, [id])
-
-  useEffect(() => {
-    if ((project?.demo_url || project?.demo_qr_url) && project.deadline_zh !== '已下架' && project.deadline_en !== 'Discontinued' && !qrGeneratedRef.current) {
-      // 根据主题设置二维码颜色
-      const isDark = document.documentElement.classList.contains('dark')
-      getProjectQrCode(project, {
-        width: 400, 
-        margin: 1, 
-        color: isDark ? {
-          dark: '#e5e5e5',  // 柔和的浅灰色，不是纯白
-          light: '#1a1a1a'  // 深灰黑色背景，不是纯黑
-        } : {
-          dark: '#000000',  // 浅色模式保持纯黑
-          light: '#ffffff'  // 浅色模式保持纯白
-        }
-      })
-        .then(url => {
-          setQrDataUrl(url)
-          qrGeneratedRef.current = true
-        })
-        .catch(console.error)
-    }
-  }, [project])
 
   const content = localizedField(project, 'content', lang)
   const headings = useMemo(() => extractHeadings(content), [content])
@@ -303,11 +267,7 @@ export default function ProjectDetailPage() {
   const localized = localizeProject(project, lang)
   const tags = localized.tags || []
   const isArchived = localized.archived
-  const hasDemo = Boolean(project.demo_url || project.demo_qr_url) && !isArchived
   const hasVideo = !!project.video_url
-  const trialMode = viewportReady
-    ? getProjectTrialMode(project.project_type, isSmallScreen, Boolean(project.demo_qr_url))
-    : 'hidden'
 
   return (
     <div className="project-layout">
@@ -367,35 +327,14 @@ export default function ProjectDetailPage() {
           )}
 
           <div className="project-actions">
-            {!isArchived && project.console_url && (
-              <a href={project.console_url} target="_blank" rel="noopener noreferrer" className="primary-action">
-                {lang === 'zh' ? '运管后台' : 'Operations console'} <ExternalLinkIcon />
-              </a>
-            )}
-            {hasDemo && trialMode === 'link' && (
-              <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="primary-action">
-                {lang === 'zh' ? '立即试用' : 'Try it live'} <ExternalLinkIcon />
-              </a>
-            )}
+            <ProjectEntrypoints project={localized} lang={lang} />
             {hasVideo && viewportReady && !isSmallScreen && (
               <a href="#video-section">{lang === 'zh' ? '观看演示' : 'Watch demo'}</a>
             )}
             {project.github && (
               <a href={project.github} target="_blank" rel="noopener noreferrer"><GithubIcon size={16} /> GitHub</a>
             )}
-            {hasDemo && trialMode === 'qr' && (
-              <div className="project-detail-qr-trigger">
-                <button type="button"><QrCode size={15} /> {lang === 'zh' ? '扫码体验' : 'Scan to try'}</button>
-                {qrDataUrl && (
-                  <div className="project-qr">
-                    <img src={qrDataUrl} alt={lang === 'zh' ? '在线试用二维码' : 'Demo QR code'} />
-                    <span>{lang === 'zh' ? '扫码体验，或保存原图后识别' : 'Scan to try, or save the image to scan'}</span>
-                    {project.demo_qr_url && <a href={project.demo_qr_url} target="_blank" rel="noreferrer">{lang === 'zh' ? '查看原图' : 'View original'}</a>}
-                    {project.demo_qr_url && project.demo_url && <a href={project.demo_url} target="_blank" rel="noreferrer">{lang === 'zh' ? '打开演示链接' : 'Open demo link'}</a>}
-                  </div>
-                )}
-              </div>
-            )}
+
           </div>
         </div>
 
@@ -596,34 +535,6 @@ export default function ProjectDetailPage() {
         }
         .project-actions a:hover,
         .project-actions button:hover { color: var(--fg); transform: translateY(-1px); }
-        .project-actions .primary-action {
-          padding: 0 16px;
-          color: var(--bg);
-          background: var(--fg);
-        }
-        .project-detail-qr-trigger {
-          position: relative;
-          display: inline-flex;
-        }
-        .project-qr {
-          position: absolute;
-          right: 0;
-          bottom: 100%;
-          z-index: 4;
-          display: none;
-          justify-items: center;
-          gap: 8px;
-          width: 174px;
-          padding: 12px;
-          border: 1px solid var(--border);
-          background: var(--bg);
-          box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
-          color: var(--muted);
-          font: 0.68rem monospace;
-        }
-        .project-detail-qr-trigger:hover .project-qr,
-        .project-detail-qr-trigger:focus-within .project-qr { display: grid; }
-        .project-qr img { width: 148px; height: 148px; }
         .project-hero-media {
           width: 100%;
           aspect-ratio: 16 / 9;

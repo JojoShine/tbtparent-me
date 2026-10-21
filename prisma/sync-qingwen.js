@@ -39,7 +39,7 @@ async function main() {
     const saved = existing
       ? await tx.project.update({ where: { id: existing.id }, data })
       : await tx.project.create({
-        data: { ...data, sortOrder: owl.sortOrder, link: '', github: null, demo_url: null },
+        data: { ...data, sortOrder: owl.sortOrder, link: '', github: null, mobile_url: null, pc_url: null },
       })
 
     await tx.projectCapability.deleteMany({ where: { projectId: saved.id } })

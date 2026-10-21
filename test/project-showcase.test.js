@@ -134,33 +134,6 @@ test('AroundMe is marked as featured and sorted before every other project', () 
   )
 })
 
-test('PC project trials are unavailable only in a mobile viewport', () => {
-  assert.equal(
-    typeof projectShowcase.isProjectTrialAllowed,
-    'function',
-    'project trial visibility helper must exist',
-  )
-
-  assert.equal(projectShowcase.isProjectTrialAllowed('pc', true), false)
-  assert.equal(projectShowcase.isProjectTrialAllowed('pc', false), true)
-  assert.equal(projectShowcase.isProjectTrialAllowed('mobile', true), true)
-  assert.equal(projectShowcase.isProjectTrialAllowed('dashboard', true), true)
-})
-
-test('mobile projects use QR on desktop and direct links on mobile', () => {
-  assert.equal(
-    typeof projectShowcase.getProjectTrialMode,
-    'function',
-    'project trial presentation helper must exist',
-  )
-
-  assert.equal(projectShowcase.getProjectTrialMode('mobile', false), 'qr')
-  assert.equal(projectShowcase.getProjectTrialMode('mobile', true), 'link')
-  assert.equal(projectShowcase.getProjectTrialMode('pc', false), 'link')
-  assert.equal(projectShowcase.getProjectTrialMode('pc', true), 'hidden')
-  assert.equal(projectShowcase.getProjectTrialMode('dashboard', true), 'link')
-})
-
 test('archived projects expose a localized demo badge label', () => {
   assert.equal(
     typeof projectShowcase.getProjectArchivedLabel,

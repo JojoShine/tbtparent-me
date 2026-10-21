@@ -14,7 +14,7 @@ const emptyProject = {
   content_zh: '', content_en: '',
   tags_zh: [], tags_en: [],
   deadline_zh: '', deadline_en: '',
-  link: '', github: '', demo_url: '', demo_qr_url: '', console_url: '', video_url: '',
+  link: '', github: '', mobile_url: '', demo_qr_url: '', pc_url: '', video_url: '',
   cover_url: '', cover_width: null, cover_height: null,
   project_type: 'pc', status: 'planning', is_open_source: false, recent_focus: false, sortOrder: 0,
   capabilities: [],
@@ -472,12 +472,12 @@ export default function AdminProjects() {
               <input style={inputStyle} value={editing.github || ''} onChange={e => handleChange('github', e.target.value)} placeholder="https://github.com/..." />
             </div>
             <div>
-              <label style={labelStyle}>演示链接（自动生成二维码）</label>
-              <input style={inputStyle} value={editing.demo_url || ''} onChange={e => handleChange('demo_url', e.target.value)} placeholder="https://..." />
+              <label style={labelStyle}>移动端入口链接（可选）</label>
+              <input style={inputStyle} value={editing.mobile_url || ''} onChange={e => handleChange('mobile_url', e.target.value)} placeholder="https://..." />
             </div>
             <div>
-              <label style={labelStyle} htmlFor="console-url">运管后台地址（独立网页入口，可选）</label>
-              <input id="console-url" type="url" style={inputStyle} value={editing.console_url || ''} onChange={e => handleChange('console_url', e.target.value)} placeholder="https://.../console/" />
+              <label style={labelStyle} htmlFor="pc-url">PC 端入口链接（可选）</label>
+              <input id="pc-url" type="url" style={inputStyle} value={editing.pc_url || ''} onChange={e => handleChange('pc_url', e.target.value)} placeholder="https://..." />
             </div>
             <div>
               <label style={labelStyle}>演示视频地址</label>
@@ -513,11 +513,11 @@ export default function AdminProjects() {
           </div>
 
           <div>
-            <label style={labelStyle} htmlFor="demo-qr-upload">二维码附件（二维码或小程序码原图）</label>
+            <label style={labelStyle} htmlFor="demo-qr-upload">移动端入口二维码（二维码或小程序码原图，可选）</label>
             <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: '10px' }}>
-              可只填写演示链接，也可只上传二维码图片。两者都有时，扫码展示附件，直接访问使用链接。运管后台作为独立入口，可与 App 下载码同时展示。图片不会重新生成或压缩。
+              移动端可填写链接或上传二维码；两者都有时使用原图扫码，并保留直接打开链接。PC 端填写网页链接。填写哪一端就展示哪一端，两端都有则同时展示，不受项目类型或访问设备影响。图片保持原样。
             </p>
-            {editing.demo_qr_url && <img src={editing.demo_qr_url} alt="演示二维码附件预览" style={{ display: 'block', width: '180px', height: '180px', objectFit: 'contain', background: '#fff', marginBottom: '10px' }} />}
+            {editing.demo_qr_url && <img src={editing.demo_qr_url} alt="移动端入口二维码预览" style={{ display: 'block', width: '180px', height: '180px', objectFit: 'contain', background: '#fff', marginBottom: '10px' }} />}
             <input id="demo-qr-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleQrUpload} disabled={uploadingQr} />
             {editing.demo_qr_url && <button type="button" style={secondaryButtonStyle} onClick={() => handleChange('demo_qr_url', null)}>清除二维码附件</button>}
             {uploadingQr && <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>上传中...</span>}

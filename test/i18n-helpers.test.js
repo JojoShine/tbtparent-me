@@ -3,6 +3,14 @@ import test from 'node:test'
 
 import { localizeProject } from '../src/lib/i18n-helpers.js'
 
+test('both entry destinations survive localization without depending on project category', () => {
+  for (const lang of ['zh', 'en']) {
+    const project = localizeProject({ mobile_url: 'https://example.com/mobile', pc_url: 'https://example.com/pc', project_type: 'pc' }, lang)
+    assert.equal(project.mobile_url, 'https://example.com/mobile')
+    assert.equal(project.pc_url, 'https://example.com/pc')
+  }
+})
+
 test('Common RAG is treated as discontinued even when legacy database status is stale', () => {
   const project = {
     id: 6,

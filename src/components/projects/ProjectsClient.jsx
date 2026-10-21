@@ -3,15 +3,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Cpu, Monitor, QrCode, Search, Smartphone } from 'lucide-react'
-import { getProjectQrCode } from '@/lib/project-qr-code'
+import { ArrowUpRight, Cpu, Monitor, Search, Smartphone } from 'lucide-react'
 import { useLang } from '@/hooks/useLang'
 import { localizeProject } from '@/lib/i18n-helpers'
-import { filterProjectCatalog, getProjectArchivedLabel, getProjectCover, getProjectTrialMode, getProjectTypeLabel, getProjectYear, isFeaturedProject, isProjectShowcaseStyleReady, shouldShowProjectCatalogTools } from '@/lib/project-showcase'
+import { filterProjectCatalog, getProjectArchivedLabel, getProjectCover, getProjectTypeLabel, getProjectYear, isFeaturedProject, isProjectShowcaseStyleReady, shouldShowProjectCatalogTools } from '@/lib/project-showcase'
 import EmptyState from '@/components/ui/EmptyState'
 import ProjectStatusBadge from '@/components/ui/ProjectStatusBadge'
 import ProjectOpenSourceBadge from '@/components/ui/ProjectOpenSourceBadge'
 import GithubIcon from '@/components/ui/GithubIcon'
+import ProjectEntrypoints from '@/components/ui/ProjectEntrypoints'
 import ImageLightbox, { IMAGE_ZOOM_CURSOR } from '@/components/ui/ImageLightbox'
 
 const typeIcons = { mobile: Smartphone, pc: Monitor, dashboard: Monitor, integrated: Cpu }
@@ -91,46 +91,7 @@ function ProjectMedia({ project, lang, eager, onPreview }) {
   )
 }
 
-function TrialAction({ project, lang, isMobileViewport, qrCode, qrOpen, onQrOpen, onQrClose }) {
-  const destination = project.demo_url || project.link
-  if ((!destination || destination === '#') && !project.demo_qr_url) return null
-  const mode = getProjectTrialMode(project.project_type, isMobileViewport, Boolean(project.demo_qr_url))
-  if (mode === 'hidden') return null
-
-  if (mode === 'qr') {
-    return (
-      <span
-        className={`river-project-qr-wrap ${qrOpen ? 'is-open' : ''}`}
-        onMouseEnter={onQrOpen}
-        onMouseLeave={onQrClose}
-        onFocus={onQrOpen}
-        onBlur={event => {
-          if (!event.currentTarget.contains(event.relatedTarget)) onQrClose()
-        }}
-      >
-        <button type="button" className="river-project-action river-project-action-primary" onClick={onQrOpen}>
-          <QrCode size={14} />{lang === 'zh' ? '扫码演示' : 'Scan demo'}
-        </button>
-        {qrOpen && (
-          <span className="river-project-qr" role="status">
-            {qrCode ? <img src={qrCode} alt={lang === 'zh' ? '项目演示二维码' : 'Project demo QR code'} /> : <span>{lang === 'zh' ? '生成中…' : 'Loading…'}</span>}
-            {project.demo_qr_url && <small>{lang === 'zh' ? '扫码体验，或保存原图后识别' : 'Scan to try, or save the image to scan'}</small>}
-            {project.demo_qr_url && <a href={project.demo_qr_url} target="_blank" rel="noreferrer">{lang === 'zh' ? '查看原图' : 'View original'}</a>}
-            {project.demo_qr_url && project.demo_url && <a href={project.demo_url} target="_blank" rel="noreferrer">{lang === 'zh' ? '打开演示链接' : 'Open demo link'}</a>}
-          </span>
-        )}
-      </span>
-    )
-  }
-
-  return (
-    <a className="river-project-action river-project-action-primary" href={destination} target="_blank" rel="noreferrer">
-      {lang === 'zh' ? '在线试用' : 'Live demo'}<ArrowUpRight size={14} />
-    </a>
-  )
-}
-
-function ProjectEntry({ rawProject, index, lang, isMobileViewport, qrState, onQrOpen, onPreview }) {
+function ProjectEntry({ rawProject, index, lang, onPreview }) {
   const project = localizeProject(rawProject, lang)
   const TypeIcon = typeIcons[project.project_type] || Monitor
   const featured = isFeaturedProject(rawProject)
@@ -177,8 +138,7 @@ function ProjectEntry({ rawProject, index, lang, isMobileViewport, qrState, onQr
           <div className="river-project-archived-note">{lang === 'zh' ? '该作品已停止维护，相关入口已关闭' : 'This project is no longer maintained and its links are disabled.'}</div>
         ) : (
           <div className="river-project-actions">
-            {project.console_url && <a className="river-project-action river-project-action-primary" href={project.console_url} target="_blank" rel="noopener noreferrer">{lang === 'zh' ? '运管后台' : 'Operations console'}<ArrowUpRight size={14} /></a>}
-            <TrialAction project={project} lang={lang} isMobileViewport={isMobileViewport} qrCode={qrState.code} qrOpen={qrState.open} onQrOpen={() => onQrOpen(project)} onQrClose={() => onQrOpen(null)} />
+            <ProjectEntrypoints project={project} lang={lang} />
             <Link className="river-project-action" href={`/projects/${project.id}`}>{lang === 'zh' ? '查看详情' : 'View details'}<ArrowUpRight size={14} /></Link>
             {project.github && <a className="river-project-action" href={project.github} target="_blank" rel="noreferrer"><GithubIcon size={14} />GitHub</a>}
           </div>
@@ -194,19 +154,8 @@ export default function ProjectsClient({ projects }) {
   const [stylesReady, setStylesReady] = useState(false)
   const [query, setQuery] = useState('')
   const [projectType, setProjectType] = useState('all')
-  const [isMobileViewport, setIsMobileViewport] = useState(false)
-  const [qrRequestedId, setQrRequestedId] = useState(null)
-  const [qrCodes, setQrCodes] = useState({})
   const [previewImage, setPreviewImage] = useState(null)
   const showCatalogTools = shouldShowProjectCatalogTools(projects)
-
-  useEffect(() => {
-    const media = window.matchMedia('(max-width: 760px)')
-    const syncViewport = () => setIsMobileViewport(media.matches)
-    syncViewport()
-    media.addEventListener('change', syncViewport)
-    return () => media.removeEventListener('change', syncViewport)
-  }, [])
 
   useEffect(() => {
     let frameId
@@ -235,21 +184,6 @@ export default function ProjectsClient({ projects }) {
     return groups
   }, [visibleProjects, lang])
 
-  const openQr = async project => {
-    if (!project) {
-      setQrRequestedId(null)
-      return
-    }
-    setQrRequestedId(project.id)
-    if (qrCodes[project.id]) return
-    try {
-      const code = await getProjectQrCode(project, { width: 220, margin: 1 })
-      setQrCodes(current => ({ ...current, [project.id]: code }))
-    } catch {
-      setQrCodes(current => ({ ...current, [project.id]: '' }))
-    }
-  }
-
   if (projects.length === 0) return <EmptyState message={lang === 'zh' ? '暂无项目' : 'No projects yet'} />
 
   return (
@@ -272,7 +206,7 @@ export default function ProjectsClient({ projects }) {
                 <div className="projects-year-heading"><span>{group.year}</span></div>
                 {group.projects.map(project => {
                   const index = visibleProjects.findIndex(item => item.id === project.id)
-                  return <ProjectEntry key={project.id} rawProject={project} index={index} lang={lang} isMobileViewport={isMobileViewport} qrState={{ open: qrRequestedId === project.id, code: qrCodes[project.id] }} onQrOpen={openQr} onPreview={setPreviewImage} />
+                  return <ProjectEntry key={project.id} rawProject={project} index={index} lang={lang} onPreview={setPreviewImage} />
                 })}
               </section>
             ))}
@@ -322,14 +256,11 @@ export default function ProjectsClient({ projects }) {
         .river-project-action { display: inline-flex; min-height: 36px; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; border: 1px solid var(--border); color: var(--fg); background: transparent; font: .66rem/1.2 monospace; text-decoration: none; cursor: pointer; transition: border-color 160ms ease, background 160ms ease, color 160ms ease; }
         .river-project-action:hover { border-color: color-mix(in srgb, var(--fg) 55%, var(--border)); background: var(--river-soft); color: var(--fg); } .river-project-action:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
         .river-project-action-primary { border-color: var(--fg); color: var(--bg); background: var(--fg); } .river-project-action-primary:hover { border-color: var(--fg); color: var(--bg); background: var(--fg); opacity: .86; }
-        .river-project-qr-wrap { position: relative; display: inline-flex; } .river-project-qr { position: absolute; right: 0; bottom: calc(100% + 10px); z-index: 10; display: grid; width: 174px; min-height: 174px; place-items: center; padding: 10px; border: 1px solid var(--border); background: #fff; box-shadow: 0 18px 50px rgba(0,0,0,.28); color: #222; font: .68rem/1.2 monospace; }
-        .river-project-qr::after { content: ""; position: absolute; top: 100%; left: 0; right: 0; height: 10px; }
-        .river-project-qr img { width: 152px; height: 152px; object-fit: contain; } .river-project-archived-note { margin-top: 22px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font: .67rem/1.55 monospace; }
+        .river-project-archived-note { margin-top: 22px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font: .67rem/1.55 monospace; }
         .river-project-archived-badge { position: absolute; right: 14px; bottom: 14px; z-index: 2; padding: 6px 10px; border: 1px solid color-mix(in srgb, var(--fg) 32%, transparent); border-radius: 2px; color: color-mix(in srgb, var(--fg) 48%, transparent); background: color-mix(in srgb, var(--bg) 82%, transparent); font: 10px/1.2 monospace; letter-spacing: .12em; transform: rotate(-8deg); transform-origin: center; }
         .river-project.is-archived .river-project-media { opacity: .5; filter: grayscale(1); } .river-project.is-archived .river-project-content { opacity: .58; } .river-project.is-archived .river-project-node span { background: var(--muted); box-shadow: 0 0 0 1px var(--river-line); }
         @media (max-width: 900px) { .river-project { grid-template-columns: minmax(0,1fr) 70px minmax(0,1fr); } .river-project.is-left .river-project-visual { padding-right: 8px; } .river-project.is-left .river-project-content { padding-left: 8px; } .river-project.is-right .river-project-content { padding-right: 8px; } .river-project.is-right .river-project-visual { padding-left: 8px; } .river-project-media { min-height: 220px; } }
         @media (max-width: 760px) {
-          .river-project-qr { left: 0; right: auto; }
           .projects-river-page { padding-top: 28px; padding-bottom: 72px; }
           .projects-river-tools { margin: 0 auto 54px; padding: 0 18px; } .projects-river { padding: 0 18px 0 52px; }
           .projects-year-heading, .projects-year-group:nth-of-type(even) .projects-year-heading { top: -30px; right: auto; left: 0; } .projects-year-heading span { font-size: 3.2rem; }

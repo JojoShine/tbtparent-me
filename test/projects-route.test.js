@@ -266,6 +266,27 @@ test('project QR attachments reject unsafe URL schemes', async () => {
   assert.equal(calls.creates.length, 0)
 })
 
+test('project creation saves independent mobile and PC entry destinations', async () => {
+  resetCalls()
+  const response = await POST(await authenticatedRequest('POST', {
+    name_zh: '示例', name_en: 'Example',
+    mobile_url: ' https://example.com/mobile ', pc_url: 'https://example.com/pc',
+  }))
+  assert.equal(response.status, 200)
+  const project = await response.json()
+  assert.equal(project.mobile_url, 'https://example.com/mobile')
+  assert.equal(project.pc_url, 'https://example.com/pc')
+})
+
+test('unsafe mobile and PC entry destinations are rejected before writing', async () => {
+  for (const field of ['mobile_url', 'pc_url']) {
+    resetCalls()
+    const response = await PUT(await authenticatedRequest('PUT', { id: 1, [field]: 'javascript:alert(1)' }))
+    assert.equal(response.status, 400)
+    assert.equal(calls.updates.length, 0)
+  }
+})
+
 test('project creation keeps a console URL separate from app demo and QR destinations', async () => {
   const response = await POST(await authenticatedRequest('POST', projectBody({
     console_url: ' https://example.com/console ',

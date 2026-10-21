@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { ArrowUpRight, Monitor, Play, QrCode, Smartphone, Tv } from 'lucide-react'
-import { getProjectQrCode } from '@/lib/project-qr-code'
+import { ArrowUpRight, Monitor, Play, Smartphone, Tv } from 'lucide-react'
+import { getProjectEntrypoints } from '@/lib/project-showcase'
+import ProjectEntrypoints from '@/components/ui/ProjectEntrypoints'
 import GithubIcon from '@/components/ui/GithubIcon'
 import ProjectStatusBadge from '@/components/ui/ProjectStatusBadge'
 import ProjectOpenSourceBadge from '@/components/ui/ProjectOpenSourceBadge'
@@ -26,25 +27,16 @@ export default function ProjectCard({ project, fromHome = false }) {
   const router = useRouter()
   const mediaRef = useRef(null)
   const videoRef = useRef(null)
-  const [qrRequested, setQrRequested] = useState(false)
-  const [qrDataUrl, setQrDataUrl] = useState('')
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
   const [videoReady, setVideoReady] = useState(false)
   const [videoPlaying, setVideoPlaying] = useState(false)
   const [videoFailed, setVideoFailed] = useState(false)
   const TypeIcon = typeIconMap[project.project_type] || Monitor
   const isArchived = Boolean(project.archived)
-  const hasDemo = Boolean(project.demo_url || project.demo_qr_url) && !isArchived
+  const { mobileUrl, mobileQrUrl, pcUrl } = getProjectEntrypoints(project)
+  const hasDemo = Boolean(mobileUrl || mobileQrUrl || pcUrl) && !isArchived
   const hasVideo = Boolean(project.video_url) && !videoFailed
-  const isMobile = project.project_type === 'mobile'
   const detailUrl = `/projects/${project.id}${fromHome ? '?from=home' : ''}`
-
-  useEffect(() => {
-    if (!qrRequested || !hasDemo || qrDataUrl) return
-    getProjectQrCode(project, { width: 320, margin: 1 })
-      .then(setQrDataUrl)
-      .catch(console.error)
-  }, [hasDemo, project, qrDataUrl, qrRequested])
 
   useEffect(() => {
     if (!hasVideo || isArchived || !mediaRef.current) return
@@ -81,7 +73,7 @@ export default function ProjectCard({ project, fromHome = false }) {
           <div className="project-card-placeholder" aria-label={`${project.name} 项目封面`}>
             <div className="project-card-cover-icon"><TypeIcon size={24} strokeWidth={1.4} /></div>
             <strong>{project.name}</strong>
-            <span>{hasVideo ? '演示视频加载后可播放' : hasDemo ? projectHost(project.demo_url) : '项目介绍与实现记录'}</span>
+            <span>{hasVideo ? '演示视频加载后可播放' : hasDemo ? projectHost(pcUrl || mobileUrl) : '项目介绍与实现记录'}</span>
           </div>
 
           {hasVideo && shouldLoadVideo && !isArchived && (
@@ -138,40 +130,12 @@ export default function ProjectCard({ project, fromHome = false }) {
             <span className="project-archived-action">项目已下架</span>
           ) : (
             <>
-              {project.console_url && (
-                <a href={project.console_url} target="_blank" rel="noopener noreferrer" className="project-primary-action">
-                  {lang === 'zh' ? '运管后台' : 'Operations console'} <ArrowUpRight size={15} />
-                </a>
-              )}
-              {hasDemo && project.demo_url && (
-                <a
-                  href={project.demo_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`project-primary-action ${isMobile ? 'project-mobile-live-action' : project.project_type === 'pc' ? 'project-pc-live-action' : ''}`}
-                >
-                  在线试用 <ArrowUpRight size={15} />
-                </a>
-              )}
+              <ProjectEntrypoints project={project} lang={lang} />
               <a href={detailUrl}>查看详情 <ArrowUpRight size={14} /></a>
               {project.github && (
                 <a href={project.github} target="_blank" rel="noopener noreferrer" aria-label="查看 GitHub">
                   <GithubIcon size={15} /> 源码
                 </a>
-              )}
-              {hasDemo && (isMobile || project.demo_qr_url) && (
-                <div className={`project-card-qr-trigger ${project.demo_qr_url ? 'has-qr-image' : ''}`} onMouseEnter={() => setQrRequested(true)} onFocus={() => setQrRequested(true)}>
-                  <button type="button" onClick={() => setQrRequested(true)}>
-                    <QrCode size={15} /> 扫码体验
-                  </button>
-                  {qrDataUrl && (
-                    <div className="project-card-qr" onClick={event => event.stopPropagation()}>
-                      <img src={qrDataUrl} alt={`${project.name} 试用地址二维码`} />
-                      <span>{project.demo_qr_url ? '扫码体验，或保存原图后识别' : '扫码打开在线版本'}</span>
-                      {project.demo_qr_url && <a href={project.demo_qr_url} target="_blank" rel="noreferrer">查看原图</a>}
-                    </div>
-                  )}
-                </div>
               )}
             </>
           )}
@@ -400,53 +364,14 @@ export default function ProjectCard({ project, fromHome = false }) {
         }
         .project-card-actions a:hover,
         .project-card-actions button:hover { color: var(--fg); transform: translateY(-1px); }
-        .project-card-actions .project-primary-action {
-          min-height: 38px;
-          padding: 0 13px;
-          color: var(--bg);
-          background: var(--fg);
-        }
-        .project-card-actions .project-primary-action:hover {
-          color: var(--bg);
-        }
-        .project-card-actions .project-mobile-live-action {
-          display: none;
-        }
-        .project-card-qr-trigger {
-          position: static;
-          display: inline-flex;
-        }
         .project-archived-action {
           color: var(--muted);
           font: 0.76rem/1.4 monospace;
           cursor: not-allowed;
         }
-        .project-card-qr {
-          position: absolute;
-          top: 16px;
-          right: 16px;
-          z-index: 4;
-          display: none;
-          justify-items: center;
-          gap: 8px;
-          width: 172px;
-          padding: 12px;
-          border: 1px solid var(--border);
-          background: var(--bg);
-          box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
-          color: var(--muted);
-          font: 0.68rem monospace;
-        }
-        .project-card-qr-trigger:hover .project-card-qr,
-        .project-card-qr-trigger:focus-within .project-card-qr { display: grid; }
-        .project-card-qr img { width: 146px; height: 146px; }
         @media (max-width: 760px) {
           .project-card-body { padding: 22px 20px 24px; gap: 18px; }
           .project-card-placeholder { padding: 22px; }
-          .project-card-actions .project-pc-live-action { display: none; }
-          .project-card-actions .project-mobile-live-action { display: inline-flex; }
-          .project-card-qr-trigger { display: none; }
-          .project-card-qr-trigger.has-qr-image { display: block; }
         }
       `}</style>
     </motion.article>
