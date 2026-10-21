@@ -5,8 +5,8 @@ export const qingwenProjectData = {
   description_en: 'A lightweight survey tool that brings shared needs from several recent questionnaire projects into one reusable product, covering quick creation, custom questions, publishing, response collection, and results.',
   tags_zh: ['调查问卷', '自定义题目', '跨端填写', '数据收集', '结果统计'],
   tags_en: ['Surveys', 'Custom Questions', 'Cross-device Forms', 'Response Collection', 'Results'],
-  deadline_zh: '持续完善中',
-  deadline_en: 'Continuously evolving',
+  deadline_zh: '已上线，持续迭代',
+  deadline_en: 'Live, with ongoing improvements',
   status: 'completed',
   project_type: 'pc',
   recent_focus: false,
@@ -42,7 +42,11 @@ export const qingwenProjectData = {
 
 ## 项目资料
 
-代码仓库与访问地址待补充。宣发图中的产品界面为示意，具体界面以实际项目为准。`,
+轻问已开发完成并上线，支持问卷创建、可视化编辑、发布分享、手机与电脑填写、答卷统计和 CSV 导出，并具备附件上传、条件显示、收集限制及用户权限管理能力。
+
+- [在线体验](https://tbtparent.me/surveys/login)
+- [代码仓库](https://github.com/JojoShine/qingwen)
+- [使用与部署文档](https://github.com/JojoShine/qingwen#readme)`,
   content_en: `## Overview
 
 Qingwen is a lightweight tool for creating custom questionnaires and collecting responses across survey scenarios. It connects creation, question configuration, publishing, collection, and results in one reusable product.
@@ -75,7 +79,11 @@ Turn repeated project requirements into reusable survey capabilities. A consiste
 
 ## Project resources
 
-Repository and live URL will be added later. Product interfaces in the promotional image are illustrative.`,
+Qingwen is complete and live. It supports questionnaire creation, visual editing, publishing and sharing, mobile and desktop responses, result statistics, and CSV export, along with attachments, conditional questions, collection limits, and user permissions.
+
+- [Try Qingwen](https://tbtparent.me/surveys/login)
+- [Source code](https://github.com/JojoShine/qingwen)
+- [Usage and deployment documentation](https://github.com/JojoShine/qingwen#readme)`,
 }
 
 export const qingwenCapabilities = [

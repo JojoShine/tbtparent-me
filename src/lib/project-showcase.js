@@ -135,6 +135,11 @@ export function getProjectArchivedLabel(isArchived, lang) {
   return lang === 'zh' ? '已下架' : 'Discontinued'
 }
 
+export function shouldShowProjectVideo(project) {
+  const { mobileUrl, mobileQrUrl, pcUrl } = getProjectEntrypoints(project)
+  return Boolean(String(project.video_url ?? '').trim()) && !(mobileUrl || mobileQrUrl || pcUrl)
+}
+
 export function getProjectStatusLabel(status, lang) {
   const labels = {
     planning: { zh: '规划中', en: 'Planned' },

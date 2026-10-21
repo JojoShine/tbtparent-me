@@ -44,7 +44,7 @@ export default function WuyuShop({ lang }) {
         .wuyu-label { font-size: 11px; letter-spacing: 2px; color: var(--muted); margin-bottom: 12px; }
         .wuyu-description { font-size: 15px; line-height: 1.8; color: var(--muted); margin-top: 12px; }
         .wuyu-actions { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 26px; font-size: 12px; }
-        .wuyu-actions button, .wuyu-actions a { text-decoration: underline; text-underline-offset: 5px; cursor: pointer; }
+        .wuyu-actions button, .wuyu-actions a { display: inline-flex; align-items: center; text-decoration: underline; text-underline-offset: 5px; cursor: pointer; }
         .wuyu-actions button:hover, .wuyu-actions a:hover { opacity: .65; }
         figure { margin: 0; text-align: center; }
         .wuyu-code { display: block; width: 204px; max-width: 100%; padding: 12px; margin: 0 auto; border-radius: 4px; background: white; cursor: zoom-in; }

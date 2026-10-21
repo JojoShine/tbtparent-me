@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { ArrowUpRight, Monitor, Play, Smartphone, Tv } from 'lucide-react'
-import { getProjectEntrypoints } from '@/lib/project-showcase'
+import { getProjectEntrypoints, shouldShowProjectVideo } from '@/lib/project-showcase'
 import ProjectEntrypoints from '@/components/ui/ProjectEntrypoints'
 import GithubIcon from '@/components/ui/GithubIcon'
 import ProjectStatusBadge from '@/components/ui/ProjectStatusBadge'
@@ -35,7 +35,7 @@ export default function ProjectCard({ project, fromHome = false }) {
   const isArchived = Boolean(project.archived)
   const { mobileUrl, mobileQrUrl, pcUrl } = getProjectEntrypoints(project)
   const hasDemo = Boolean(mobileUrl || mobileQrUrl || pcUrl) && !isArchived
-  const hasVideo = Boolean(project.video_url) && !videoFailed
+  const hasVideo = shouldShowProjectVideo(project) && !videoFailed
   const detailUrl = `/projects/${project.id}${fromHome ? '?from=home' : ''}`
 
   useEffect(() => {

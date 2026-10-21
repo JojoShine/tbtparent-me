@@ -4,6 +4,20 @@ import * as showcase from '../src/lib/project-showcase.js'
 
 const { getProjectEntrypoints } = showcase
 
+test('experience entries take priority over project demo videos', () => {
+  assert.equal(typeof showcase.shouldShowProjectVideo, 'function')
+  assert.equal(showcase.shouldShowProjectVideo({ video_url: 'https://example.com/demo.mp4' }), true)
+  for (const entry of [
+    { mobile_url: 'https://example.com/mobile' },
+    { pc_url: 'https://example.com/pc' },
+    { demo_qr_url: '/code.png' },
+  ]) {
+    assert.equal(showcase.shouldShowProjectVideo({ video_url: 'https://example.com/demo.mp4', ...entry }), false)
+  }
+  assert.equal(showcase.shouldShowProjectVideo({ video_url: ' ', mobile_url: '#' }), false)
+  assert.equal(showcase.shouldShowProjectVideo({ video_url: 'https://example.com/demo.mp4', pc_url: '#', mobile_url: ' ' }), true)
+})
+
 test('mobile and PC destinations remain independent of project name and category', () => {
   assert.equal(typeof getProjectEntrypoints, 'function')
   for (const project_type of ['mobile', 'pc', 'dashboard', 'integrated']) {

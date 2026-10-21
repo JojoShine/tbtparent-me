@@ -20,6 +20,7 @@ import ImageLightbox, { IMAGE_ZOOM_CURSOR } from '@/components/ui/ImageLightbox'
 import { useLang } from '@/hooks/useLang'
 import { useTheme } from '@/hooks/useTheme'
 import { localizedField, localizeProject } from '@/lib/i18n-helpers'
+import { shouldShowProjectVideo } from '@/lib/project-showcase'
 
 const fadeUp = {
   initial: { opacity: 0, y: 10 },
@@ -267,7 +268,7 @@ export default function ProjectDetailPage() {
   const localized = localizeProject(project, lang)
   const tags = localized.tags || []
   const isArchived = localized.archived
-  const hasVideo = !!project.video_url
+  const hasVideo = shouldShowProjectVideo(project)
 
   return (
     <div className="project-layout">
