@@ -3,144 +3,61 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Cpu, Monitor, Search, Smartphone } from 'lucide-react'
+import { ArrowUpRight, Monitor, Search } from 'lucide-react'
 import { useLang } from '@/hooks/useLang'
 import { localizeProject } from '@/lib/i18n-helpers'
-import { filterProjectCatalog, getProjectArchivedLabel, getProjectCover, getProjectTypeLabel, getProjectYear, isFeaturedProject, isProjectShowcaseStyleReady, shouldShowProjectCatalogTools } from '@/lib/project-showcase'
+import { getProductExploreUrl } from '@/lib/product-home'
+import { filterProjectCatalog, getProjectCover, getProjectEntrypoints, getProjectYear, isProjectShowcaseStyleReady } from '@/lib/project-showcase'
+import { getProjectCategory, projectCategories } from '@/lib/project-categories'
 import EmptyState from '@/components/ui/EmptyState'
 import ProjectStatusBadge from '@/components/ui/ProjectStatusBadge'
 import ProjectOpenSourceBadge from '@/components/ui/ProjectOpenSourceBadge'
 import GithubIcon from '@/components/ui/GithubIcon'
 import ProjectEntrypoints from '@/components/ui/ProjectEntrypoints'
 import ImageLightbox, { IMAGE_ZOOM_CURSOR } from '@/components/ui/ImageLightbox'
-
-const typeIcons = { mobile: Smartphone, pc: Monitor, dashboard: Monitor, integrated: Cpu }
-
-function projectState(project, lang) {
-  if (project.archived) return lang === 'zh' ? '已下架' : 'Discontinued'
-  return project.deadline || (lang === 'zh' ? '持续迭代' : 'In progress')
-}
-
-function projectDate(project) {
-  const date = new Date(project.createdAt)
-  if (Number.isNaN(date.getTime())) return ''
-  return `${date.getFullYear()} · ${String(date.getMonth() + 1).padStart(2, '0')}`
-}
-
-function ProjectRiverLoading({ lang }) {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{
-        display: 'grid',
-        minHeight: 'min(690px, calc(100dvh - 110px))',
-        placeItems: 'center',
-      }}
-    >
-      <span
-        style={{
-          color: 'var(--muted, #888)',
-          fontFamily: 'monospace',
-          fontSize: '12px',
-          letterSpacing: '.16em',
-        }}
-      >
-        {lang === 'zh' ? '正在加载作品…' : 'LOADING WORKS…'}
-      </span>
-    </div>
-  )
-}
-
-function ProjectMedia({ project, lang, eager, onPreview }) {
-  const TypeIcon = typeIcons[project.project_type] || Monitor
-  const cover = getProjectCover(project)
-
-  if (!cover) {
-    return (
-      <div className="river-project-media river-project-media-static" aria-hidden="true">
-        <TypeIcon size={28} strokeWidth={1.25} />
-        <span>{getProjectTypeLabel(project.project_type, lang)}</span>
-        <strong>{project.name}</strong>
-      </div>
-    )
-  }
-
-  const alt = `${project.name} ${lang === 'zh' ? '项目封面' : 'project cover'}`
-
-  return (
-    <div className="river-project-media river-project-cover">
-      <button
-        type="button"
-        className="river-project-cover-button"
-        onClick={() => onPreview({ src: cover.src, alt })}
-        aria-label={lang === 'zh' ? `放大查看${project.name}封面` : `Enlarge ${project.name} cover`}
-        style={{ cursor: IMAGE_ZOOM_CURSOR }}
-      >
-      <Image
-        src={cover.src}
-        alt={alt}
-        width={cover.width}
-        height={cover.height}
-        sizes="(max-width: 760px) calc(100vw - 72px), 468px"
-        loading={eager ? 'eager' : 'lazy'}
-        style={{ cursor: IMAGE_ZOOM_CURSOR }}
-      />
-      </button>
-    </div>
-  )
-}
+import ProjectYearFilter from './ProjectYearFilter'
 
 function ProjectEntry({ rawProject, index, lang, onPreview }) {
   const project = localizeProject(rawProject, lang)
-  const TypeIcon = typeIcons[project.project_type] || Monitor
-  const featured = isFeaturedProject(rawProject)
+  const cover = getProjectCover(project)
+  const exploreUrl = getProductExploreUrl(rawProject)
+  const { pcUrl, mobileUrl, mobileQrUrl } = getProjectEntrypoints(project)
+  const showExplore = exploreUrl && !(pcUrl || mobileUrl || mobileQrUrl)
+  const alt = `${project.name} ${lang === 'zh' ? '项目封面' : 'project cover'}`
 
   return (
-    <article
-      className={`river-project ${index % 2 === 0 ? 'is-left' : 'is-right'} ${project.archived ? 'is-archived' : ''} ${featured ? 'is-featured' : ''}`}
-    >
-      <div className="river-project-node" aria-hidden="true"><span /></div>
-      <span className="river-project-date">{projectDate(project)}</span>
-      <div className="river-project-visual">
-        <ProjectMedia project={project} lang={lang} eager={index === 0} onPreview={onPreview} />
-        {project.archived && <span className="river-project-archived-badge">{getProjectArchivedLabel(true, lang)}</span>}
-      </div>
-
-      <div className="river-project-content">
-        {featured && <div className="river-project-featured"><span>{lang === 'zh' ? '重点项目' : 'Featured project'}</span></div>}
-        <div className="river-project-eyebrow">
-          <span>{String(index + 1).padStart(2, '0')}</span>
-          <span><TypeIcon size={13} />{getProjectTypeLabel(project.project_type, lang)}</span>
-          <span className="river-project-status">{projectState(project, lang)}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+    <article className={`catalog-card ${project.archived ? 'is-archived' : ''}`}>
+      {cover ? (
+        <button
+          type="button"
+          className="catalog-cover river-project-cover"
+          onClick={() => onPreview({ src: cover.src, alt })}
+          aria-label={lang === 'zh' ? `放大查看${project.name}封面` : `Enlarge ${project.name} cover`}
+          style={{ cursor: IMAGE_ZOOM_CURSOR }}
+        >
+          <Image src={cover.src} alt={alt} width={cover.width} height={cover.height}
+            sizes="(max-width: 620px) calc(100vw - 36px), (max-width: 1100px) calc((100vw - 72px) / 2), (max-width: 1536px) calc((100vw - 136px) / 3), 466px"
+            loading={index < 3 ? 'eager' : 'lazy'} />
+        </button>
+      ) : (
+        <div className="catalog-cover catalog-cover-placeholder" aria-hidden="true"><Monitor size={30} strokeWidth={1.2} /><strong>{project.name}</strong></div>
+      )}
+      <div className="catalog-card-body">
+        <div className="catalog-card-heading">
           <h2>{project.name}</h2>
-          <ProjectStatusBadge status={project.status} lang={lang} />
+          {project.archived ? <span className="catalog-archived-label">{lang === 'zh' ? '已下架' : 'Discontinued'}</span> : <ProjectStatusBadge status={project.status} lang={lang} />}
           <ProjectOpenSourceBadge isOpenSource={project.is_open_source} lang={lang} />
         </div>
-        <p className="river-project-description">{project.description}</p>
-
-        {project.tags.length > 0 && <div className="river-project-tags">{project.tags.map(tag => <span key={tag}>{tag}</span>)}</div>}
-
-        {project.capabilities.length > 0 && (
-          <ol className="river-project-capabilities" aria-label={lang === 'zh' ? '核心能力' : 'Capabilities'}>
-            {project.capabilities.map((capability, capabilityIndex) => (
-              <li key={capability.id ?? capability.title}>
-                <span className="river-project-capability-number">{capabilityIndex + 1}</span>
-                <span><strong>{capability.title}</strong>{capability.description && <small>{capability.description}</small>}</span>
-              </li>
-            ))}
-          </ol>
-        )}
-
+        <p className="catalog-description">{project.description}</p>
+        {project.tags.length > 0 && <div className="catalog-tags">{project.tags.slice(0, 2).map(tag => <span key={tag}>{tag}</span>)}</div>}
         {project.archived ? (
-          <div className="river-project-archived-note">{lang === 'zh' ? '该作品已停止维护，相关入口已关闭' : 'This project is no longer maintained and its links are disabled.'}</div>
+          <p className="catalog-archived-note">{lang === 'zh' ? '该作品已停止维护，相关入口已关闭' : 'No longer maintained; links are disabled.'}</p>
         ) : (
-          <div className="river-project-actions">
+          <div className="catalog-actions">
+            {showExplore && <a href={exploreUrl} target="_blank" rel="noopener noreferrer">{lang === 'zh' ? '查看作品' : 'View project'}<ArrowUpRight size={14} /></a>}
             <ProjectEntrypoints project={project} lang={lang} />
-            <Link className="river-project-action" href={`/projects/${project.id}`}>{lang === 'zh' ? '查看详情' : 'View details'}<ArrowUpRight size={14} /></Link>
-            {project.github && <a className="river-project-action" href={project.github} target="_blank" rel="noreferrer"><GithubIcon size={14} />GitHub</a>}
+            <Link href={`/projects/${project.id}`}>{lang === 'zh' ? '查看详情' : 'View details'}<ArrowUpRight size={14} /></Link>
+            {project.github && <a href={project.github} target="_blank" rel="noopener noreferrer"><GithubIcon size={14} />GitHub</a>}
           </div>
         )}
       </div>
@@ -152,14 +69,13 @@ export default function ProjectsClient({ projects }) {
   const { lang } = useLang()
   const pageRef = useRef(null)
   const [stylesReady, setStylesReady] = useState(false)
+  const [category, setCategory] = useState('all')
   const [query, setQuery] = useState('')
-  const [projectType, setProjectType] = useState('all')
+  const [year, setYear] = useState('')
   const [previewImage, setPreviewImage] = useState(null)
-  const showCatalogTools = shouldShowProjectCatalogTools(projects)
 
   useEffect(() => {
     let frameId
-
     const revealWhenStyled = () => {
       if (isProjectShowcaseStyleReady(pageRef.current)) {
         setStylesReady(true)
@@ -167,160 +83,104 @@ export default function ProjectsClient({ projects }) {
       }
       frameId = window.requestAnimationFrame(revealWhenStyled)
     }
-
     revealWhenStyled()
     return () => window.cancelAnimationFrame(frameId)
   }, [])
 
-  const visibleProjects = useMemo(() => filterProjectCatalog(projects, { projectType, query }), [projects, projectType, query])
-  const yearGroups = useMemo(() => {
-    const groups = []
-    visibleProjects.forEach(project => {
-      const year = getProjectYear(project) || (lang === 'zh' ? '未标注' : 'Undated')
-      const previous = groups[groups.length - 1]
-      if (previous?.year === year) previous.projects.push(project)
-      else groups.push({ year, projects: [project] })
-    })
-    return groups
-  }, [visibleProjects, lang])
-
-  if (projects.length === 0) return <EmptyState message={lang === 'zh' ? '暂无项目' : 'No projects yet'} />
+  const listedProjects = useMemo(() => projects.filter(project => !project.archived && !localizeProject(project, 'zh').archived), [projects])
+  const years = useMemo(() => [...new Set(listedProjects.map(getProjectYear).filter(Boolean))].sort((a, b) => b - a), [listedProjects])
+  const matchingProjects = useMemo(() => filterProjectCatalog(listedProjects, { activeYear: year ? Number(year) : null, query }), [listedProjects, year, query])
+  const counts = useMemo(() => matchingProjects.reduce((result, project) => {
+    const key = getProjectCategory(project)
+    result[key] = (result[key] || 0) + 1
+    return result
+  }, {}), [matchingProjects])
+  const visibleProjects = useMemo(() => matchingProjects.filter(project => category === 'all' || getProjectCategory(project) === category), [matchingProjects, category])
 
   return (
-    <main ref={pageRef} className="projects-river-page">
+    <main ref={pageRef} className="project-catalog" aria-busy={!stylesReady}>
       {stylesReady ? <>
-        {showCatalogTools && (
-        <div className="projects-river-tools">
-          <label><Search size={15} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder={lang === 'zh' ? '搜索作品' : 'Search projects'} /></label>
-          <select value={projectType} onChange={event => setProjectType(event.target.value)} aria-label={lang === 'zh' ? '项目类型' : 'Project type'}>
-            <option value="all">{lang === 'zh' ? '全部类型' : 'All types'}</option><option value="pc">{lang === 'zh' ? 'PC 端' : 'Desktop'}</option><option value="mobile">{lang === 'zh' ? '移动端' : 'Mobile'}</option><option value="dashboard">{lang === 'zh' ? '数据大屏' : 'Dashboard'}</option><option value="integrated">{lang === 'zh' ? '软硬一体' : 'Integrated System'}</option>
-          </select>
-        </div>
-        )}
-
-        {visibleProjects.length === 0 ? <EmptyState message={lang === 'zh' ? '没有匹配的项目' : 'No matching projects'} /> : (
-          <div className="projects-river">
-            <div className="projects-timeline-line" aria-hidden="true" />
-            {yearGroups.map(group => (
-              <section key={group.year} id={`projects-year-${group.year}`} className="projects-year-group">
-                <div className="projects-year-heading"><span>{group.year}</span></div>
-                {group.projects.map(project => {
-                  const index = visibleProjects.findIndex(item => item.id === project.id)
-                  return <ProjectEntry key={project.id} rawProject={project} index={index} lang={lang} onPreview={setPreviewImage} />
-                })}
-              </section>
-            ))}
-          </div>
-        )}
-      </> : <ProjectRiverLoading lang={lang} />}
-
+      <header className="catalog-heading">
+        <div><h1>{lang === 'zh' ? '作品' : 'Works'}</h1><p>{lang === 'zh' ? '从日常工具到产品实践，找到你感兴趣的作品。' : 'Explore everyday tools and product projects.'}</p></div>
+        <span>{listedProjects.length} {lang === 'zh' ? '个作品' : 'works'}</span>
+      </header>
+      <div className="catalog-toolbar">
+      <nav className="catalog-categories" aria-label={lang === 'zh' ? '作品分类' : 'Product categories'}>
+        <button type="button" aria-pressed={category === 'all'} onClick={() => setCategory('all')}>{lang === 'zh' ? '全部' : 'All'}<span>{matchingProjects.length}</span></button>
+        {projectCategories.filter(item => item.id !== 'other' || listedProjects.some(project => getProjectCategory(project) === 'other')).map(item => (
+          <button type="button" key={item.id} aria-pressed={category === item.id} onClick={() => setCategory(item.id)}>{item[lang === 'zh' ? 'zh' : 'en']}<span>{counts[item.id] || 0}</span></button>
+        ))}
+      </nav>
+      <div className="catalog-filters">
+        <label className="catalog-search"><Search size={17} aria-hidden="true" /><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={lang === 'zh' ? '搜索作品' : 'Search works'} aria-label={lang === 'zh' ? '搜索作品' : 'Search works'} /></label>
+        <ProjectYearFilter value={year} years={years} onChange={setYear} lang={lang} />
+      </div>
+      </div>
+      <p className="catalog-result-count" role="status" aria-live="polite">{lang === 'zh' ? `显示 ${visibleProjects.length} 个作品` : `${visibleProjects.length} works shown`}</p>
+      {visibleProjects.length ? <div className="catalog-grid">{visibleProjects.map((project, index) => <ProjectEntry key={project.id} rawProject={project} index={index} lang={lang} onPreview={setPreviewImage} />)}</div> : <EmptyState message={lang === 'zh' ? '没有匹配的作品' : 'No matching works'} />}
       <ImageLightbox image={previewImage} onClose={() => setPreviewImage(null)} lang={lang} />
-
+      </> : (
+        <div role="status" aria-live="polite" style={{ display: 'grid', minHeight: 'min(690px, calc(100dvh - 110px))', placeItems: 'center', color: 'var(--muted, #888)', fontSize: '12px' }}>
+          {lang === 'zh' ? '正在加载作品…' : 'Loading works…'}
+        </div>
+      )}
       <style jsx global>{`
-        .projects-river-page { --project-showcase-ready: 1; --river-line: color-mix(in srgb, var(--fg) 30%, transparent); --river-soft: color-mix(in srgb, var(--fg) 7%, transparent); width: 100%; padding: clamp(36px, 6vw, 70px) 0 120px; }
-        .projects-river-tools { display: flex; gap: 10px; max-width: 1080px; margin: 0 auto 72px; padding: 0 24px; }
-        .projects-river-tools label { display: flex; align-items: center; gap: 8px; flex: 1; padding: 0 12px; border: 1px solid var(--border); }
-        .projects-river-tools input, .projects-river-tools select { min-height: 42px; border: 0; color: var(--fg); background: transparent; font: .78rem/1.2 monospace; outline: none; }
-        .projects-river-tools input { width: 100%; } .projects-river-tools select { padding: 0 12px; border: 1px solid var(--border); }
-        .projects-river { position: relative; max-width: 1160px; margin: 0 auto; padding: 0 24px; }
-        .projects-year-group { position: relative; scroll-margin-top: 92px; } .projects-year-group + .projects-year-group { margin-top: 54px; }
-        .projects-year-heading { position: absolute; z-index: 0; top: -54px; left: 0; color: color-mix(in srgb, var(--fg) 10%, transparent); pointer-events: none; }
-        .projects-year-group:nth-of-type(even) .projects-year-heading { right: 0; left: auto; }
-        .projects-year-heading span { font: 300 clamp(4.8rem, 9vw, 7.4rem)/1 monospace; letter-spacing: -.08em; }
-        .river-project { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1fr); grid-template-areas: 'visual node content'; align-items: center; min-height: 350px; margin-bottom: clamp(52px, 7vw, 92px); }
-        .river-project.is-right { grid-template-areas: 'content node visual'; }
-        .river-project-node { grid-area: node; position: relative; align-self: stretch; }
-        .river-project-node span { position: absolute; top: 50%; left: 50%; display: block; width: 12px; height: 12px; margin: -6px 0 0 -6px; border: 3px solid var(--bg); border-radius: 50%; background: var(--fg); box-shadow: 0 0 0 1px var(--river-line), 0 0 24px color-mix(in srgb, var(--fg) 25%, transparent); transform: translateX(var(--river-node-x)); }
-        .river-project-date { position: absolute; z-index: 3; top: 50%; left: 50%; color: color-mix(in srgb, var(--fg) 72%, var(--muted)); font: .62rem/1 monospace; white-space: nowrap; transform: translate(calc(var(--river-node-x) - 74px), -22px); }
-        .river-project-visual { position: relative; grid-area: visual; min-width: 0; } .river-project-content { grid-area: content; min-width: 0; }
-        .river-project.is-left .river-project-visual { padding-right: 18px; } .river-project.is-left .river-project-content { padding-left: 18px; } .river-project.is-right .river-project-content { padding-right: 18px; } .river-project.is-right .river-project-visual { padding-left: 18px; }
-        .river-project-media { position: relative; display: flex; aspect-ratio: 16/10; width: 100%; min-height: 220px; overflow: hidden; border: 1px solid var(--border); border-radius: 2px; color: var(--fg); background: linear-gradient(135deg, color-mix(in srgb, var(--fg) 5%, transparent), transparent 62%), repeating-linear-gradient(90deg, transparent 0 48px, color-mix(in srgb, var(--fg) 3%, transparent) 49px 50px); }
-        .river-project-media::after { content: ''; position: absolute; inset: 10px; border: 1px solid color-mix(in srgb, var(--fg) 7%, transparent); pointer-events: none; }
-        .river-project-media.river-project-cover { min-height: 0; aspect-ratio: auto; }
-        .river-project-cover-button { display: block; width: 100%; padding: 0; border: 0; color: inherit; background: transparent; cursor: zoom-in; }
-        .river-project-cover-button:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+        .site-page-shell:has(> .project-catalog) { max-width: 1440px; }
+        .project-catalog { --project-showcase-ready: 1; --catalog-link: #177d66; width: 100%; margin: 0 auto; padding: 24px 0 80px; }
+        .dark .project-catalog { --catalog-link: #65d7bb; }
+        .catalog-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+        .catalog-heading > div { display: flex; align-items: baseline; gap: 22px; min-width: 0; }
+        .catalog-heading h1 { margin: 0; font-size: 32px; font-weight: 600; line-height: 1.3; letter-spacing: -.04em; }
+        .catalog-heading p, .catalog-heading > span { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+        .catalog-heading > span { flex-shrink: 0; }
+        .catalog-toolbar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 24px; padding-bottom: 22px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .catalog-categories { display: flex; flex: 1 1 auto; flex-wrap: wrap; min-width: 0; gap: 10px; }
+        .catalog-filters { display: flex; flex: 0 1 350px; min-width: 0; gap: 10px; margin-left: auto; }
+        .catalog-search { display: flex; flex: 1; min-width: 0; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); background: var(--bg); }
+        .catalog-search svg { flex-shrink: 0; }
+        .catalog-search input { width: 100%; min-width: 0; min-height: 40px; padding: 0; border: 0; outline: none; color: var(--fg); background: transparent; font: inherit; font-size: 13px; }
+        .catalog-search:focus-within { outline: 2px solid var(--fg); outline-offset: 3px; }
+        .catalog-categories button { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 10px; min-height: 40px; padding: 8px 15px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; transition: color 150ms, border-color 150ms; }
+        .catalog-categories button span { font: 11px/1.4 monospace; opacity: .7; }
+        .catalog-categories button:hover { border-color: var(--muted); color: var(--fg); }
+        .catalog-categories button[aria-pressed='true'] { color: var(--bg); border-color: var(--fg); background: var(--fg); }
+        .catalog-result-count { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+        .catalog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
+        .catalog-card { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 6px; background: color-mix(in srgb, var(--bg) 97%, var(--fg)); transition: border-color 150ms; }
+        .catalog-card:hover { border-color: color-mix(in srgb, var(--fg) 40%, var(--border)); }
+        .catalog-cover { display: block; flex-shrink: 0; width: 100%; padding: 0; border: 0; border-radius: 5px 5px 0 0; background: transparent; color: var(--fg); overflow: hidden; }
         .river-project-cover img { display: block; width: 100%; height: auto; cursor: zoom-in; }
-        .river-project-media-static { flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 9px; padding: 28px; }
-        .river-project-media-static span { color: var(--muted); font: .66rem/1.2 monospace; letter-spacing: .12em; text-transform: uppercase; }
-        .river-project-media-static strong { max-width: 90%; font-size: clamp(1.45rem, 3vw, 2.5rem); font-weight: 500; line-height: 1; letter-spacing: -.04em; }
-        .river-project-eyebrow { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; color: var(--muted); font: .65rem/1.2 monospace; letter-spacing: .08em; text-transform: uppercase; }
-        .river-project-eyebrow > span { display: inline-flex; align-items: center; gap: 6px; } .river-project-status { margin-left: auto; }
-        .river-project-content h2 { margin: 16px 0 12px; font-size: clamp(1.75rem, 3vw, 2.8rem); font-weight: 500; line-height: 1; letter-spacing: -.045em; overflow-wrap: anywhere; }
-        .river-project-description { margin: 0; color: color-mix(in srgb, var(--fg) 76%, var(--muted)); font-size: .92rem; line-height: 1.78; }
-        .river-project-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; } .river-project-tags span { padding: 5px 8px; border: 1px solid var(--border); color: var(--muted); font: .62rem/1.2 monospace; white-space: nowrap; }
-        .river-project-capabilities { display: grid; gap: 0; margin: 24px 0 0; padding: 0; border-top: 1px solid var(--border); list-style: none; }
-        .river-project-capabilities li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-        .river-project-capability-number { color: var(--muted); font: .62rem/1.5 monospace; } .river-project-capabilities strong { display: block; font-size: .78rem; font-weight: 500; line-height: 1.45; }
-        .river-project-capabilities small { display: block; margin-top: 4px; color: var(--muted); font-size: .68rem; line-height: 1.55; }
-        .river-project-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
-        .river-project-action { display: inline-flex; min-height: 36px; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; border: 1px solid var(--border); color: var(--fg); background: transparent; font: .66rem/1.2 monospace; text-decoration: none; cursor: pointer; transition: border-color 160ms ease, background 160ms ease, color 160ms ease; }
-        .river-project-action:hover { border-color: color-mix(in srgb, var(--fg) 55%, var(--border)); background: var(--river-soft); color: var(--fg); } .river-project-action:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
-        .river-project-action-primary { border-color: var(--fg); color: var(--bg); background: var(--fg); } .river-project-action-primary:hover { border-color: var(--fg); color: var(--bg); background: var(--fg); opacity: .86; }
-        .river-project-archived-note { margin-top: 22px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font: .67rem/1.55 monospace; }
-        .river-project-archived-badge { position: absolute; right: 14px; bottom: 14px; z-index: 2; padding: 6px 10px; border: 1px solid color-mix(in srgb, var(--fg) 32%, transparent); border-radius: 2px; color: color-mix(in srgb, var(--fg) 48%, transparent); background: color-mix(in srgb, var(--bg) 82%, transparent); font: 10px/1.2 monospace; letter-spacing: .12em; transform: rotate(-8deg); transform-origin: center; }
-        .river-project.is-archived .river-project-media { opacity: .5; filter: grayscale(1); } .river-project.is-archived .river-project-content { opacity: .58; } .river-project.is-archived .river-project-node span { background: var(--muted); box-shadow: 0 0 0 1px var(--river-line); }
-        @media (max-width: 900px) { .river-project { grid-template-columns: minmax(0,1fr) 70px minmax(0,1fr); } .river-project.is-left .river-project-visual { padding-right: 8px; } .river-project.is-left .river-project-content { padding-left: 8px; } .river-project.is-right .river-project-content { padding-right: 8px; } .river-project.is-right .river-project-visual { padding-left: 8px; } .river-project-media { min-height: 220px; } }
-        @media (max-width: 760px) {
-          .projects-river-page { padding-top: 28px; padding-bottom: 72px; }
-          .projects-river-tools { margin: 0 auto 54px; padding: 0 18px; } .projects-river { padding: 0 18px 0 52px; }
-          .projects-year-heading, .projects-year-group:nth-of-type(even) .projects-year-heading { top: -30px; right: auto; left: 0; } .projects-year-heading span { font-size: 3.2rem; }
-          .river-project, .river-project.is-right { grid-template-columns: 1fr; grid-template-areas: 'visual' 'content'; gap: 26px; min-height: 0; margin-bottom: 94px; }
-          .river-project-node { position: absolute; top: 28px; left: -32px; } .river-project-node span { position: static; width: 10px; height: 10px; margin: 0; transform: none; } .river-project-date { top: 26px; left: -10px; transform: none; }
-          .river-project.is-left .river-project-visual, .river-project.is-left .river-project-content, .river-project.is-right .river-project-content, .river-project.is-right .river-project-visual { padding: 0; }
-          .river-project-media { min-height: 0; aspect-ratio: 16/10; } .river-project-content h2 { font-size: clamp(2rem, 11vw, 3rem); } .river-project-status { margin-left: 0; }
+        .catalog-cover-placeholder { display: flex; aspect-ratio: 3/2; align-items: center; justify-content: center; flex-direction: column; gap: 16px; color: var(--muted); }
+        .catalog-cover-placeholder strong { max-width: 90%; overflow-wrap: anywhere; font-size: 24px; font-weight: 500; }
+        .catalog-card-body { display: flex; flex: 1; flex-direction: column; padding: 16px; }
+        .catalog-card-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; margin-bottom: 10px; }
+        .catalog-card-heading h2 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -.025em; line-height: 1.3; overflow-wrap: anywhere; }
+        .catalog-description { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; margin: 0; min-height: 44px; color: var(--muted); font-size: 13px; line-height: 22px; }
+        .catalog-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+        .catalog-tags span { max-width: 100%; padding: 3px 7px; border: 1px solid var(--border); border-radius: 3px; color: var(--muted); font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+        .catalog-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; margin-top: auto; padding-top: 14px; }
+        .catalog-actions a { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; color: var(--catalog-link); font-size: 12px; text-decoration: none; }
+        .catalog-actions a:hover { text-decoration: underline; text-underline-offset: 4px; }
+        .catalog-archived-label { color: var(--muted); font-size: 11px; border: 1px solid var(--border); border-radius: 3px; padding: 3px 6px; }
+        .catalog-card.is-archived .catalog-cover { filter: grayscale(1); opacity: .5; }
+        .catalog-archived-note { margin: auto 0 0; padding-top: 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+        .project-catalog button:focus-visible, .project-catalog a:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+        @media (max-width: 1100px) { .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 620px) {
+          .project-catalog { padding-top: 12px; padding-bottom: 48px; }
+          .catalog-heading { align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+          .catalog-heading > div { display: block; } .catalog-heading h1 { font-size: 28px; }
+          .catalog-heading p { font-size: 12px; margin-top: 8px; } .catalog-heading > span { font-size: 12px; padding-top: 9px; }
+          .catalog-toolbar { display: block; padding-bottom: 16px; margin-bottom: 20px; }
+          .catalog-categories { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; gap: 8px; padding: 0 0 12px; }
+          .catalog-filters { width: 100%; margin-top: 4px; }
+          .catalog-filters input { min-height: 44px; }
+          .catalog-categories button { min-height: 44px; padding: 8px 12px; font-size: 12px; }
+          .catalog-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+          .catalog-card-heading h2 { font-size: 21px; } .catalog-actions { gap: 6px 18px; }
+          .catalog-actions a { min-height: 40px; font-size: 13px; }
         }
-        @media (prefers-reduced-motion: reduce) { .river-project-action { transition: none; } }
-        .projects-river-page { position: relative; isolation: isolate; padding-top: clamp(72px, 8vw, 104px); }
-        .projects-river { --river-node-x: 0px; --river-section-gap: 70px; --river-media-offset: 40px; max-width: 1080px; padding: 0 32px 90px; }
-        .projects-timeline-line { position: absolute; top: 0; bottom: 0; left: calc(50% - .5px); width: 1px; background: color-mix(in srgb, var(--fg) 35%, transparent); pointer-events: none; }
-        .projects-year-group + .projects-year-group { margin-top: 88px; }
-        .projects-year-heading { top: -62px; }
-        .projects-year-heading span { font-size: 86px; font-weight: 200; color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--fg) 13%, transparent); }
-        .river-project { grid-template-columns: minmax(0, 1fr) 144px minmax(0, 1fr); align-items: start; min-height: 332px; margin-bottom: var(--river-section-gap); }
-        .river-project-node { position: absolute; left: calc(50% - 7px); top: 24px; width: 14px; height: 14px; }
-        .river-project-node span { position: static; margin: 0; width: 14px; height: 14px; border: 3px solid var(--bg); outline: 1px solid #aaa; box-shadow: 0 0 0 3px #ffffff15, 0 0 17px #ffffff66; }
-        .river-project-date { top: 31px; transform: translate(calc(var(--river-node-x) - 80px), -50%); }
-        .river-project.is-left .river-project-visual,
-        .river-project.is-left .river-project-content,
-        .river-project.is-right .river-project-content,
-        .river-project.is-right .river-project-visual { padding: 0; }
-        .river-project-visual { margin-top: var(--river-media-offset); }
-        .river-project-eyebrow { display: none; }
-        .river-project-featured { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--fg); font: 600 10px/1.2 monospace; letter-spacing: .14em; text-transform: uppercase; }
-        .river-project-featured::after { content: ''; width: 44px; height: 1px; background: color-mix(in srgb, var(--fg) 50%, transparent); }
-        .river-project.is-featured .river-project-node span { outline-color: var(--fg); box-shadow: 0 0 0 4px color-mix(in srgb, var(--fg) 10%, transparent), 0 0 22px color-mix(in srgb, var(--fg) 32%, transparent); }
-        .river-project-content h2 { margin: 0 0 12px; font-size: 36px; letter-spacing: -.025em; font-weight: 600; }
-        .river-project-description { font-size: 14px; line-height: 1.75; color: var(--muted); }
-        .river-project-tags { gap: 8px; margin-top: 16px; }
-        .river-project-tags span { border: 0; background: color-mix(in srgb, var(--fg) 7%, transparent); border-radius: 2px; padding: 6px 9px; font: 10px/1.3 inherit; }
-        .river-project-capabilities { border: 0; margin-top: 24px; gap: 9px; }
-        .river-project-capabilities::before { content: attr(aria-label); margin-bottom: 4px; font-size: 13px; }
-        .river-project-capabilities li { border: 0; padding: 0; grid-template-columns: 16px 1fr; gap: 9px; }
-        .river-project-capability-number { border: 1px solid var(--muted); border-radius: 50%; width: 15px; height: 15px; text-align: center; font: 9px/13px monospace; }
-        .river-project-capabilities strong { font-weight: 400; font-size: 13px; color: var(--muted); }
-        .river-project-capabilities small { display: block; margin-top: 5px; font-size: 13px; line-height: 1.7; }
-        .river-project-actions { margin-top: 28px; gap: 22px; }
-        .river-project-action { padding: 0; border: 0; background: transparent; color: var(--fg); font-size: 11px; min-height: 32px; }
-        .river-project-action:hover { background: transparent; color: var(--fg); opacity: .7; }
-        .river-project-action-primary { min-height: 34px; padding: 0 14px; border: 1px solid var(--fg); color: var(--bg); background: var(--fg); }
-        .river-project-action-primary:hover { border-color: var(--fg); color: var(--bg); background: var(--fg); opacity: .82; }
-        .river-project-media { min-height: 0; aspect-ratio: 1.58; background: color-mix(in srgb, var(--bg) 97%, var(--fg)); }
-        .river-project-media::after { display: none; }
-        .river-project-media-static { opacity: .45; padding: 24px; }
-        .river-project-media-static strong { font-size: 23px; }
-        @media (max-width: 760px) {
-          .projects-river-page { padding-top: 56px; }
-          .projects-river { padding: 0 12px 50px 60px; }
-          .projects-timeline-line { left: 33.5px; }
-          .river-project, .river-project.is-right { grid-template-columns: 1fr; grid-template-areas: 'content' 'visual'; min-height: 0; gap: 18px; margin-bottom: 70px; }
-          .river-project-node { left: -33px; top: 7px; }
-          .river-project-node span { transform: none; }
-          .river-project-date { left: 0; top: -18px; transform: none; font-size: 9px; }
-          .river-project-visual { margin-top: 0; }
-          .river-project-content h2 { font-size: 30px; }
-          .projects-year-heading, .projects-year-group:nth-of-type(even) .projects-year-heading { top: -57px; }
-          .projects-year-heading span { font-size: 48px; }
-        }
+        @media (prefers-reduced-motion: reduce) { .catalog-card, .catalog-categories button { transition: none; } }
       `}</style>
     </main>
   )
