@@ -35,13 +35,20 @@ function readVisitorToken(request) {
 }
 
 function json(data, init = {}) {
-  return Response.json(data, init)
+  return Response.json(data, {
+    ...init,
+    headers: { ...init.headers, 'Cache-Control': 'no-store' },
+  })
+}
+
+function visitDate() {
+  return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().split('T')[0]
 }
 
 // GET - 获取今日访客数和总数
 export async function GET() {
   try {
-    const today = new Date().toISOString().split('T')[0]
+    const today = visitDate()
     const [todayVisit, totalResult] = await Promise.all([
       prisma.siteVisit.findUnique({ where: { date: today } }),
       prisma.siteVisit.aggregate({ _sum: { count: true } }),
@@ -53,14 +60,14 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Failed to get visit stats:', error)
-    return json({ todayCount: 0, todayPosition: 0, total: 0 })
+    return json({ error: 'Visit statistics unavailable' }, { status: 503 })
   }
 }
 
 // POST - 记录访问，访客身份由服务端签名 Cookie 管理
 export async function POST(request) {
   try {
-    const today = new Date().toISOString().split('T')[0]
+    const today = visitDate()
     const visitor = readVisitorToken(request)
 
     if (visitor?.date === today) {
@@ -109,6 +116,6 @@ export async function POST(request) {
     return response
   } catch (error) {
     console.error('Failed to record visit:', error)
-    return json({ todayCount: 0, todayPosition: 0, total: 0 })
+    return json({ error: 'Visit statistics unavailable' }, { status: 503 })
   }
 }

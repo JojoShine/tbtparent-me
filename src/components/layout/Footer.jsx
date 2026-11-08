@@ -2,21 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { useLang } from '@/hooks/useLang'
+import { recordVisit } from '@/lib/visit-stats-client'
 
 export default function Footer() {
   const { lang } = useLang()
   const [stats, setStats] = useState(null)
 
   useEffect(() => {
-    fetch('/api/visits', {
-      method: 'POST',
-      cache: 'no-store',
-    })
-      .then(res => res.json())
+    let active = true
+    recordVisit()
       .then(data => {
-        if (data && !data.error) setStats(data)
+        if (active) setStats(data)
       })
       .catch(() => {})
+    return () => { active = false }
   }, [])
 
   return (
@@ -29,8 +28,8 @@ export default function Footer() {
         {stats && (
           <span>
             {lang === 'zh'
-              ? `您是今天的第 ${stats.todayPosition} 位访客，当日总访客 ${stats.todayCount}`
-              : `Visitor #${stats.todayPosition} today, ${stats.todayCount} total today`}
+              ? `今日访客 ${stats.todayCount} · 累计访问人次 ${stats.total}`
+              : `Visitors today: ${stats.todayCount} · Total daily visits: ${stats.total}`}
           </span>
         )}
       </div>
